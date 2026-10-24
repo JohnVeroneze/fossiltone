@@ -121,6 +121,7 @@
       ev.preventDefault();
       const f = ev.currentTarget;
       const email = f.email.value.trim(), senha = f.senha.value;
+      if (!fonte || fonte.modo === "demo") return erroGate("entrar-erro", "O login ainda não está ligado ao Supabase. Use a demonstração abaixo.");
       if (!email || !senha) return erroGate("entrar-erro", "Preencha e-mail e senha.");
       const btn = $("button[type=submit]", f);
       btn.disabled = true;
@@ -173,7 +174,7 @@
       fecharGaveta();
       history.replaceState(null, "", location.pathname);
       abrirGate();
-      mostrarForm(window.FTDados.configurado() ? "form-entrar" : "");
+      mostrarForm("form-entrar");
     });
 
     $("#btn-reiniciar-demo").addEventListener("click", async () => {
@@ -302,7 +303,7 @@
 
   function tabelaPedidos(lista, compacta) {
     return `<div class="table-wrap"><table class="table table--cards">
-      <thead><tr><th>Nº</th><th>Data</th><th>Cliente</th>${compacta ? "" : "<th>Itens</th><th>Canal</th>"}<th class="num">Total</th><th>Status</th></tr></thead>
+      <thead><tr><th>Nº</th><th>Data</th><th>Cliente</th>${compacta ? "" : '<th class="col-opt">Itens</th><th class="col-opt">Canal</th>'}<th class="num">Total</th><th>Status</th></tr></thead>
       <tbody>${lista.map((p) => {
         const c = cliente(p.cliente_id);
         const itens = itensDe(p.id);
@@ -310,7 +311,7 @@
           <td data-label="Nº" class="code">#${esc(p.codigo)}</td>
           <td data-label="Data">${data(p.criado_em)}</td>
           <td data-label="Cliente"><span class="strong">${esc(c ? c.nome : "Sem cliente")}</span></td>
-          ${compacta ? "" : `<td data-label="Itens">${esc(itens.map((i) => (i.quantidade > 1 ? i.quantidade + "× " : "") + i.nome).join(", ") || "—")}</td><td data-label="Canal">${esc(CANAIS[p.canal] || p.canal || "")}</td>`}
+          ${compacta ? "" : `<td data-label="Itens" class="col-opt">${esc(itens.map((i) => (i.quantidade > 1 ? i.quantidade + "× " : "") + i.nome).join(", ") || "—")}</td><td data-label="Canal" class="col-opt">${esc(CANAIS[p.canal] || p.canal || "")}</td>`}
           <td data-label="Total" class="num">${dinheiro(p.total)}</td>
           <td data-label="Status">${stamp(p.status, STATUS_PEDIDO)}</td>
         </tr>`;
@@ -885,7 +886,6 @@
       const demo = window.FTDados.demo();
       if (await demo.sessao()) { fonte = demo; return abrirApp({ email: "demonstracao" }); }
       abrirGate();
-      $("#form-entrar").hidden = true;
       $("#gate-demo").hidden = false;
       return;
     }

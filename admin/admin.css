@@ -124,7 +124,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .field input, .field select, .field textarea, .search {
   width: 100%;
   padding: .62em .85em;
-  background: rgba(0, 0, 0, .25);
+  background-color: rgba(0, 0, 0, .25);
   border: 1.5px solid rgba(239, 227, 200, .2);
   border-radius: 4px;
   color: var(--text);
@@ -337,6 +337,11 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .mini td { padding: .5rem .25rem; border-bottom: 1px solid var(--line-soft); }
 .mini tr:last-child td { border-bottom: 0; }
 
+/* com a lateral aberta e pouca largura, as colunas de apoio saem */
+@media (min-width: 761px) and (max-width: 1240px) {
+  .table .col-opt { display: none; }
+}
+
 /* em telas estreitas, cada linha vira um cartão */
 @media (max-width: 760px) {
   .table--cards thead { display: none; }
@@ -378,7 +383,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 
 .drawer .field label, .drawer .field .label, .drawer .check { color: var(--ink); }
 .drawer .field small { color: rgba(42, 26, 14, .65); }
-.drawer .field input, .drawer .field select, .drawer .field textarea { background: rgba(255, 255, 255, .45); border-color: rgba(42, 26, 14, .25); color: var(--ink); }
+.drawer .field input, .drawer .field select, .drawer .field textarea { background-color: rgba(255, 255, 255, .45); border-color: rgba(42, 26, 14, .25); color: var(--ink); }
 .drawer .field input:focus, .drawer .field select:focus, .drawer .field textarea:focus { border-color: var(--rust); }
 .drawer .field select { background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'><path d='M1 1.5l5 5 5-5' fill='none' stroke='%238a3a12' stroke-width='1.6'/></svg>"); }
 .drawer .field select option { background: var(--paper); color: var(--ink); }

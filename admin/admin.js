@@ -102,6 +102,7 @@
   function abrirGate() {
     $("#app").hidden = true;
     $("#gate").hidden = false;
+    $("#gate-demo").hidden = window.FTDados.configurado();
     document.title = "Entrar · Gabinete · Fossil Tone";
   }
 
@@ -886,12 +887,10 @@
       const demo = window.FTDados.demo();
       if (await demo.sessao()) { fonte = demo; return abrirApp({ email: "demonstracao" }); }
       abrirGate();
-      $("#gate-demo").hidden = false;
       return;
     }
 
     abrirGate();
-    $("#gate-demo").hidden = true;
     try {
       fonte = await window.FTDados.supabase();
     } catch (e) {

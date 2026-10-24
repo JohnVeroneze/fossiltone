@@ -1,0 +1,620 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Fossil Tone</title>
+  <meta name="description" content="Pedais e amplificadores analógicos e valvulados, feitos à mão no interior de SP. Inspirados nos clássicos, ajustados pro seu som.">
+  <meta name="theme-color" content="#2B1609">
+  <!-- quando o site tiver domínio, trocar og:image por um endereço completo (https://.../assets/og-image.jpg) -->
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="pt_BR">
+  <meta property="og:title" content="Fossil Tone">
+  <meta property="og:description" content="Timbres extintos. Trazidos de volta. Pedais e amplificadores analógicos e valvulados, feitos à mão no interior de SP.">
+  <meta property="og:image" content="assets/og-image.jpg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Logotipo da Fossil Tone preso numa pedra de âmbar, com a frase Timbres extintos, trazidos de volta.">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="assets/favicon.png" type="image/png">
+  <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+  <link rel="preload" href="assets/fonts/big-shoulders-display-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="assets/fonts/newsreader-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="styles.css?v=35">
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="logo" viewBox="0 0 753.22 171.01">
+    <path d="M12.69,113.28c1.2-1.2,2.41-1.4,4.01-.6l6.01,2.61c2,.8,2.21,2.61.8,4.41-9.22,12.63-9.62,33.28,9.42,33.28s32.08-19.04,43.7-39.69c3.41-6.01,8.62-15.44,14.43-26.46l-31.27,1.4c-2.21,0-3.41-1.2-2.41-3.41l2.21-5.21c.6-1.4,1.8-2.21,3.41-2.41l34.68-2.41c10.22-19.04,21.45-40.29,29.47-55.53-27.06,1.6-46.91,3.41-59.94,4.61-42.3,3.41-49.12,16.44-42.7,25.86,5.41,7.82,12.83,10.42,16.84,11.23,2,.4,3.21,1.6,3.01,3.61l-.8,5.61c-.2,1.6-1.8,2.81-3.61,2.41-11.23-3.21-24.86-9.62-31.07-23.66C-2.75,22.86,20.7,12.84,62.6,9.03c32.88-3.01,57.74-4.61,87.2-7.02,3.01-.2,4.41,2,3.01,4.81l-5.41,10.42c-2,4.01-15.64,28.47-30.27,56.13l22.45-1.6c2.21-.2,3.41,1.2,2.41,3.41l-3.01,7.22c-.6,1.4-1.6,2.41-3.41,2.41l-25.26,1.2-5.21,10.02c-26.46,50.72-44.71,74.98-75.78,74.98-34.28,0-36.69-36.89-16.64-57.74Z"/>
+    <path d="M127.55,115.48c3.61-21.65,26.66-48.92,49.32-45.91,10.02,1.4,13.43,11.63,11.43,22.45-4.21,24.26-23.86,53.12-45.91,49.92-11.83-1.8-17.44-12.43-14.83-26.46ZM148.6,122.9c11.63,2,26.06-15.04,29.27-33.28.8-4.61,0-11.23-4.41-12.03-12.23-1.2-28.47,20.05-31.07,34.08-1.2,6.42,1,10.42,6.21,11.23Z"/>
+    <path d="M178.67,134.12c-1.2-1.4-.8-2.81.2-4.21l7.62-10.83c1.2-1.8,2.61-1.6,3.81.2,3.01,4.41,5.81,6.62,9.22,7.42,6.01,1.4,11.63-2,12.23-10.42.6-9.62-12.03-17.64-11.03-30.07,1.4-16.04,15.84-24.66,30.67-22.25,3.61.6,8.02,2.81,11.03,5.21,1.4,1.2,1.6,2.61.4,4.21l-3.41,4.61c-1.2,1.6-2.61,1.8-4.21.6-1.8-1.4-4.01-2.41-6.62-2.81-9.02-1.6-14.43,4.01-14.83,10.42-.8,13.03,11.63,18.44,11.23,33.68-.4,14.23-15.04,25.26-29.67,23.25-8.22-1-13.03-4.41-16.64-9.02Z"/>
+    <path d="M226.38,134.12c-1.2-1.4-.8-2.81.2-4.21l7.62-10.83c1.2-1.8,2.61-1.6,3.81.2,3.01,4.41,5.81,6.62,9.22,7.42,6.01,1.4,11.63-2,12.23-10.42.6-9.62-12.03-17.64-11.03-30.07,1.4-16.04,15.84-24.66,30.67-22.25,3.61.6,8.02,2.81,11.03,5.21,1.4,1.2,1.6,2.61.4,4.21l-3.41,4.61c-1.2,1.6-2.61,1.8-4.21.6-1.8-1.4-4.01-2.41-6.62-2.81-9.02-1.6-14.43,4.01-14.83,10.42-.8,13.03,11.63,18.44,11.23,33.68-.4,14.23-15.04,25.26-29.67,23.25-8.22-1-13.03-4.41-16.64-9.02Z"/>
+    <path d="M277.7,118.29c2-9.22,10.42-23.05,25.46-45.71,1-1.4,2.61-1.8,4.01-1l6.21,3.41c1.6,1,2.21,2.81,1,4.61-12.23,19.25-19.65,29.07-21.45,36.69-1.8,6.21,1,9.82,6.62,10.42,5.81.6,18.24-2,30.67-10.02,2-1.2,4.21-.6,5.01,1.4l1,2.61c.4,1.2.2,2.41-.6,3.21-18.84,17.04-36.29,17.64-44.91,16.24-12.23-2.21-15.24-11.43-13.03-21.85ZM325.61,45.12c5.21.2,8.82,4.81,7.02,11.03-2.21,7.22-9.62,10.62-14.63,9.62-3.81-.8-6.62-4.01-5.61-9.02,1.4-7.22,7.62-12.03,13.23-11.63Z"/>
+    <path d="M329.02,113.88c3.41-19.25,20.25-60.34,42.1-85,8.42-9.62,19.25-19.45,27.46-19.45,15.24,0,14.63,18.84,3.01,37.49-9.82,15.84-29.47,44.7-58.94,69.16-.4,6.82,5.21,10.22,10.42,10.83,11.43,1,24.46-3.21,32.68-8.22,1.6-1,3.21-.6,4.01,1.2l1.6,3.21c.8,1.6.6,3.01-.8,4.21-11.83,9.62-27.06,17.04-45.71,15.24-8.82-1.4-19.65-7.62-15.84-28.67ZM396.17,38.5c4.41-7.22,5.61-14.03,4.41-15.64-1.2-1.6-4.41-1.4-8.22,2.21-19.65,18.64-38.69,53.33-46.51,77.78,23.66-23.05,42.3-50.12,50.32-64.35Z"/>
+    <path d="M453.9,50.93c-11.63-26.06,11.83-37.09,53.73-41.3C550.53,5.42,598.64,2.42,643.75.01c3.01-.2,4.61,2.61,3.21,5.41l-5.21,9.82c-1.4,2.81-2.61,3.01-5.81,3.21-23.46,1-47.31,2.21-68.16,3.41-20.85,35.68-49.52,102.84-65.55,141.73-.6,1.6-2,2.21-3.61,1.6l-13.43-4.61c-1.6-.6-2.41-2.21-1.8-3.81,9.82-28.67,44.5-91.62,68.96-133.91l-40.09,2.81c-42.3,3.01-49.12,16.64-42.7,26.06,5.41,7.82,18.44,14.23,28.47,15.24,1.8.2,3.21,1.8,3.01,3.41l-.8,5.61c-.2,1.6-1.8,2.81-3.61,2.41-17.24-3.21-36.49-13.43-42.7-27.46Z"/>
+    <path d="M531.89,115.48c3.61-21.65,26.66-48.92,49.32-45.91,10.02,1.4,13.43,11.63,11.43,22.45-4.21,24.26-23.86,53.12-45.91,49.92-11.83-1.8-17.44-12.43-14.83-26.46ZM552.93,122.9c11.63,2,26.06-15.04,29.27-33.28.8-4.61,0-11.23-4.41-12.03-12.23-1.2-28.47,20.05-31.07,34.08-1.2,6.42,1,10.42,6.21,11.23Z"/>
+    <path d="M649.56,92.43c10.22-15.24,7.02-20.65-7.42-7.82-12.23,11.03-23.86,25.06-40.29,51.52-.8,1.2-2.21,1.8-3.41,1.4l-9.82-3.01c-2-.6-3.01-2.61-2-4.41l28.27-57.13c.8-1.4,2.41-2,3.81-1.4l4.61,2c1.6.8,2.41,2.61,1.6,4.21l-16.04,32.08c8.02-10.22,18.04-22.85,26.66-30.67,23.86-22.05,42.1-11.63,27.46,15.44-8.42,15.44-17.64,29.67-6.62,31.67,8.82,1.2,19.45-5.61,25.66-10.42,1.4-1.4,3.41-1,4.61.6l1.2,1.6c.6,1,.6,2.21,0,3.21-11.23,16.04-27.46,21.45-40.29,19.65-16.64-2.61-14.83-23.25,2-48.51Z"/>
+    <path d="M676.02,122.1c2-12.23,12.23-19.65,23.66-24.06-11.43-5.81-5.01-21.25,7.22-27.87,11.43-6.21,26.46-7.82,37.29-5.41,2,.4,3.01,2.21,2.21,4.01l-2.61,6.42c-.6,1.4-2,2.21-3.61,1.8-8.82-2.21-19.85-2.81-27.46,1.6-7.02,4.01-10.62,10.42-2.21,11.83,4.61.8,8.62.8,15.64.2,2.61-.2,4.81,1.4,4.01,4.01l-1.4,4.21c-.4,1-1.4,1.8-2.61,2-17.04,1.4-32.48,5.01-35.08,15.04-2,9.22,4.81,14.43,24.06,12.43,12.83-1.2,22.85-5.21,31.27-10.42,1.8-1,3.81-.6,4.61,1.2l1.8,3.61c.6,1.4.6,2.81-.2,3.41-9.82,6.21-23.05,14.43-41.7,18.04-24.66,4.81-37.29-6.42-34.88-22.05Z"/>
+  </symbol>
+  <symbol id="logo-stack" viewBox="0 0 373.11 290.67">
+    <path d="M11.54,101.22c1.09-1.09,2.19-1.28,3.65-.55l5.47,2.37c1.82.73,2.01,2.37.73,4.01-8.39,11.49-8.75,30.27,8.57,30.27s29.18-17.32,39.75-36.11c3.1-5.47,7.84-14.04,13.13-24.07l-28.45,1.28c-2.01,0-3.1-1.09-2.19-3.1l2.01-4.74c.55-1.28,1.64-2.01,3.1-2.19l31.55-2.19c9.3-17.32,19.51-36.65,26.81-50.51-24.62,1.46-42.67,3.1-54.52,4.19-38.48,3.1-44.68,14.95-38.84,23.52,4.92,7.11,11.67,9.48,15.32,10.21,1.82.37,2.92,1.46,2.74,3.28l-.73,5.11c-.18,1.46-1.64,2.55-3.28,2.19-10.21-2.92-22.61-8.75-28.27-21.52C-2.5,18.98,18.83,9.86,56.95,6.39,86.85,3.66,109.46,2.2,136.27.01c2.74-.18,4.01,1.82,2.74,4.38l-4.92,9.48c-1.82,3.65-14.22,25.89-27.54,51.06l20.42-1.46c2.01-.18,3.1,1.09,2.19,3.1l-2.74,6.56c-.55,1.28-1.46,2.19-3.1,2.19l-22.98,1.09-4.74,9.12c-24.07,46.14-40.67,68.2-68.93,68.2-31.18,0-33.37-33.55-15.14-52.52Z"/>
+    <path d="M116.03,103.22c3.28-19.69,24.25-44.49,44.86-41.76,9.12,1.28,12.22,10.58,10.39,20.42-3.83,22.06-21.7,48.32-41.76,45.41-10.76-1.64-15.86-11.31-13.49-24.07ZM135.17,109.97c10.58,1.82,23.71-13.68,26.62-30.27.73-4.19,0-10.21-4.01-10.94-11.12-1.09-25.89,18.24-28.27,31-1.09,5.84.91,9.48,5.65,10.21Z"/>
+    <path d="M162.52,120.18c-1.09-1.28-.73-2.55.18-3.83l6.93-9.85c1.09-1.64,2.37-1.46,3.46.18,2.74,4.01,5.29,6.02,8.39,6.75,5.47,1.28,10.58-1.82,11.12-9.48.55-8.75-10.94-16.05-10.03-27.35,1.28-14.59,14.41-22.43,27.9-20.24,3.28.55,7.29,2.55,10.03,4.74,1.28,1.09,1.46,2.37.36,3.83l-3.1,4.19c-1.09,1.46-2.37,1.64-3.83.55-1.64-1.28-3.65-2.19-6.02-2.55-8.21-1.46-13.13,3.65-13.49,9.48-.73,11.85,10.58,16.78,10.21,30.64-.37,12.95-13.68,22.98-26.99,21.15-7.48-.91-11.85-4.01-15.14-8.21Z"/>
+    <path d="M205.92,120.18c-1.09-1.28-.73-2.55.18-3.83l6.93-9.85c1.09-1.64,2.37-1.46,3.46.18,2.74,4.01,5.29,6.02,8.39,6.75,5.47,1.28,10.58-1.82,11.12-9.48.55-8.75-10.94-16.05-10.03-27.35,1.28-14.59,14.41-22.43,27.9-20.24,3.28.55,7.29,2.55,10.03,4.74,1.28,1.09,1.46,2.37.37,3.83l-3.1,4.19c-1.09,1.46-2.37,1.64-3.83.55-1.64-1.28-3.65-2.19-6.02-2.55-8.21-1.46-13.13,3.65-13.49,9.48-.73,11.85,10.58,16.78,10.21,30.64-.37,12.95-13.68,22.98-26.99,21.15-7.48-.91-11.85-4.01-15.14-8.21Z"/>
+    <path d="M252.6,105.78c1.82-8.39,9.48-20.97,23.16-41.58.91-1.28,2.37-1.64,3.65-.91l5.65,3.1c1.46.91,2.01,2.55.91,4.19-11.12,17.51-17.87,26.44-19.51,33.37-1.64,5.65.91,8.94,6.02,9.48,5.29.55,16.59-1.82,27.9-9.12,1.82-1.09,3.83-.55,4.56,1.28l.91,2.37c.36,1.09.18,2.19-.55,2.92-17.14,15.5-33.01,16.05-40.85,14.77-11.12-2.01-13.86-10.4-11.85-19.88ZM296.19,39.22c4.74.18,8.02,4.38,6.38,10.03-2.01,6.56-8.75,9.66-13.31,8.75-3.46-.73-6.02-3.65-5.11-8.21,1.28-6.56,6.93-10.94,12.04-10.58Z"/>
+    <path d="M299.28,101.77c3.1-17.51,18.42-54.89,38.29-77.32,7.66-8.75,17.51-17.69,24.98-17.69,13.86,0,13.31,17.14,2.74,34.1-8.94,14.41-26.81,40.66-53.61,62.91-.36,6.2,4.74,9.3,9.48,9.85,10.39.91,22.25-2.92,29.72-7.48,1.46-.91,2.92-.55,3.65,1.09l1.46,2.92c.73,1.46.55,2.74-.73,3.83-10.76,8.75-24.62,15.5-41.58,13.86-8.02-1.28-17.87-6.93-14.41-26.08ZM360.37,33.2c4.01-6.56,5.11-12.77,4.01-14.22-1.09-1.46-4.01-1.28-7.48,2.01-17.87,16.96-35.19,48.51-42.31,70.75,21.52-20.97,38.48-45.59,45.77-58.54Z"/>
+    <path d="M52.63,186.52c-10.58-23.71,10.76-33.74,48.87-37.57,39.02-3.83,82.79-6.56,123.82-8.75,2.74-.18,4.19,2.37,2.92,4.92l-4.74,8.94c-1.28,2.55-2.37,2.74-5.29,2.92-21.34.91-43.04,2.01-62,3.1-18.96,32.46-45.04,93.55-59.63,128.92-.55,1.46-1.82,2.01-3.28,1.46l-12.22-4.19c-1.46-.55-2.19-2.01-1.64-3.46,8.93-26.08,40.48-83.34,62.73-121.81l-36.47,2.55c-38.48,2.74-44.68,15.14-38.84,23.71,4.92,7.11,16.78,12.95,25.89,13.86,1.64.18,2.92,1.64,2.74,3.1l-.73,5.11c-.18,1.46-1.64,2.55-3.28,2.19-15.68-2.92-33.19-12.22-38.84-24.98Z"/>
+    <path d="M123.57,245.23c3.28-19.69,24.25-44.49,44.86-41.76,9.12,1.28,12.22,10.58,10.39,20.42-3.83,22.06-21.7,48.32-41.76,45.41-10.76-1.64-15.87-11.31-13.49-24.07ZM142.71,251.98c10.58,1.82,23.71-13.68,26.62-30.27.73-4.19,0-10.21-4.01-10.94-11.12-1.09-25.89,18.24-28.26,31-1.09,5.84.91,9.48,5.65,10.21Z"/>
+    <path d="M230.61,224.26c9.3-13.86,6.38-18.78-6.75-7.11-11.12,10.03-21.7,22.79-36.65,46.86-.73,1.09-2.01,1.64-3.1,1.28l-8.94-2.74c-1.82-.55-2.74-2.37-1.82-4.01l25.71-51.97c.73-1.28,2.19-1.82,3.46-1.28l4.19,1.82c1.46.73,2.19,2.37,1.46,3.83l-14.59,29.18c7.29-9.3,16.41-20.79,24.25-27.9,21.7-20.06,38.29-10.58,24.98,14.04-7.66,14.04-16.05,26.99-6.02,28.81,8.02,1.09,17.69-5.11,23.34-9.48,1.28-1.28,3.1-.91,4.19.55l1.09,1.46c.55.91.55,2.01,0,2.92-10.21,14.59-24.98,19.51-36.65,17.87-15.14-2.37-13.49-21.15,1.82-44.13Z"/>
+    <path d="M254.67,251.25c1.82-11.12,11.12-17.87,21.52-21.88-10.39-5.29-4.56-19.33,6.56-25.35,10.39-5.65,24.07-7.11,33.92-4.92,1.82.36,2.74,2.01,2.01,3.65l-2.37,5.84c-.55,1.28-1.82,2.01-3.28,1.64-8.02-2.01-18.05-2.55-24.98,1.46-6.38,3.65-9.66,9.48-2.01,10.76,4.19.73,7.84.73,14.22.18,2.37-.18,4.38,1.28,3.65,3.65l-1.28,3.83c-.37.91-1.28,1.64-2.37,1.82-15.5,1.28-29.54,4.56-31.91,13.68-1.82,8.39,4.38,13.13,21.88,11.31,11.67-1.09,20.79-4.74,28.45-9.48,1.64-.91,3.47-.55,4.19,1.09l1.64,3.28c.55,1.28.55,2.55-.18,3.1-8.94,5.65-20.97,13.13-37.93,16.41-22.43,4.38-33.92-5.84-31.73-20.06Z"/>
+  </symbol>
+</svg>
+
+<a class="skip" href="#conteudo" data-i18n="skip">Pular para o conteúdo</a>
+
+<header class="topbar" id="topbar">
+  <div class="wrap topbar__inner">
+    <a class="topbar__logo" href="#topo" aria-label="Fossil Tone, voltar ao topo" data-i18n-aria="a11y.home">
+      <svg aria-hidden="true"><use href="#logo"/></svg>
+    </a>
+    <button type="button" class="depth" id="depth-btn" aria-expanded="false" aria-controls="strata-menu" aria-label="Abrir o mapa das camadas" data-i18n-aria="menu.open">
+      <span class="depth__text" aria-hidden="true">
+        <span class="depth__period" id="depth-period">Superfície</span>
+        <span class="depth__value" id="depth-value">0 m</span>
+      </span>
+      <svg class="depth__caret" viewBox="0 0 12 8" aria-hidden="true"><path d="M1 1.5l5 5 5-5"/></svg>
+    </button>
+    <nav class="topbar__nav" aria-label="Seções" data-i18n-aria="a11y.nav">
+      <a href="#colecao" data-i18n="nav.collection">Coleção</a>
+      <a href="#laboratorio" data-i18n="nav.lab">Laboratório</a>
+      <a href="#contato" data-i18n="nav.contact">Contato</a>
+    </nav>
+    <div class="lang" role="group" aria-label="Idioma / Language">
+      <button type="button" data-lang="pt" aria-pressed="true">PT</button>
+      <button type="button" data-lang="en" aria-pressed="false">EN</button>
+    </div>
+  </div>
+  <nav class="strata-menu" id="strata-menu" aria-label="Camadas do site" data-i18n-aria="menu.label" hidden>
+    <ol class="strata-menu__list">
+      <li><a class="wrap" href="#topo" data-layer="0"><span class="strata-menu__name" data-i18n="menu.top">Início</span><span class="strata-menu__meta"><span data-i18n="depth.surface">Superfície</span><span data-depth="0">0 m</span></span></a></li>
+      <li><a class="wrap" href="#sobre" data-layer="1"><span class="strata-menu__name" data-i18n="menu.about">Sobre</span><span class="strata-menu__meta"><span data-i18n="depth.pleistocene">Pleistoceno</span><span data-depth="12">12 m</span></span></a></li>
+      <li><a class="wrap" href="#colecao" data-layer="2"><span class="strata-menu__name" data-i18n="menu.collection">Coleção</span><span class="strata-menu__meta"><span data-i18n="depth.miocene">Mioceno</span><span data-depth="340">340 m</span></span></a></li>
+      <li><a class="wrap" href="#laboratorio" data-layer="3"><span class="strata-menu__name" data-i18n="menu.lab">Laboratório</span><span class="strata-menu__meta"><span data-i18n="depth.jurassic">Jurássico</span><span data-depth="1450">1450 m</span></span></a></li>
+      <li><a class="wrap" href="#orcamento" data-layer="4"><span class="strata-menu__name" data-i18n="menu.create">Crie sua espécie</span><span class="strata-menu__meta"><span data-i18n="depth.triassic">Triássico</span><span data-depth="2100">2100 m</span></span></a></li>
+      <li><a class="wrap" href="#contato" data-layer="5"><span class="strata-menu__name" data-i18n="menu.contact">Contato</span><span class="strata-menu__meta"><span data-i18n="depth.magma">Câmara magmática</span><span data-depth="6000">6000 m</span></span></a></li>
+    </ol>
+  </nav>
+</header>
+
+<nav class="core" id="core" aria-label="Coluna estratigráfica" data-i18n-aria="core.label">
+  <ol class="core__list">
+    <li><a href="#topo" data-layer="0"><span class="core__tip"><span class="core__name" data-i18n="menu.top">Início</span><span class="core__meta"><span data-i18n="depth.surface">Superfície</span> <span data-depth="0">0 m</span></span></span></a></li>
+    <li><a href="#sobre" data-layer="1"><span class="core__tip"><span class="core__name" data-i18n="menu.about">Sobre</span><span class="core__meta"><span data-i18n="depth.pleistocene">Pleistoceno</span> <span data-depth="12">12 m</span></span></span></a></li>
+    <li><a href="#colecao" data-layer="2"><span class="core__tip"><span class="core__name" data-i18n="menu.collection">Coleção</span><span class="core__meta"><span data-i18n="depth.miocene">Mioceno</span> <span data-depth="340">340 m</span></span></span></a></li>
+    <li><a href="#laboratorio" data-layer="3"><span class="core__tip"><span class="core__name" data-i18n="menu.lab">Laboratório</span><span class="core__meta"><span data-i18n="depth.jurassic">Jurássico</span> <span data-depth="1450">1450 m</span></span></span></a></li>
+    <li><a href="#orcamento" data-layer="4"><span class="core__tip"><span class="core__name" data-i18n="menu.create">Crie sua espécie</span><span class="core__meta"><span data-i18n="depth.triassic">Triássico</span> <span data-depth="2100">2100 m</span></span></span></a></li>
+    <li><a href="#contato" data-layer="5"><span class="core__tip"><span class="core__name" data-i18n="menu.contact">Contato</span><span class="core__meta"><span data-i18n="depth.magma">Câmara magmática</span> <span data-depth="6000">6000 m</span></span></span></a></li>
+  </ol>
+  <span class="core__drill" id="core-drill" aria-hidden="true"></span>
+</nav>
+
+<main id="conteudo">
+
+  <!-- SUPERFÍCIE -->
+  <section class="hero" id="topo">
+    <div class="wrap hero__grid">
+      <div class="hero__text">
+        <h1 class="hero__title">
+          <span data-i18n="hero.l1">Timbres extintos</span>
+          <span data-i18n="hero.l2">trazidos de volta.</span>
+        </h1>
+        <p class="hero__lead" data-i18n="hero.lead">Pedais e amplificadores analógicos, valvulados e feitos à mão no interior de SP. Partimos dos circuitos clássicos e ajustamos cada um pro som de quem vai tocar.</p>
+        <div class="hero__actions">
+          <a class="btn" href="#orcamento" data-i18n="cta.quote">Solicite um orçamento</a>
+          <a class="link" href="#colecao" data-i18n="hero.see">Ver a coleção</a>
+        </div>
+      </div>
+
+      <figure class="amber" id="amber">
+        <div class="amber__tilt">
+          <div class="amber__stone" role="img" aria-label="Logotipo da Fossil Tone preso dentro de uma pedra de âmbar." data-i18n-aria="hero.alt">
+            <svg class="amber__fossil amber__fossil--raw" viewBox="0 0 373.11 290.67" aria-hidden="true"><use href="#logo-stack"/></svg>
+            <div class="amber__resin" aria-hidden="true"></div>
+            <svg class="amber__fossil amber__fossil--in" viewBox="0 0 373.11 290.67" aria-hidden="true">
+              <use class="amber__ghost" href="#logo-stack" x="6" y="8"/>
+              <use href="#logo-stack"/>
+            </svg>
+            <svg class="amber__facets" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+              <polygon class="f-hi"  points="22,12 58,0 64,14 30,20"/>
+              <polygon class="f-hi2" points="0,68 12,32 22,12 30,20 24,58 4,85"/>
+              <polygon class="f-lo"  points="64,14 58,0 95,31 100,44 80,50"/>
+              <polygon class="f-lo2" points="80,50 100,44 90,88 75,95 70,80"/>
+              <polygon class="f-dk"  points="4,85 24,58 30,100"/>
+              <polygon class="f-dk2" points="24,58 70,80 75,95 30,100"/>
+              <polyline class="f-edge" points="30,20 64,14 80,50 70,80 24,58 30,20"/>
+              <polygon class="f-rim" points="22,12 58,0 95,31 100,44 90,88 75,95 30,100 4,85 0,68 12,32"/>
+            </svg>
+            <div class="amber__glare" aria-hidden="true"></div>
+            <span class="bubble" style="--x:16%;--y:46%;--s:7px" aria-hidden="true"></span>
+            <span class="bubble" style="--x:74%;--y:20%;--s:4px" aria-hidden="true"></span>
+            <span class="bubble" style="--x:68%;--y:78%;--s:9px" aria-hidden="true"></span>
+            <span class="bubble" style="--x:38%;--y:88%;--s:3px" aria-hidden="true"></span>
+            <span class="bubble" style="--x:86%;--y:56%;--s:5px" aria-hidden="true"></span>
+            <svg class="amber__cracks" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+              <polyline class="crack" points="62,14 58,22 61,27 55,34"/>
+              <polyline class="crack" points="61,27 70,30 74,38 83,40"/>
+              <polyline class="crack" points="55,34 47,37 43,45 35,46"/>
+              <polyline class="crack" points="74,38 72,48 77,56 74,66"/>
+              <polyline class="crack" points="58,22 49,19 42,22 33,18 24,22"/>
+            </svg>
+            <svg class="amber__mosquito" viewBox="0 0 60 40" aria-hidden="true">
+              <ellipse class="wing" cx="35" cy="13" rx="9" ry="3" transform="rotate(-24 35 13)"/>
+              <ellipse class="wing" cx="38" cy="15" rx="8" ry="2.6" transform="rotate(-8 38 15)"/>
+              <g class="legs">
+                <polyline points="28,21 21,27 17,36"/><polyline points="30,22 28,31 25,39"/><polyline points="32,22 38,30 41,38"/>
+                <polyline points="28,20 20,22 12,21"/><polyline points="31,21 36,27 47,30"/><polyline points="30,21 24,30 22,38"/>
+                <line x1="23" y1="19.5" x2="13" y2="23"/>
+              </g>
+              <ellipse cx="30" cy="20" rx="4.2" ry="3"/>
+              <ellipse cx="42" cy="22" rx="9.5" ry="2.4" transform="rotate(9 42 22)"/>
+              <circle cx="25" cy="19" r="2.3"/>
+            </svg>
+          </div>
+        </div>
+        <figcaption class="tag">
+          <svg class="tag__string" viewBox="0 0 40 70" aria-hidden="true"><path d="M32 68 C34 48 14 26 6 2"/></svg>
+          <span class="tag__card">
+            <span class="tag__no">FT-000</span>
+            <span data-i18n="hero.tag1">Fossil Tone, preservado em âmbar</span>
+            <span data-i18n="hero.tag2">Período Valvulado</span>
+          </span>
+        </figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <!-- SOBRE -->
+  <section class="about" id="sobre" aria-labelledby="sobre-t">
+    <div class="wrap about__grid">
+      <div class="about__head">
+        <h2 class="h2" id="sobre-t" data-i18n="about.title">A gente escava som</h2>
+        <ul class="facts">
+          <li data-i18n="about.f1">Analógico de ponta a ponta</li>
+          <li data-i18n="about.f2">Montado à mão no interior de SP</li>
+          <li data-i18n="about.f3">Enviamos para todo o Brasil</li>
+        </ul>
+      </div>
+      <div class="about__body">
+        <p data-i18n="about.p1">Tem timbre que sumiu do mapa: circuito que saiu de linha, amp que só existe em disco antigo, pedal que custa um rim no usado. A Fossil Tone desenterra esses clássicos, estuda cada componente e remonta tudo à mão.</p>
+        <p data-i18n="about.p2">Nada de digital, nada de simulação. É válvula esquentando, transistor e solda. E como cada músico vive na sua própria era, qualquer pedal ou amp nosso pode ganhar arte, pintura e mods de circuito feitos pra você.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- COLEÇÃO -->
+  <section class="collection" id="colecao" aria-labelledby="colecao-t">
+    <svg class="strata strata--clay" viewBox="0 0 1200 60" preserveAspectRatio="none" aria-hidden="true">
+      <path class="b1" d="M0 20 C150 6 300 30 470 18 S800 2 960 16 S1130 26 1200 14 V60 H0Z"/>
+      <path class="b2" d="M0 34 C180 24 330 44 520 32 S860 20 1010 32 S1150 38 1200 30 V60 H0Z"/>
+      <path class="b3" d="M0 46 C200 40 360 54 560 44 S880 36 1040 46 S1160 50 1200 44 V60 H0Z"/>
+    </svg>
+    <div class="wrap">
+      <header class="section-head">
+        <h2 class="h2" id="colecao-t" data-i18n="col.title">A coleção</h2>
+        <p data-i18n="col.lead">Uma peça já está em exposição. A outra ainda está no sítio de escavação.</p>
+      </header>
+      <div class="section-rule" aria-hidden="true"><span></span></div>
+
+      <!-- Megalodon: em exposição -->
+      <article class="specimen spot" id="exposicao-megalodon" aria-labelledby="mega-t">
+        <div class="gallery">
+          <div class="gallery__main">
+            <picture>
+              <source id="gallery-main-avif" type="image/avif" srcset="assets/img/megalodon-angle-800.avif 800w, assets/img/megalodon-angle-1200.avif 1200w" sizes="(min-width: 861px) 540px, (min-width: 700px) 46vw, calc(100vw - 32px)">
+              <img id="gallery-main" src="assets/img/megalodon-angle-800.jpg" srcset="assets/img/megalodon-angle-800.jpg 800w, assets/img/megalodon-angle-1200.jpg 1200w" sizes="(min-width: 861px) 540px, (min-width: 700px) 46vw, calc(100vw - 32px)" width="800" height="1200" alt="Megalodon em ângulo sobre uma mesa de madeira." loading="lazy" decoding="async">
+            </picture>
+          </div>
+          <div class="gallery__thumbs" role="group" aria-label="Fotos do Megalodon" data-i18n-aria="mega.photos">
+            <button type="button" aria-pressed="true" data-photo="megalodon-angle" data-alt-key="mega.alt1"><picture><source type="image/avif" srcset="assets/img/megalodon-angle-thumb.avif"><img src="assets/img/megalodon-angle-thumb.jpg" width="240" height="360" alt="" loading="lazy" decoding="async"></picture></button>
+            <button type="button" aria-pressed="false" data-photo="megalodon-art" data-alt-key="mega.alt2"><picture><source type="image/avif" srcset="assets/img/megalodon-art-thumb.avif"><img src="assets/img/megalodon-art-thumb.jpg" width="240" height="360" alt="" loading="lazy" decoding="async"></picture></button>
+            <button type="button" aria-pressed="false" data-photo="megalodon-plate" data-alt-key="mega.alt3"><picture><source type="image/avif" srcset="assets/img/megalodon-plate-thumb.avif"><img src="assets/img/megalodon-plate-thumb.jpg" width="240" height="360" alt="" loading="lazy" decoding="async"></picture></button>
+            <button type="button" aria-pressed="false" data-photo="megalodon-manual" data-alt-key="mega.alt4"><picture><source type="image/avif" srcset="assets/img/megalodon-manual-thumb.avif"><img src="assets/img/megalodon-manual-thumb.jpg" width="240" height="360" alt="" loading="lazy" decoding="async"></picture></button>
+          </div>
+        </div>
+
+        <div class="specimen__info">
+          <h3 class="species-name" id="mega-t">Megalodon</h3>
+          <p class="species-kind" data-i18n="mega.kind">Overdrive e distortion de dois estágios</p>
+          <p data-i18n="mega.p">Um predador com duas fileiras de dentes. Inspirado no clássico overdrive boutique, ele vai do crunch macio a uma distorção cheia de mordida girando um knob só.</p>
+
+          <div class="card card--mega">
+            <div class="card__head">
+              <span>Fossil Tone</span>
+              <span class="card__no">FT-001 <button type="button" class="info-btn" data-ficha="megalodon" aria-label="Abrir a ficha técnica">i</button></span>
+            </div>
+            <dl class="card__rows">
+              <div><dt data-i18n="card.sci">Nome científico</dt><dd><i>Carcharocles saturatus</i></dd></div>
+              <div><dt data-i18n="card.class">Classe</dt><dd data-i18n="mega.class">Pedal, overdrive/distortion</dd></div>
+              <div><dt data-i18n="card.habitat">Habitat</dt><dd data-i18n="mega.habitat">Do blues sujo ao rock pesado</dd></div>
+              <div><dt data-i18n="card.diet">Dieta</dt><dd data-i18n="mega.diet">Guitarras, de preferência altas</dd></div>
+              <div><dt data-i18n="card.status">Situação</dt><dd data-i18n="mega.status">Primeira edição, sob encomenda</dd></div>
+            </dl>
+            <span class="stamp" data-i18n="mega.stamp">1ª edição</span>
+            <span class="card__hole" aria-hidden="true"></span>
+          </div>
+
+          <div class="knobs">
+            <h4 class="knobs__title" data-i18n="knobs.title">Favor tocar. Gire os knobs.</h4>
+            <div class="knobs__row" role="group" aria-label="Controles do Megalodon" data-i18n-aria="knobs.aria">
+              <button type="button" class="knob" data-knob="level" aria-pressed="false"><svg viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="17"/><line x1="20" y1="20" x2="20" y2="6"/></svg><span>Level</span></button>
+              <button type="button" class="knob" data-knob="sustain" aria-pressed="false"><svg viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="17"/><line x1="20" y1="20" x2="20" y2="6"/></svg><span>Sustain</span></button>
+              <button type="button" class="knob" data-knob="hicut" aria-pressed="false"><svg viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="17"/><line x1="20" y1="20" x2="20" y2="6"/></svg><span>Hi-Cut</span></button>
+              <button type="button" class="knob" data-knob="stage2" aria-pressed="true"><svg viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="17"/><line x1="20" y1="20" x2="20" y2="6"/></svg><span>Stage 2</span></button>
+            </div>
+            <p class="knobs__desc" id="knob-desc" aria-live="polite"></p>
+          </div>
+
+        </div>
+        <div class="specimen__actions">
+          <a class="btn" href="#orcamento" data-i18n="mega.cta" data-preset="pedal">Encomendar um Megalodon</a>
+          <button type="button" class="btn btn--ghost examine" data-examine="megalodon"><svg class="examine__icon" viewBox="0 0 20 20" aria-hidden="true"><circle cx="8.5" cy="8.5" r="5.5"/><path d="M12.6 12.6 18 18"/></svg><span data-i18n="examine">Examinar o espécime</span></button>
+        </div>
+      </article>
+
+      <div class="section-rule section-rule--piece" aria-hidden="true"><span></span></div>
+
+      <!-- Kraken: ainda no sítio -->
+      <article class="specimen specimen--dig" id="exposicao-kraken" aria-labelledby="kraken-t">
+        <div class="dig">
+          <svg class="dig__amp" viewBox="0 -232 400 502" preserveAspectRatio="xMidYMax slice" role="img" aria-labelledby="kraken-svg-t">
+            <title id="kraken-svg-t" data-i18n="kraken.svg">Silhueta do cabeçote Kraken ainda parcialmente enterrada.</title>
+            <defs>
+              <pattern id="grill" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+                <line x1="0" y1="0" x2="0" y2="8" stroke="currentColor" stroke-width="1" opacity=".45"/>
+              </pattern>
+              <clipPath id="ground"><rect x="0" y="0" width="400" height="260"/></clipPath>
+            </defs>
+            <g class="dig__grid" aria-hidden="true">
+              <line x1="0" y1="-150" x2="400" y2="-150"/><line x1="0" y1="-40" x2="400" y2="-40"/>
+              <line x1="100" y1="-232" x2="100" y2="270"/><line x1="200" y1="-232" x2="200" y2="270"/><line x1="300" y1="-232" x2="300" y2="270"/>
+              <text x="106" y="-158">A1</text><text x="206" y="-158">A2</text><text x="306" y="-158">A3</text>
+            </g>
+            <g class="dig__outline">
+              <path d="M140 52 v-16 q0-10 10-10 h100 q10 0 10 10 v16" fill="none"/>
+              <rect x="30" y="52" width="340" height="176" rx="14" fill="none"/>
+              <rect x="46" y="68" width="308" height="96" rx="4" fill="url(#grill)"/>
+              <rect x="150" y="104" width="100" height="26" rx="3" fill="none"/>
+              <line x1="46" y1="180" x2="354" y2="180"/>
+              <g class="dig__knobs">
+                <circle cx="80"  cy="204" r="9"/><circle cx="122" cy="204" r="9"/><circle cx="164" cy="204" r="9"/>
+                <circle cx="206" cy="204" r="9"/><circle cx="248" cy="204" r="9"/><circle cx="290" cy="204" r="9"/>
+                <rect x="318" y="196" width="22" height="16" rx="2"/>
+              </g>
+            </g>
+            <g class="dig__strata">
+              <path class="s1" d="M0 150 C60 138 110 162 170 150 S290 132 400 148 V270 H0Z"/>
+              <path class="s2" d="M0 182 C80 172 140 196 220 184 S330 170 400 182 V270 H0Z"/>
+              <path class="s3" d="M0 214 C70 206 150 226 230 216 S340 204 400 214 V270 H0Z"/>
+              <circle class="pebble" cx="62" cy="196" r="5"/><circle class="pebble" cx="300" cy="226" r="4"/><circle class="pebble" cx="210" cy="168" r="3"/>
+            </g>
+          </svg>
+        </div>
+
+        <div class="specimen__info">
+          <h3 class="species-name" id="kraken-t">Kraken</h3>
+          <p class="species-kind" data-i18n="kraken.kind">Cabeçote valvulado. Em escavação.</p>
+          <p data-i18n="kraken.p">Inspirado no clássico britânico dos anos 80, o som de metade dos discos de rock que você ama. Ainda está saindo da rocha: primeiro em cabeçote, depois também em combo.</p>
+
+          <div class="card card--kraken">
+            <div class="card__head">
+              <span>Fossil Tone</span>
+              <span class="card__no">FT-002 <button type="button" class="info-btn" data-ficha="kraken" aria-label="Abrir a ficha técnica">i</button></span>
+            </div>
+            <dl class="card__rows">
+              <div><dt data-i18n="card.sci">Nome científico</dt><dd><i>Architeuthis valvularis</i></dd></div>
+              <div><dt data-i18n="card.class">Classe</dt><dd data-i18n="kraken.class">Amplificador valvulado</dd></div>
+              <div><dt data-i18n="card.habitat">Habitat</dt><dd data-i18n="kraken.habitat">Hard rock, punk e afins</dd></div>
+              <div><dt data-i18n="card.diet">Dieta</dt><dd data-i18n="kraken.diet">Power chords e volume alto</dd></div>
+              <div><dt data-i18n="card.status">Situação</dt><dd data-i18n="kraken.status">Em desenvolvimento</dd></div>
+            </dl>
+            <span class="stamp stamp--wip" data-i18n="kraken.stamp">Em escavação</span>
+            <span class="card__hole" aria-hidden="true"></span>
+          </div>
+
+          <div class="specimen__actions">
+            <button type="button" class="btn btn--ghost examine" data-examine="kraken"><svg class="examine__icon" viewBox="0 0 20 20" aria-hidden="true"><circle cx="8.5" cy="8.5" r="5.5"/><path d="M12.6 12.6 18 18"/></svg><span data-i18n="examine">Examinar o espécime</span></button>
+          </div>
+
+        </div>
+      </article>
+
+      <!-- lista de espera do Kraken: no mesmo formato da caixa "Tem um timbre na cabeça?" do laboratório -->
+      <form class="waitlist" id="waitlist" data-produto="kraken" novalidate>
+        <div class="waitlist__head">
+          <h4 class="waitlist__title" data-i18n="wait.title">Lista de espera do Kraken</h4>
+          <p class="waitlist__lead" data-i18n="wait.lead">Deixe seu contato e a gente avisa quando ele sair da rocha.</p>
+        </div>
+        <div class="waitlist__fields">
+          <div class="field">
+            <label for="w-name" data-i18n="wait.name">Seu nome</label>
+            <input id="w-name" name="nome" type="text" autocomplete="name" maxlength="80" required>
+          </div>
+          <div class="field">
+            <label for="w-contact" data-i18n="wait.contact">Seu e-mail</label>
+            <input id="w-contact" name="email" type="email" autocomplete="email" maxlength="120" required>
+          </div>
+          <a class="btn" id="wait-wa" href="https://wa.me/5519991226377" target="_blank" rel="noopener" data-i18n="wait.submit">Entrar na lista de espera</a>
+        </div>
+        <p class="waitlist__note" data-i18n="wait.note">Usamos seu contato só para avisar quando o Kraken ficar pronto.</p>
+        <p class="waitlist__status" id="waitlist-status" role="status"></p>
+      </form>
+
+      <!-- Fichário do acervo: montado a partir de data/catalogo.json -->
+      <section class="drawer" id="acervo" aria-labelledby="acervo-t">
+        <header class="drawer__head">
+          <h3 class="drawer__title" id="acervo-t" data-i18n="drawer.title">Fichário do acervo</h3>
+          <p class="drawer__lead" data-i18n="drawer.lead">Todas as peças catalogadas até agora. Puxe uma ficha para abrir o dossiê.</p>
+        </header>
+        <div class="drawer__box">
+          <div class="drawer__track" id="drawer-track" role="list">
+            <p class="drawer__empty" id="drawer-empty" data-i18n="drawer.loading">Abrindo a gaveta…</p>
+          </div>
+          <div class="drawer__front">
+            <button type="button" class="drawer__nav" data-dir="-1" aria-label="Fichas anteriores" data-i18n-aria="drawer.prev"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3 5 8l5 5"/></svg></button>
+            <div class="drawer__plate">
+              <p class="drawer__label" aria-hidden="true"><span>Acervo FT</span></p>
+              <p class="drawer__count" id="drawer-count"></p>
+            </div>
+            <button type="button" class="drawer__nav" data-dir="1" aria-label="Próximas fichas" data-i18n-aria="drawer.next"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="m6 3 5 5-5 5"/></svg></button>
+          </div>
+        </div>
+      </section>
+    </div>
+  </section>
+
+  <!-- LABORATÓRIO -->
+  <section class="lab" id="laboratorio" aria-labelledby="lab-t">
+    <svg class="strata strata--rock" viewBox="0 0 1200 60" preserveAspectRatio="none" aria-hidden="true">
+      <path class="b1" d="M0 16 C120 28 260 4 420 14 S720 30 900 12 S1110 4 1200 18 V60 H0Z"/>
+      <path class="b2" d="M0 30 C140 40 300 20 460 30 S760 42 940 26 S1120 20 1200 32 V60 H0Z"/>
+      <path class="b3" d="M0 44 C160 52 320 38 500 46 S800 54 980 42 S1140 38 1200 46 V60 H0Z"/>
+    </svg>
+    <div class="wrap">
+      <header class="lab__head">
+        <h2 class="h2 h2--lab" id="lab-t" data-i18n="lab.title">Laboratório Âmbar</h2>
+        <div class="lab__intro">
+          <p class="lab__lead" data-i18n="lab.lead">Você já viu esse filme: tiram o DNA de um mosquito preso no âmbar e um dinossauro volta à vida. Aqui, o DNA é o seu som.</p>
+          <p data-i18n="lab.p">O laboratório é a nossa oficina sob medida. Você conta o timbre que procura e a gente cria uma espécie única, com circuito ajustado, arte exclusiva e pintura do jeito que você imaginar.</p>
+        </div>
+      </header>
+
+      <ol class="steps">
+        <li><h3 data-i18n="lab.s1t">Extração</h3><p data-i18n="lab.s1">Você conta o timbre que procura, suas referências e o que falta no seu setup.</p></li>
+        <li><h3 data-i18n="lab.s2t">Sequenciamento</h3><p data-i18n="lab.s2">A gente define com você o circuito, os mods e a arte.</p></li>
+        <li><h3 data-i18n="lab.s3t">Incubação</h3><p data-i18n="lab.s3">Montagem à mão, componente por componente, e pintura.</p></li>
+        <li><h3 data-i18n="lab.s4t">Eclosão</h3><p data-i18n="lab.s4">Sua espécie nasce, passa nos testes e vai pra sua casa.</p></li>
+      </ol>
+
+      <div class="lab__cta">
+        <p class="lab__cta-text" data-i18n="lab.ctaText">Tem um timbre na cabeça? A gente extrai o DNA dele e cria a sua espécie.</p>
+        <div class="lab__cta-actions">
+          <a class="btn" href="#orcamento" data-i18n="lab.cta">Criar minha espécie</a>
+          <a class="link" id="lab-wa" href="https://wa.me/5519991226377" target="_blank" rel="noopener" data-i18n="lab.ctaWa">Falar com o laboratório no WhatsApp</a>
+        </div>
+      </div>
+
+      <div class="section-rule section-rule--piece" aria-hidden="true"><span></span></div>
+
+      <article class="case spot" id="exposicao-zero" aria-labelledby="zero-t">
+        <div class="case__photos">
+          <picture class="case__main">
+            <source type="image/avif" srcset="assets/img/zero-front-800.avif 800w, assets/img/zero-front-1200.avif 1200w" sizes="(min-width: 861px) 600px, (min-width: 700px) 46vw, calc(100vw - 32px)">
+            <img src="assets/img/zero-front-800.jpg" srcset="assets/img/zero-front-800.jpg 800w, assets/img/zero-front-1200.jpg 1200w" sizes="(min-width: 861px) 600px, (min-width: 700px) 46vw, calc(100vw - 32px)" width="800" height="800" alt="Pedal ZeRO Alcino Edition, preto, com o nome ZeRO em letras brancas e um raio vermelho." data-i18n-alt="zero.alt1" loading="lazy" decoding="async">
+          </picture>
+          <picture>
+            <source type="image/avif" srcset="assets/img/zero-hand-600.avif">
+            <img src="assets/img/zero-hand-600.jpg" width="600" height="600" alt="O pedal ZeRO na mão, mostrando os controles Volume, Tone e Gain." data-i18n-alt="zero.alt2" loading="lazy" decoding="async">
+          </picture>
+          <picture>
+            <source type="image/avif" srcset="assets/img/zero-back-600.avif">
+            <img src="assets/img/zero-back-600.jpg" width="600" height="600" alt="Fundo do pedal com a tracklist do disco Alcino gravada." data-i18n-alt="zero.alt3" loading="lazy" decoding="async">
+          </picture>
+        </div>
+        <div class="case__info">
+          <p class="case__kicker" data-i18n="zero.kicker">Exposição temporária, ainda em incubação</p>
+          <h3 class="species-name species-name--zero" id="zero-t">ZeRO <span>Alcino Edition</span></h3>
+          <p data-i18n="zero.p1">Um pedal criado do zero (com o perdão do trocadilho) para o ZeRO, a partir do disco Alcino.</p>
+          <p data-i18n="zero.p2">Volume, Tone e Gain, uma chave Si/Ge pra alternar entre silício e germânio, e a tracklist do disco gravada no fundo da caixa.</p>
+          <div class="card card--zero">
+            <div class="card__head"><span>Fossil Tone</span><span class="card__no">FT-L01 <button type="button" class="info-btn" data-ficha="zero" aria-label="Abrir a ficha técnica">i</button></span></div>
+            <dl class="card__rows">
+              <div><dt data-i18n="card.sci">Nome científico</dt><dd><i>Zerodon alcinoi</i></dd></div>
+              <div><dt data-i18n="card.found">Criado para</dt><dd><a href="https://instagram.com/iamzerobadass" target="_blank" rel="noopener">@iamzerobadass</a></dd></div>
+              <div><dt data-i18n="card.status">Situação</dt><dd data-i18n="zero.status">Em desenvolvimento</dd></div>
+            </dl>
+            <span class="card__hole" aria-hidden="true"></span>
+          </div>
+          <!-- knobs do ZeRO: montados pelo acervo.js a partir do "painel" no catalogo.json -->
+          <div data-painel="zero"></div>
+        </div>
+        <div class="specimen__actions">
+          <button type="button" class="btn btn--ghost examine" data-examine="zero"><svg class="examine__icon" viewBox="0 0 20 20" aria-hidden="true"><circle cx="8.5" cy="8.5" r="5.5"/><path d="M12.6 12.6 18 18"/></svg><span data-i18n="examine">Examinar o espécime</span></button>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <!-- CRIE SUA ESPÉCIE -->
+  <section class="create" id="orcamento" aria-labelledby="create-t">
+    <svg class="strata strata--shale" viewBox="0 0 1200 60" preserveAspectRatio="none" aria-hidden="true">
+      <path class="b1" d="M0 24 C200 12 380 30 600 20 S960 8 1200 22 V60 H0Z"/>
+      <path class="b2" d="M0 36 C220 28 400 44 620 34 S980 24 1200 36 V60 H0Z"/>
+      <path class="b3" d="M0 48 C240 42 420 54 640 46 S1000 40 1200 48 V60 H0Z"/>
+    </svg>
+    <div class="wrap create__grid">
+      <div class="create__form-col">
+        <h2 class="h2" id="create-t" data-i18n="form.title">Crie sua espécie</h2>
+        <p class="create__lead" data-i18n="form.lead">Conte o que você procura. A ficha ao lado vai se montando, e o botão abre o WhatsApp com tudo preenchido. A gente responde com o orçamento.</p>
+
+        <form class="form" id="species-form" novalidate>
+          <fieldset>
+            <legend data-i18n="form.type">O que vamos criar?</legend>
+            <div class="chips">
+              <label><input type="radio" id="f-type-pedal" name="type" value="pedal" checked><span data-i18n="form.pedal">Pedal</span></label>
+              <label><input type="radio" id="f-type-amp" name="type" value="amp"><span data-i18n="form.amp">Amplificador</span></label>
+            </div>
+          </fieldset>
+
+          <fieldset>
+            <legend data-i18n="form.instrument">Pra qual instrumento?</legend>
+            <div class="chips">
+              <label><input type="radio" id="f-inst-guitar" name="instrument" value="guitar" checked><span data-i18n="form.guitar">Guitarra</span></label>
+              <label><input type="radio" id="f-inst-bass" name="instrument" value="bass"><span data-i18n="form.bass">Baixo</span></label>
+            </div>
+          </fieldset>
+
+          <fieldset>
+            <legend data-i18n="form.custom">O que você quer personalizar?</legend>
+            <div class="chips">
+              <label><input type="checkbox" id="f-custom-art" name="custom" value="art"><span data-i18n="form.art">Arte e pintura</span></label>
+              <label><input type="checkbox" id="f-custom-mods" name="custom" value="mods"><span data-i18n="form.mods">Mods de circuito</span></label>
+            </div>
+          </fieldset>
+
+          <div class="field">
+            <label for="f-ref" data-i18n="form.ref">Timbre de referência</label>
+            <input id="f-ref" name="ref" type="text" autocomplete="off" data-i18n-ph="form.refPh" placeholder="Um pedal, um amp, um disco, uma banda">
+          </div>
+
+          <div class="field">
+            <label for="f-details" data-i18n="form.details">Conte mais (opcional)</label>
+            <textarea id="f-details" name="details" rows="3" data-i18n-ph="form.detailsPh" placeholder="Estilo que você toca, o que falta no seu som, ideia de arte"></textarea>
+          </div>
+
+          <div class="field">
+            <label for="f-name" data-i18n="form.name">Seu nome</label>
+            <input id="f-name" name="name" type="text" autocomplete="given-name" maxlength="40">
+          </div>
+
+          <a class="btn btn--wa" id="send-wa" href="https://wa.me/5519991226377" target="_blank" rel="noopener" data-i18n="form.send">Enviar pelo WhatsApp</a>
+          <p class="form__hint" data-i18n="form.hint">O WhatsApp abre com a mensagem pronta. É só enviar.</p>
+        </form>
+      </div>
+
+      <div class="create__card-col" aria-live="polite">
+        <div class="card card--new" id="new-card">
+          <div class="card__head"><span>Fossil Tone</span><span id="nc-num">FT-000</span></div>
+          <figure class="plate" id="plate" aria-hidden="true">
+            <svg class="plate__art" viewBox="0 0 240 150">
+              <defs>
+                <pattern id="plate-grill" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+                  <line x1="0" y1="0" x2="0" y2="6" stroke="currentColor" stroke-width=".8" opacity=".45"/>
+                </pattern>
+              </defs>
+              <g class="sp sp--pedal">
+                <rect class="jack" x="75" y="52" width="8" height="14" rx="1.5"/>
+                <rect class="jack" x="157" y="52" width="8" height="14" rx="1.5"/>
+                <rect class="body" x="82" y="12" width="76" height="124" rx="8"/>
+                <g class="mut mut--art">
+                  <path class="paint p1" pathLength="1" d="M90 96 C104 84 116 102 132 90 S150 84 152 92"/>
+                  <path class="paint p2" pathLength="1" d="M92 118 C106 110 122 124 150 112"/>
+                  <circle class="drop d1" cx="98" cy="82" r="2.6"/><circle class="drop d2" cx="146" cy="124" r="2"/><circle class="drop d3" cx="140" cy="78" r="1.6"/>
+                </g>
+                <g class="mut mut--mods">
+                  <polyline class="trace" pathLength="1" points="92,70 104,70 104,80 116,80"/>
+                  <polyline class="trace" pathLength="1" points="116,80 119,75 123,85 127,75 131,85 134,80 148,80 148,70"/>
+                  <polyline class="trace" pathLength="1" points="96,128 96,120 112,120"/>
+                  <line class="trace" pathLength="1" x1="128" y1="117" x2="128" y2="125"/><line class="trace" pathLength="1" x1="132" y1="117" x2="132" y2="125"/>
+                  <line class="trace" pathLength="1" x1="112" y1="121" x2="128" y2="121"/><line class="trace" pathLength="1" x1="132" y1="121" x2="146" y2="121"/>
+                  <circle class="node" cx="104" cy="70" r="1.7"/><circle class="node" cx="148" cy="70" r="1.7"/><circle class="node" cx="112" cy="120" r="1.7"/>
+                </g>
+                <circle class="knob" cx="102" cy="34" r="9"/><line class="tick" x1="102" y1="34" x2="102" y2="26.5"/>
+                <circle class="knob" cx="138" cy="34" r="9"/><line class="tick" x1="138" y1="34" x2="143" y2="28"/>
+                <circle class="led" cx="120" cy="56" r="2.6"/>
+                <circle class="switch" cx="120" cy="104" r="9"/><circle class="switch-cap" cx="120" cy="104" r="5"/>
+              </g>
+              <g class="sp sp--amp">
+                <path class="handle" d="M98 38 v-8 q0-5 5-5 h34 q5 0 5 5 v8"/>
+                <rect class="body" x="38" y="38" width="164" height="90" rx="8"/>
+                <rect class="grill" x="48" y="48" width="144" height="46" rx="2" fill="url(#plate-grill)"/>
+                <g class="mut mut--art">
+                  <path class="paint p1" pathLength="1" d="M54 62 C80 50 100 76 130 60 S176 56 186 70"/>
+                  <path class="paint p2" pathLength="1" d="M58 86 C90 78 130 92 182 82"/>
+                  <circle class="drop d1" cx="70" cy="52" r="2.6"/><circle class="drop d2" cx="176" cy="90" r="2"/><circle class="drop d3" cx="150" cy="56" r="1.6"/>
+                </g>
+                <rect class="plate-logo" x="100" y="64" width="40" height="12" rx="2"/>
+                <line class="rule" x1="48" y1="102" x2="192" y2="102"/>
+                <g class="mut mut--mods">
+                  <polyline class="trace" pathLength="1" points="54,108 66,108 66,120 92,120"/>
+                  <polyline class="trace" pathLength="1" points="92,120 95,115 99,125 103,115 107,125 110,120 140,120 140,108 160,108"/>
+                  <circle class="node" cx="66" cy="108" r="1.7"/><circle class="node" cx="140" cy="108" r="1.7"/><circle class="node" cx="160" cy="108" r="1.7"/>
+                </g>
+                <circle class="knob" cx="60" cy="115" r="5.5"/><circle class="knob" cx="78" cy="115" r="5.5"/><circle class="knob" cx="96" cy="115" r="5.5"/>
+                <circle class="knob" cx="114" cy="115" r="5.5"/><circle class="knob" cx="132" cy="115" r="5.5"/><circle class="knob" cx="150" cy="115" r="5.5"/>
+                <rect class="switch-cap" x="170" y="110" width="20" height="10" rx="2"/>
+              </g>
+              <g class="plate__scale">
+                <line x1="188" y1="142" x2="228" y2="142"/><line x1="188" y1="139" x2="188" y2="145"/><line x1="208" y1="140" x2="208" y2="144"/><line x1="228" y1="139" x2="228" y2="145"/>
+              </g>
+            </svg>
+            <figcaption class="plate__cap"><span id="plate-fig">Fig. 1</span><span>5 cm</span></figcaption>
+          </figure>
+          <p class="card__species"><i id="nc-sci">Novosaurus classicus</i></p>
+          <dl class="card__rows">
+            <div><dt data-i18n="card.class">Classe</dt><dd id="nc-class">Pedal</dd></div>
+            <div><dt data-i18n="card.instrument">Instrumento</dt><dd id="nc-inst">Guitarra</dd></div>
+            <div><dt data-i18n="card.ref">Referência</dt><dd id="nc-ref">—</dd></div>
+            <div><dt data-i18n="card.mutations">Mutações</dt><dd id="nc-mut">—</dd></div>
+            <div><dt data-i18n="card.discoverer">Descoberto por</dt><dd id="nc-name">—</dd></div>
+          </dl>
+          <span class="stamp stamp--new" id="nc-stamp">Rascunho</span>
+          <span class="card__hole" aria-hidden="true"></span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CÂMARA MAGMÁTICA -->
+  <section class="contact" id="contato" aria-labelledby="contato-t">
+    <svg class="strata strata--hot" viewBox="0 0 1200 60" preserveAspectRatio="none" aria-hidden="true">
+      <path class="b1" d="M0 14 C130 26 270 6 430 16 S730 28 910 12 S1120 6 1200 18 V60 H0Z"/>
+      <path class="b2" d="M0 30 C150 40 310 22 470 32 S770 42 950 28 S1130 22 1200 34 V60 H0Z"/>
+      <path class="b3" d="M0 44 C160 52 320 38 490 46 S790 55 970 43 S1140 39 1200 47 V60 H0Z"/>
+      <path class="seam" d="M0 44 C160 52 320 38 490 46 S790 55 970 43 S1140 39 1200 47"/>
+    </svg>
+    <canvas class="magma" id="magma" aria-hidden="true"></canvas>
+    <div class="wrap contact__inner">
+      <p class="thermo" aria-hidden="true">
+        <span class="thermo__dot"></span>
+        <span class="thermo__temp"><span id="magma-temp">20</span> °C</span>
+        <span class="thermo__status" id="magma-status">Crosta fria</span>
+      </p>
+      <h2 class="h2 h2--contact" id="contato-t" data-i18n="contact.title">Fale com a gente</h2>
+      <p class="contact__lead" data-i18n="contact.lead">Orçamento, dúvida, ideia maluca de pedal. A gente responde.</p>
+
+      <ul class="channels">
+        <li><a href="https://wa.me/5519991226377" target="_blank" rel="noopener"><span class="channels__k">WhatsApp</span><span class="channels__v">(19) 99122-6377</span></a></li>
+        <li><a href="https://instagram.com/fossiltone" target="_blank" rel="noopener"><span class="channels__k">Instagram</span><span class="channels__v">@fossiltone</span></a></li>
+        <li><a href="mailto:fossiltonefx@gmail.com"><span class="channels__k">E-mail</span><span class="channels__v">fossiltonefx@gmail.com</span></a></li>
+      </ul>
+      <p class="contact__where" data-i18n="contact.where">Interior de SP. Enviamos para todo o Brasil.</p>
+    </div>
+  </section>
+</main>
+
+<footer class="footer">
+  <div class="wrap footer__inner">
+    <a class="footer__home" href="#topo" aria-label="Fossil Tone, voltar ao topo" data-i18n-aria="a11y.home"><svg class="footer__logo" aria-hidden="true"><use href="#logo"/></svg></a>
+    <p>© <span id="year">2026</span> Fossil Tone. <span data-i18n="footer.joke">Nenhum dinossauro foi ferido na fabricação destes pedais.</span></p>
+  </div>
+</footer>
+
+<dialog class="sheet dossier" id="dossier" aria-labelledby="dossier-title"></dialog>
+<dialog class="sheet ficha" id="ficha-dialog" aria-labelledby="ficha-title"></dialog>
+
+<script src="main.js?v=13"></script>
+<script src="acervo.js?v=13"></script>
+</body>
+</html>

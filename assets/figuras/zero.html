@@ -1,0 +1,731 @@
+<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<!-- Figura interativa do ZeRO, embutida no dossiê do site (assets/figuras/zero.html).
+     Só o desenho: o botão "Ver conexões", os knobs, os selos e os avisos ficam na página (acervo.js),
+     que conversa com esta figura por postMessage. Origem: figura-zero-v3/zero-v2-figura.html -->
+</head><body>
+<script>
+/* ============================================================
+   Colorfigures core: projection, shapes, shading, ink, labels, page shell.
+   A figure page includes this file (scripts/build.py inlines it), then calls mountFigure({...}).
+   See SKILL.md for the drawing contract and conventions.
+   One fixed view (front-left-top) and one fixed light (from above, behind the viewer's right shoulder: the front is lit,
+   the left side is in shade, and cast shadows fall toward the lower left of the screen).
+   ============================================================ */
+
+/* ---------- palettes ---------- */
+const PALS = {
+  mustard: { l:'#f4b829', m:'#d49c1f', d:'#4e4a18' },
+  tomato:  { l:'#ef6a4c', m:'#cf5038', d:'#4a2219' },
+  mint:    { l:'#93d3b0', m:'#71b693', d:'#1f4034' },
+  cobalt:  { l:'#76a0e2', m:'#5a82c6', d:'#1c2948' },
+  blush:   { l:'#f3a6bb', m:'#d8869c', d:'#4b2430' },
+};
+const METAL   = { l:'#eef0f0', m:'#c6ccce', d:'#8f989b' };
+const CLEAR   = { l:'#e4f2f4', m:'#c4dfe4', d:'#97b9c0' };
+const CERAMIC = { l:'#fbfaf3', m:'#e3e0d2', d:'#bdb8a6' };
+const DARK    = { l:'#55504a', m:'#3d3935', d:'#272421' };
+const INK = '#231e16';
+const SHADOW = '#41538f';
+
+/* ---------- projection (x = depth toward viewer-right, y = toward viewer-left, z = up) ---------- */
+const C = Math.cos(Math.PI/6), S = Math.sin(Math.PI/6);
+let OX = 0, OY = 0;
+/* VIEW turns the object in 90° steps about a vertical axis through its centre (RC):
+   0 = front (+x) and left (+y) faces toward the viewer, 1 = turned once (the +y side becomes the front)…
+   Figures keep modelling in their own coordinates; P / Dv / vis / tone / depthOf all apply the turn. */
+let VIEW = 0, RC = [0, 0];
+const VIEW_NAMES = ['front', 'left side', 'back', 'right side'];
+const TURNS = [0, 2];                 // the views the UI offers: front and back (figures still draw correctly in all four)
+const rotV = ([x,y,z]) => { switch (VIEW & 3){ case 1: return [y,-x,z]; case 2: return [-x,-y,z]; case 3: return [-y,x,z]; default: return [x,y,z]; } };
+const rotXY = (x,y) => { const r = rotV([x-RC[0], y-RC[1], 0]); return [r[0]+RC[0], r[1]+RC[1]]; };
+const P0 = (x,y,z) => [(x-y)*C + OX, (x+y)*S - z + OY];                       // raw iso, no turn
+const P  = (x,y,z) => { const [a,b] = rotXY(x,y); return [(a-b)*C + OX, (a+b)*S - z + OY]; };
+const Dv = (x,y,z) => { const [a,b,c] = rotV([x,y,z]); return [(a-b)*C, (a+b)*S - c]; };
+// distance toward the viewer in the current view: draw parts with smaller depth first
+const depthOf = p => { const [a,b] = rotXY(p[0],p[1]); return a + b + p[2]; };
+// sort [{at:[x,y,z], svg}] back-to-front for the current view and join
+const byDepth = parts => parts.filter(Boolean).sort((p,q) => depthOf(p.at) - depthOf(q.at)).map(p => p.svg).join('');
+const f  = v => v.toFixed(1);
+const pd = (pts, close=true) => 'M' + pts.map(p => { const q = P(p[0],p[1],p[2]); return f(q[0])+' '+f(q[1]); }).join('L') + (close ? 'Z' : '');
+const sp = pts => 'M' + pts.map(q => f(q[0])+' '+f(q[1])).join('L') + 'Z';
+
+/* ---------- 2D shapes in a plane's (u,v) coords (v up), mapped to 3D by a plane ---------- */
+const arcUV  = (cu,cv,r,a0,a1,n=7) => { const o=[]; for (let i=0;i<=n;i++){ const a=(a0+(a1-a0)*i/n)*Math.PI/180; o.push([cu+r*Math.cos(a), cv+r*Math.sin(a)]); } return o; };
+const rrUV   = (u0,v0,u1,v1,r,n=7) => r <= 0 ? rectUV(u0,v0,u1,v1) : [...arcUV(u1-r,v0+r,r,-90,0,n), ...arcUV(u1-r,v1-r,r,0,90,n), ...arcUV(u0+r,v1-r,r,90,180,n), ...arcUV(u0+r,v0+r,r,180,270,n)];
+const rectUV = (u0,v0,u1,v1) => [[u0,v0],[u1,v0],[u1,v1],[u0,v1]];
+const ellUV  = (cu,cv,ru,rv,n=24) => Array.from({length:n}, (_,i) => { const a=i/n*2*Math.PI; return [cu+ru*Math.cos(a), cv+rv*Math.sin(a)]; });
+const PX = x => ([u,v]) => [x,u,v];      // front-facing plane x = const   (u = y, v = z)
+const PY = y => ([u,v]) => [u,y,v];      // side plane y = const           (u = x, v = z)
+const PZ = z => ([u,v]) => [u,v,z];      // horizontal plane z = const     (u = x, v = y)
+const on = (plane, uv) => uv.map(plane);
+
+/* ---------- vectors + shading ---------- */
+const sub=(a,b)=>[a[0]-b[0],a[1]-b[1],a[2]-b[2]], dot=(a,b)=>a[0]*b[0]+a[1]*b[1]+a[2]*b[2];
+const cross=(a,b)=>[a[1]*b[2]-a[2]*b[1], a[2]*b[0]-a[0]*b[2], a[0]*b[1]-a[1]*b[0]];
+const norm=a=>{ const l=Math.hypot(...a)||1; return a.map(v=>v/l); };
+const avg=ps=>ps.reduce((s,p)=>[s[0]+p[0]/ps.length,s[1]+p[1]/ps.length,s[2]+p[2]/ps.length],[0,0,0]);
+const vis = n => { const r = rotV(n); return r[0]+r[1]+r[2] > 1e-6; };   // viewer looks from (+1,+1,+1) after the turn
+const facing = vis;                                                       // readable alias: is this face toward the viewer?
+const SHADOW_K = 0.85, AZ_MIN = 20, AZ_MAX = 160;
+// cast shadows are drawn shorter than the shading light implies (0.45 × height instead of 0.85 ×): long shadows of tall
+// parts on thin supports (a lamp shade, a fan head) land far from the object and read as separate blobs
+const SHADOW_LEN = 0.45;
+let L = [0,0,1], SH = [0,0];
+function setLight(deg){ const a=deg*Math.PI/180; SH=[SHADOW_K*Math.cos(a), SHADOW_K*Math.sin(a)]; L=norm([-SH[0],-SH[1],1]); }
+const LIN = norm([.6,.2,1]);                       // fixed light for interiors / small props
+const tone  = (n,m) => { const d=dot(rotV(n),L);   return d>-.15 ? m.l : d>-.45 ? m.m : m.d; };   // exterior, follows the sun
+const toneI = (n,m) => { const d=dot(rotV(n),LIN); return d>.6 ? m.l : d>.05 ? m.m : m.d; };      // interior / props
+const mix = (a,b,t) => '#' + [1,3,5].map(i => Math.round(parseInt(a.substr(i,2),16)*(1-t) + parseInt(b.substr(i,2),16)*t).toString(16).padStart(2,'0')).join('');
+const matOf = hex => ({ l:hex, m:mix(hex,'#000000',.16), d:mix(hex,'#000000',.42) });
+const ease = t => t<.5 ? 2*t*t : 1-Math.pow(-2*t+2,2)/2;
+
+/* ---------- drawing primitives (all return SVG strings) ---------- */
+const ink   = (d,w=1.0) => `<path d="${d}" fill="none" stroke="${INK}" stroke-width="${w}" stroke-linejoin="round" stroke-linecap="round"/>`;
+const fill  = (d,c,extra='') => `<path d="${d}" fill="${c}" ${extra}/>`;
+const face  = (d,c) => `<path d="${d}" fill="${c}" stroke="${c}" stroke-width=".7" stroke-linejoin="round"/>`;
+const shape = (pts,c,w=.9) => fill(pd(pts),c) + (w ? ink(pd(pts),w) : '');
+const line  = (pts,w=.9) => ink(pd(pts,false),w);
+// Loft between two rings of equal length (closed). colour(n) picks each strip's fill; flip = seen from inside.
+function loft(A, B, colour, flip=false){
+  const n=A.length, cen=avg(A.concat(B)); let s='';
+  for (let i=0;i<n;i++){
+    const a0=A[i], a1=A[(i+1)%n], b1=B[(i+1)%n], b0=B[i];
+    let nr = norm(cross(sub(a1,a0), sub(b0,a0)));
+    if (!isFinite(nr[0])) continue;
+    if (dot(nr, sub(avg([a0,a1,b1,b0]), cen)) < 0) nr = nr.map(v=>-v);
+    if (flip) nr = nr.map(v=>-v);
+    if (vis(nr)) s += face(pd([a0,a1,b1,b0]), colour(nr));
+  }
+  return s;
+}
+function hull(pts){
+  pts = pts.slice().sort((a,b)=>a[0]-b[0]||a[1]-b[1]);
+  const cr=(o,a,b)=>(a[0]-o[0])*(b[1]-o[1])-(a[1]-o[1])*(b[0]-o[0]); const lo=[], up=[];
+  for (const p of pts){ while(lo.length>=2 && cr(lo[lo.length-2],lo[lo.length-1],p)<=0) lo.pop(); lo.push(p); }
+  for (const p of pts.reverse()){ while(up.length>=2 && cr(up[up.length-2],up[up.length-1],p)<=0) up.pop(); up.push(p); }
+  lo.pop(); up.pop(); return lo.concat(up);
+}
+// Silhouette ink, weighted by how thick the part is on screen (like a hand inker): the w you pass is the most it gets.
+// Thickness = 2 × area / perimeter of the outline (a rod's diameter, about half a box's width), as a share of the
+// frame width. A long thin rod, a handle or a knob stays light (~1–1.5); a grinder, kettle or machine body gets the
+// heavy ~2.4–2.8. Thin parts stay thin and parts keep air between them.
+const hullInk = (pts3, w=1.4) => { const h = hull(pts3.map(p=>P(...p))); let a = 0, per = 0;
+  for (let i = 0; i < h.length; i++){ const p = h[i], q = h[(i+1) % h.length]; a += p[0]*q[1] - q[0]*p[1]; per += Math.hypot(q[0]-p[0], q[1]-p[1]); }
+  const thick = per ? Math.abs(a) / per / (INK_K * INK_REF_VB) : 0;
+  return ink(sp(h), Math.min(w, .9 + 20*thick)); };
+// Axis-aligned box: three visible faces, shaded, each outlined. shade = tone (sunlit) or toneI (interior).
+function box(x0,y0,z0,x1,y1,z1,m,shade=toneI,w=.9){
+  // all six faces, drawn only when they face the viewer (sides first, then top) — correct in every VIEW
+  const F = [
+    [[0,1,0],  [[x0,y1,z0],[x1,y1,z0],[x1,y1,z1],[x0,y1,z1]]],
+    [[1,0,0],  [[x1,y0,z0],[x1,y1,z0],[x1,y1,z1],[x1,y0,z1]]],
+    [[0,-1,0], [[x0,y0,z0],[x1,y0,z0],[x1,y0,z1],[x0,y0,z1]]],
+    [[-1,0,0], [[x0,y0,z0],[x0,y1,z0],[x0,y1,z1],[x0,y0,z1]]],
+    [[0,0,1],  [[x0,y0,z1],[x1,y0,z1],[x1,y1,z1],[x0,y1,z1]]] ];
+  return F.filter(([n]) => vis(n)).map(([n,q]) => shape(q, shade(n,m), w)).join('');
+}
+// Rounded-profile extrusion: profile (u=y, v=z) swept along x from x0 to x1. Body of most machines.
+function extrude(profileUV, x0, x1, m, shade=tone){ return loft(on(PX(x0),profileUV), on(PX(x1),profileUV), n=>shade(n,m)); }
+// Vertical cylinder (axis z) centred (x,y), radius r from z0 to z1, with top cap.
+function cyl(x,y,z0,z1,r,m,shade=toneI,w=1.2,n=24){
+  const A=on(PZ(z0),ellUV(x,y,r,r,n)), B=on(PZ(z1),ellUV(x,y,r,r,n));
+  return loft(A,B,nr=>shade(nr,m)) + fill(pd(B),shade([0,0,1],m)) + hullInk([...A,...B],w) + ink(pd(B),w*.8);
+}
+// Cylinder lying along x (e.g. a knob or dial sticking out of a front face): centred (y,z), from x0 to x1.
+function cylX(x0,x1,y,z,r,m,shade=toneI,w=1.1,n=20){
+  const A=on(PX(x0),ellUV(y,z,r,r,n)), B=on(PX(x1),ellUV(y,z,r,r,n));
+  // cap on whichever end faces the viewer (the +x end in VIEW 0)
+  const capB = vis([1,0,0]), cap = capB ? B : A, cn = capB ? [1,0,0] : [-1,0,0];
+  return loft(A,B,nr=>shade(nr,m)) + (vis(cn) ? fill(pd(cap),shade(cn,m)) : '') + hullInk([...A,...B],w) + (vis(cn) ? ink(pd(cap),w*.8) : '');
+}
+// Cylinder between any two 3D points a and b (a lamp arm, a rod, a pipe at an angle, a handle bar), radius r.
+// The end facing the viewer gets a cap. For a tapered part (a cone, a lamp shade) pass r1 for the radius at b.
+function rod(a, b, r, m, shade=toneI, w=1, r1=r, n=16){
+  const d = norm(sub(b, a)), u = norm(cross(d, Math.abs(d[2]) < .9 ? [0,0,1] : [1,0,0])), v = cross(d, u);
+  const ring = (p, rr) => Array.from({length:n}, (_,i) => { const t = i/n*2*Math.PI, c = Math.cos(t)*rr, s2 = Math.sin(t)*rr;
+    return [p[0] + u[0]*c + v[0]*s2, p[1] + u[1]*c + v[1]*s2, p[2] + u[2]*c + v[2]*s2]; });
+  const A = ring(a, r), B = ring(b, r1), capB = vis(d), cap = capB ? B : A, cn = capB ? d : d.map(x => -x);
+  return loft(A, B, nr => shade(nr, m)) + (Math.max(r, r1) > 0 ? fill(pd(cap), shade(cn, m)) + ink(pd(cap), w*.8) : '') + hullInk([...A, ...B], w);
+}
+// Text lying flat on a front plane x = const, centred at (y,z) baseline; reads left-to-right on screen.
+const txM = (o, U, V) => `matrix(${U[0].toFixed(4)} ${U[1].toFixed(4)} ${V[0].toFixed(4)} ${V[1].toFixed(4)} ${f(o[0])} ${f(o[1])})`;
+const tx = (x,y,z,str,size,col=INK,weight=700) => { const o=P(x,y,z);
+  return `<text transform="${txM(o, Dv(0,-1,0), Dv(0,0,-1))}" font-size="${size}" fill="${col}" text-anchor="middle" font-family="ui-monospace,Menlo,monospace" font-weight="${weight}" letter-spacing=".04em">${str}</text>`; };
+// Text on a side plane y = const, centred at (x,z).
+const txY = (x,y,z,str,size,col=INK,weight=700) => { const o=P(x,y,z);
+  return `<text transform="${txM(o, Dv(1,0,0), Dv(0,0,-1))}" font-size="${size}" fill="${col}" text-anchor="middle" font-family="ui-monospace,Menlo,monospace" font-weight="${weight}" letter-spacing=".04em">${str}</text>`; };
+// Cast shadow of a set of 3D points (any outline of the object), pushed along the light onto z = 0.
+// the light stays put relative to the viewer, so the shadow is cast in turned coordinates
+// z0: the surface it falls on (a board, a counter); clip it to that surface with clipTo(...) if it could spill off.
+// clip: the 3D outline of the surface it falls on (e.g. boardTop(...)), so it can't spill over the edge.
+const castShadow = (pts3, z0=0, clip=null) => { const k = SHADOW_LEN / SHADOW_K;
+  const s = fill(sp(hull(pts3.map(([x,y,z]) => { const [a,b] = rotXY(x,y); return P0(a+(z-z0)*SH[0]*k, b+(z-z0)*SH[1]*k, z0); }))), SHADOW);
+  return clip ? clipTo(clip, s) : s; };
+// A board for the object to stand on (a tray, a desk top, a counter): a rounded slab from (x0,y0) to (x1,y1), h thick.
+// Draw it first; then castShadow(points, h, boardTop(x0,y0,x1,y1,h,r)) so shadows lie on it and stop at its edge.
+const BOARD = { l:'#e6e1d4', m:'#cfc8b8', d:'#aaa293' }, WOOD = { l:'#d9a86c', m:'#bf8a4f', d:'#8e6236' };
+const boardTop = (x0,y0,x1,y1,h=3,r=5) => on(PZ(h), rrUV(x0,y0,x1,y1,r));
+function board(x0,y0,x1,y1,h=3,r=5,m=BOARD){
+  const A = on(PZ(0), rrUV(x0,y0,x1,y1,r)), B = boardTop(x0,y0,x1,y1,h,r);
+  return loft(A, B, n => toneI(n, m)) + fill(pd(B), m.l) + ink(pd(B), 1) + hullInk([...A, ...B], 1.8);
+}
+// Group helpers: clickable target, clip to an opening.
+const act  = (name, inner, data='') => `<g data-act="${name}" ${data}>${inner}</g>`;
+let _clipN = 0;
+// Part label (for "how does it work" figures): a cream pill with a leader line to a 3D point on the part.
+// dx, dy = where the pill sits, in screen units at the reference zoom (they scale with the figure like stroke widths).
+// on = that part is working right now (the pill turns the accent colour). Labels can be hidden with the Labels switch.
+function tag(p3, dx, dy, text, on=false){
+  const k = INK_K, [X,Y] = P(...p3), fs = 8.6*k, w = text.length*fs*.62 + fs*1.5, h = fs*1.8, cx = X + dx*k, cy = Y + dy*k;
+  return `<g class="tag${on ? ' on' : ''}"><path d="M${f(X)} ${f(Y)}L${f(cx)} ${f(cy)}" fill="none" stroke="${INK}" stroke-width="1"/>`
+    + `<circle cx="${f(X)}" cy="${f(Y)}" r="${f(1.3*k)}" fill="${INK}"/>`
+    + `<rect x="${f(cx-w/2)}" y="${f(cy-h/2)}" width="${f(w)}" height="${f(h)}" rx="${f(h/2)}" fill="${on ? 'var(--accent,#f4b829)' : '#fff4d6'}" stroke="${INK}" stroke-width="1.2"/>`
+    + `<text x="${f(cx)}" y="${f(cy+fs*.36)}" font-size="${f(fs)}" text-anchor="middle" font-family="ui-monospace,Menlo,monospace" font-weight="800" letter-spacing=".04em" fill="${INK}">${text}</text></g>`;
+}
+const clipTo = (pts3, inner) => { const id = 'k' + (++_clipN); return `<clipPath id="${id}"><path d="${pd(pts3)}"/></clipPath><g clip-path="url(#${id})">${inner}</g>`; };
+
+/* ---------- constant on-screen line weight ----------
+   Stroke widths are written in model units, and each figure is zoomed to fill the frame, so a small
+   object would get fat lines. INK_K rescales every stroke-width (and the wobble/grain filter) so all
+   figures match the reference zoom of the booth / vending machine (viewBox ≈ 585 units wide). */
+const INK_REF_VB = 585;
+let INK_K = 1;
+const inkScale = svg => INK_K === 1 ? svg : svg.replace(/stroke-width="([\d.]+)"/g, (_, w) => `stroke-width="${(+w * INK_K).toFixed(2)}"`);
+
+/* ---------- page shell ---------- */
+const CORE_CSS = `
+  :root{--paper:#f2efe7;--ink:#231e16;--muted:#857d6e;--rule:#ddd6c8}
+  *{box-sizing:border-box} html,body{margin:0;height:100%}
+  body{background-color:var(--paper);
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='320' height='320'><filter id='p'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .42  0 0 0 0 .39  0 0 0 0 .33  .16 0 0 0 0'/></filter><rect width='100%' height='100%' filter='url(%23p)'/></svg>");
+    overflow-x:hidden;color:var(--ink);font:13px/1.4 ui-monospace,SFMono-Regular,Menlo,monospace;display:flex;flex-direction:column;align-items:center;padding:24px 16px 32px}
+  header{width:100%;max-width:760px;display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap}
+  header h1{font-size:13px;font-weight:600;margin:0;letter-spacing:.02em} header span{color:var(--muted)}
+  #fig{width:100%;max-width:760px;height:auto;display:block;margin:4px 0 8px;user-select:none;overflow:visible}
+  #fig [data-act]{cursor:pointer}
+  #readout, .idea{display:none}   /* status line + big idea are off: the buttons and motion tell the story */
+  .idea{width:100%;max-width:760px;margin:-6px 0 16px;font-size:12.5px;line-height:1.5;text-align:center;color:var(--ink)}
+  .idea strong{letter-spacing:.12em;text-transform:uppercase;font-size:11px;margin-right:8px}
+  #readout{position:relative;min-height:1.4em;letter-spacing:.08em;text-transform:uppercase;margin-bottom:14px;text-align:center;text-shadow:0 0 3px var(--paper),0 0 6px var(--paper),0 0 10px var(--paper)}
+  .stage{position:relative;width:100%;max-width:760px}
+  .actions{position:absolute;top:4px;left:0;display:flex;flex-direction:column;align-items:flex-start;gap:8px;z-index:2;max-width:220px}
+  .actions .cap{color:var(--muted);font-size:11px;letter-spacing:.08em;text-transform:uppercase;margin:0 0 2px}
+  html.nolabels #fig .tag{display:none}
+  .ctl[hidden]{display:none}
+  /* ui.flash(text): a short note under the buttons ("the can is empty — refill it"); the status line itself stays hidden */
+  .toast{position:absolute;left:0;z-index:3;font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;background:var(--paper);
+    border:1.5px solid var(--ink);border-radius:8px;padding:4px 9px;box-shadow:2px 2px 0 var(--ink);opacity:0;transition:opacity .2s;pointer-events:none;max-width:240px}
+  .toast.show{opacity:1}
+  .made-with{width:100%;max-width:760px;margin-top:18px;text-align:right;font-size:11px;letter-spacing:.1em;text-transform:uppercase}
+  .made-with a{color:var(--muted);text-decoration:none} .made-with a:hover{color:var(--ink)}
+  .stats{position:absolute;top:4px;right:0;display:flex;flex-direction:column;align-items:flex-end;gap:10px;z-index:2;text-align:right}
+  .stat .k{font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+  .stat .v{font-size:34px;font-weight:800;line-height:1.05;letter-spacing:-.01em;font-variant-numeric:tabular-nums;color:var(--ink)}
+  .stat.small .v{font-size:20px}
+  .stat .v.bump{animation:bump .35s ease-out}
+  @keyframes bump{0%{transform:scale(1.18)}100%{transform:none}}
+  .stepwrap{position:relative;display:flex;align-items:center;gap:8px}
+  .act{font:inherit;color:var(--ink);background:var(--paper);border:1.5px solid var(--ink);border-radius:999px;padding:5px 14px;cursor:pointer;white-space:nowrap}
+  .act:hover{background:color-mix(in srgb,var(--paper) 92%,var(--ink))}
+  .act .car{margin-left:6px;font-size:10px}
+  .act:focus-visible{outline:2px solid var(--ink);outline-offset:3px}
+  .chips{display:none;flex-wrap:wrap;gap:6px;background:var(--paper);border:2px solid var(--ink);border-radius:12px;box-shadow:3px 3px 0 var(--ink);
+    padding:8px;width:max-content;max-width:min(300px,62vw);position:absolute;left:calc(100% + 10px);top:-4px;z-index:3}
+  .stepwrap.open .chips{display:flex}
+  .chip{white-space:nowrap;font:inherit;font-size:11.5px;font-weight:700;color:var(--ink);background:var(--paper);border:1.5px solid var(--ink);border-radius:8px;padding:4px 8px;cursor:pointer;box-shadow:2px 2px 0 var(--ink)}
+  .chip:hover{background:var(--accent,#f4b829);transform:translate(-1px,-1px)}
+  .chip.current{background:var(--ink);color:var(--paper)} .chip.current:hover{background:var(--ink);transform:none}
+  .chip.off{opacity:.45} .chip.off:hover{transform:none;background:var(--paper)}
+  
+  @media (max-width:560px){body{padding:14px 12px 24px}header span,.actions .cap{display:none}.actions{flex-direction:row;flex-wrap:wrap;gap:6px}.act{font-size:12px;padding:4px 11px}.stats{position:static;flex-direction:row;justify-content:flex-end;gap:18px;margin-bottom:4px}.actions{position:static;max-width:none;margin:6px 0 4px}.chips{left:0;top:calc(100% + 8px)}}
+  .controls{width:100%;max-width:760px;display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px 28px;border-top:1px solid var(--rule);padding-top:16px}
+  .ctl{display:flex;flex-direction:column;gap:6px}
+  .ctl label{color:var(--muted);font-size:11px;letter-spacing:.08em;text-transform:uppercase}
+  input[type=range]{width:100%;accent-color:var(--ink)}
+  .row{display:flex;gap:8px;flex-wrap:wrap}
+  button{font:inherit;color:var(--ink);background:transparent;border:1.5px solid var(--ink);border-radius:999px;padding:5px 14px;cursor:pointer}
+  button:hover{background:#0000000d}
+  .sw{width:26px;height:26px;padding:0;border-radius:50%} .sw[aria-pressed=true]{outline:2px solid var(--ink);outline-offset:2px}`;
+
+const filterFor = k => `<filter id="hand" x="-3%" y="-3%" width="106%" height="106%" color-interpolation-filters="sRGB">
+  <feTurbulence type="fractalNoise" baseFrequency="${(0.045/k).toFixed(4)}" numOctaves="2" seed="4" result="warp"/>
+  <feDisplacementMap id="wob" in="SourceGraphic" in2="warp" scale="${(2.4*k).toFixed(2)}" xChannelSelector="R" yChannelSelector="G" result="wob"/>
+  <feTurbulence type="fractalNoise" baseFrequency="${(0.9/k).toFixed(4)}" numOctaves="3" seed="11" result="n1"/>
+  <feColorMatrix in="n1" type="matrix" values=".3 0 0 0 .84  .3 0 0 0 .84  .3 0 0 0 .84  0 0 0 0 1" result="grain"/>
+  <feTurbulence type="fractalNoise" baseFrequency="${(0.012/k).toFixed(4)}" numOctaves="2" seed="7" result="n2"/>
+  <feColorMatrix in="n2" type="matrix" values=".3 0 0 0 .85  .3 0 0 0 .85  .3 0 0 0 .85  0 0 0 0 1" result="blot"/>
+  <feBlend in="wob" in2="grain" mode="multiply" result="g1"/><feBlend in="g1" in2="blot" mode="multiply" result="g2"/>
+  <feComposite in="g2" in2="wob" operator="in"/></filter>`;
+
+/* mountFigure({
+     fig:'03', title:'Photo booth', hint:'click the curtain…',
+     size:[W,D,H],                 // bounding box, used to frame the view (shadow range included)
+     palette:'mustard',            // default PALS key
+     state:{...},                  // figure state (st.pal is built in)
+     scene: (st, m) => svgString,  // m = current palette {l,m,d}
+     readout: st => 'text',        // status line under the figure
+     buttons: [{label, onClick(st, ui)}      // listed in the order the user should do them
+               | {label, choices: st => [{label, onClick(st,ui), current?, disabled?, why?}]}],   // opens a picker
+     stats: st => [{label, value, small?}],   // optional: big numbers top-right (credit, change, score)
+     credit: false,                // optional: hide the small "Made with Colorfigures" link
+     acts: { name(st, el, ui){} },  // clicks on act(name, …) groups; el has dataset
+     params(st, q){}               // optional: read URLSearchParams for screenshot states
+   })  -> ui = { st, render, animate(stepFn), flash(text,ms) }
+   animate(step): calls step(dt seconds) every frame and re-renders until step returns false. */
+addEventListener('error', e => { document.documentElement.dataset.errors = (document.documentElement.dataset.errors || '') + ' ' + e.message + ';'; });
+function mountFigure(cfg){
+  document.title = cfg.title;
+  const style = document.createElement('style'); style.textContent = CORE_CSS; document.head.appendChild(style);
+  document.body.innerHTML = `
+    <header><h1>Fig. ${cfg.fig} — ${cfg.title}</h1><span>${cfg.hint || ''}</span></header>
+    <div class="stage">
+      ${cfg.buttons && cfg.buttons.length ? `<div class="actions" id="btns"><div class="cap">${cfg.buttonsLabel || 'Try it'}</div></div>` : ''}
+      ${cfg.stats ? '<div class="stats" id="stats"></div>' : ''}
+      <div class="toast" id="toast" role="status"></div>
+      <svg id="fig" role="img" aria-label="${cfg.title}"><defs id="fdefs"></defs><g id="art" filter="url(#hand)"></g></svg>
+    </div>
+    <div id="readout"></div>
+    ${cfg.idea ? `<p class="idea"><strong>The big idea</strong>${cfg.idea}</p>` : ''}
+    <div class="controls">
+      <div class="ctl"><label for="wb">Hand-drawn wobble</label><input id="wb" type="range" min="0" max="7" step="0.1" value="2.4"></div>
+      <div class="ctl"><label>Colour</label><div class="row" id="pals"></div></div>
+      <div class="ctl" id="lblctl" hidden><label>Labels</label><div class="row"><button id="lbl" aria-pressed="true">On</button></div></div>
+    </div>
+    ${cfg.credit === false ? '' : '<footer class="made-with"><a href="https://april-zhu.com/colorfigures" target="_blank" rel="noopener">Made with Colorfigures ↗</a></footer>'}`;
+  const st = cfg.state || {};            // kept as the same object, so a figure may hold on to it
+  if (!st.pal) st.pal = cfg.palette || 'mustard';
+  if (st.az == null) st.az = 105;
+  const q = new URLSearchParams(location.search);
+  if (PALS[q.get('pal')]) st.pal = q.get('pal');
+  if (cfg.params) cfg.params(st, q);
+
+  // frame on the object itself: centred, filling ~60% of the width / ~78% of the height of a 4:3 view.
+  // The cast shadow is allowed to spill outside the frame (svg overflow is visible).
+  const [W,D,H] = cfg.size, pts = [];
+  OX = OY = 0; RC = cfg.center || [W/2, D/2];
+  VIEW = 0;
+  for (const x of [0,W]) for (const y of [0,D]) for (const z of [0,H]) pts.push(P(x,y,z));
+  const xs=pts.map(p=>p[0]), ys=pts.map(p=>p[1]);
+  const bw = Math.max(...xs)-Math.min(...xs), bh = Math.max(...ys)-Math.min(...ys);
+  // the object fills ~74% of the width / ~88% of the height, nudged right of centre so the buttons (top left) stay clear
+  const vbW = Math.max(bw/.74, bh/.88/.75), vbH = vbW*.75;
+  OX = (vbW-bw)/2 + vbW*.06 - Math.min(...xs); OY = vbH*.04 - Math.min(...ys);   // sit a little high: shadows fall downward
+  const svg = document.getElementById('fig');
+  svg.setAttribute('viewBox', `0 0 ${f(vbW)} ${f(vbH)}`);
+  INK_K = vbW / INK_REF_VB;
+  document.getElementById('fdefs').innerHTML = filterFor(INK_K);
+
+  const art = document.getElementById('art'), readout = document.getElementById('readout');
+  const ui = { st };
+  ui.render = () => { _clipN = 0; document.documentElement.style.setProperty('--accent', PALS[st.pal].l); art.innerHTML = inkScale(cfg.scene(st, PALS[st.pal])); if (!ui._flash) readout.textContent = cfg.readout ? cfg.readout(st) : ''; if (ui.drawStats) ui.drawStats(); };
+  // big numbers in the top-right corner (credit, change, score…); a value that changes gets a little bump
+  const statsEl = document.getElementById('stats'), prevStats = {};
+  ui.drawStats = () => { if (!statsEl) return;
+    const list = cfg.stats(st).filter(Boolean), html = list.map(x => `<div class="stat${x.small ? ' small' : ''}"><div class="k">${x.label}</div><div class="v" data-k="${x.label}">${x.value}</div></div>`).join('');
+    if (statsEl._html !== html){ statsEl._html = html; statsEl.innerHTML = html;
+      statsEl.querySelectorAll('.v').forEach(v => { if (prevStats[v.dataset.k] != null && prevStats[v.dataset.k] !== v.textContent) v.classList.add('bump'); prevStats[v.dataset.k] = v.textContent; }); } };
+  let flashT = 0;
+  const toast = document.getElementById('toast');
+  ui.flash = (text, ms=1600) => { ui._flash = true; readout.textContent = text; toast.textContent = text;
+    toast.style.top = ((document.getElementById('btns') ? document.getElementById('btns').offsetTop + document.getElementById('btns').offsetHeight : 0) + 8) + 'px'; toast.classList.add('show');
+    clearTimeout(flashT); flashT = setTimeout(() => { ui._flash = false; toast.classList.remove('show'); ui.render(); }, ms); };
+  // animations run on a ~60 fps timer rather than requestAnimationFrame, so they also run in headless test shots
+  ui.animate = step => { let last = performance.now();
+    const loop = () => { const now = performance.now(), dt = Math.max(0, Math.min(.05,(now-last)/1000)); last = now; const more = step(dt) !== false; ui.render(); if (more) setTimeout(loop, 16); };
+    setTimeout(loop, 16); };
+
+  // clickable parts react on press, not on click: while something animates, the scene is redrawn every frame, so the
+  // element under the pointer is replaced between press and release and a 'click' would never fire
+  svg.addEventListener('pointerdown', e => { if (e.button) return; const a = e.target.closest('[data-act]'); if (!a || !cfg.acts || !cfg.acts[a.dataset.act]) return;
+    e.preventDefault(); cfg.acts[a.dataset.act](st, a, ui); ui.render(); });
+  const btns = document.getElementById('btns');
+  const stepEls = [];
+  if (btns) cfg.buttons.forEach((b, i) => {
+    const wrap = document.createElement('div'); wrap.className = 'stepwrap';
+    const el = document.createElement('button'); el.className = 'act';
+    el.innerHTML = `${b.label}${b.choices ? '<span class="car">▾</span>' : ''}`;
+    wrap.appendChild(el); btns.appendChild(wrap); stepEls.push(el);
+    if (!b.choices){ el.onclick = () => { closeChips(); b.onClick(st, ui); ui.render(); }; return; }
+    const chips = document.createElement('div'); chips.className = 'chips'; wrap.appendChild(chips);
+    el.onclick = e => { e.stopPropagation(); const open = !wrap.classList.contains('open'); closeChips();
+      if (!open) return;
+      chips.innerHTML = '';
+      // every choice stays clickable, so nothing silently ignores a press:
+      //   current:true  = the one in use (shown selected); a press just says so
+      //   disabled:true = not possible right now (shown faded); a press says why (c.why, or a generic note)
+      for (const c of b.choices(st)){ const ch = document.createElement('button'); ch.className = 'chip' + (c.current ? ' current' : c.disabled ? ' off' : ''); ch.textContent = c.label;
+        if (c.current) ch.setAttribute('aria-pressed', 'true');
+        ch.onclick = ev => { ev.stopPropagation(); closeChips();
+          if (c.current) return ui.flash(`${c.label} — already set`);
+          if (c.disabled) return ui.flash(c.why || `${c.label} isn't possible right now`);
+          c.onClick(st, ui); ui.render(); }; chips.appendChild(ch); }
+      wrap.classList.add('open'); };
+  });
+  function closeChips(){ document.querySelectorAll('.stepwrap.open').forEach(w => w.classList.remove('open')); }
+  document.addEventListener('click', closeChips);
+
+  document.getElementById('wb').oninput = e => document.getElementById('wob').setAttribute('scale', (e.target.value * INK_K).toFixed(2));
+  const pals = document.getElementById('pals');
+  for (const [k,p] of Object.entries(PALS)){
+    const b = document.createElement('button'); b.className='sw'; b.title=k; b.style.background=p.l; b.setAttribute('aria-pressed', k===st.pal);
+    b.onclick = () => { st.pal=k; [...pals.children].forEach(c=>c.setAttribute('aria-pressed', c===b)); ui.render(); };
+    pals.appendChild(b);
+  }
+  // labels: the switch appears when the figure draws any tag(); ?labels=0 starts with them hidden
+  const lblctl = document.getElementById('lblctl'), lbl = document.getElementById('lbl');
+  const setLabels = on => { document.documentElement.classList.toggle('nolabels', !on); lbl.textContent = on ? 'On' : 'Off'; lbl.setAttribute('aria-pressed', on); };
+  lbl.onclick = () => setLabels(document.documentElement.classList.contains('nolabels'));
+  if (q.get('labels') === '0') setLabels(false);
+  // testing: ?press=Label@ms,Label@ms clicks the buttons whose text starts with Label at those times after load
+  // (any order, repeats allowed); Label>Choice picks a choice from a picker button (?press=Speed>3@300).
+  // Script errors and unknown labels are recorded on <html data-errors="…">
+  window.__st = st;
+  const noteErr = m => { document.documentElement.dataset.errors = (document.documentElement.dataset.errors || '') + ' ' + m + ';'; };
+  const starts = (el, t) => el.textContent.trim().toLowerCase().startsWith(t.trim().toLowerCase());
+  if (q.has('press')) q.get('press').split(',').forEach(item => { const [what, ms] = item.split('@'), [label, choice] = what.split('>');
+    setTimeout(() => { const b = [...document.querySelectorAll('.act')].find(b => starts(b, label));
+      if (!b) return noteErr(`no button "${label}"`);
+      b.click(); if (choice == null) return;
+      const c = [...b.parentElement.querySelectorAll('.chip')].find(c => starts(c, choice));
+      if (c && !c.disabled) c.click(); else noteErr(`no choice "${choice}" in "${label}"`); }, +ms || 0); });
+  setLight(st.az); ui.render();
+  if (art.querySelector('.tag')) lblctl.hidden = false;
+  return ui;
+}
+
+</script>
+<script>
+const ZTOP = "<g><polygon points=\"97.41 295.53 111.23 282.86 102.02 282.86 113.25 272.2 95.1 284.59 100.29 286.03 84.16 295.53 97.41 295.53\" fill=\"#c8141b\"/><polygon points=\"169.05 295.53 155.22 282.86 164.44 282.86 153.21 272.2 171.36 284.59 166.17 286.03 182.3 295.53 169.05 295.53\" fill=\"#c8141b\"/></g><g><g><path d=\"M192.56,107.26l0.16-2.02-1.83-0.14-0.4-16.17-2.03 0.05 0.12,4.95-0.05-0.02-4.18,10.68-2.28-0.18-0.16,2.02,1.67 0.13-3.28,8.39,1.89 0.74,3.51-8.96,3.21 0.25 0.22,9.11,2.03-0.05-0.22-8.9,1.62 0.13ZM186.47,104.75l2.24-5.73 0.15,5.92-2.39-0.19Z\" fill=\"#f7f4ee\"/><path d=\"M205.3,111.46c-2.02-0.97-2.89-3.18-2.58-6.58 0.28-3.07,1.4-5.37,3.35-6.84,3.66-2.77,9.12-1.78,9.18-1.78l0.19-1,0.19-1c-0.26-0.05-6.38-1.17-10.77,2.14-2.42,1.83-3.82,4.62-4.15,8.29-0.33,3.64 0.59,5.84,1.82,7.19h-6.73l2.69-21.73-2.01-0.25-2.72,21.98h-2.1v2.03h12.31v-0.88c0.16 0.09 0.32 0.18 0.47 0.25,1.16 0.56,2.48 0.79,3.82 0.79,3.55,0,7.27-1.61,8.72-3.03l-1.41-1.46c-1.6,1.55-7.03,3.41-10.25,1.87Z\" fill=\"#f7f4ee\"/><rect x=\"218.32\" y=\"95.07\" width=\"2.03\" height=\"19.83\" fill=\"#f7f4ee\"/><polygon points=\"232.68 109.24 227.11 93.92 225.15 94.2 223.65 114.82 225.67 114.97 226.83 99.08 232.03 113.4 233.98 113.24 238.38 90.22 236.39 89.84 232.68 109.24\" fill=\"#f7f4ee\"/><path d=\"M250.58,95.79c-1.02-1.5-2.75-2.36-4.62-2.31-6.09 0.17-7.11,5.98-7.26,8.46-0.34,5.53 0.86,8.81,1.93,10.6 0.99,1.66,2.74,2.66,4.6,2.66 0.07,0,0.14,0,0.22,0,2.2-0.09,5.98-1.24,6.59-7.86 0.52-5.65 0.06-9.31-1.46-11.54ZM250.02,107.15c-0.36,3.88-1.92,5.9-4.65,6.02-1.2 0.05-2.34-0.59-2.99-1.67-0.92-1.54-1.96-4.43-1.65-9.43 0.26-4.26,2.04-6.47,5.29-6.56 0.03,0,0.07,0,0.1,0,1.12,0,2.18 0.54,2.78,1.43,1.22,1.79,1.58,5.14,1.11,10.22Z\" fill=\"#f7f4ee\"/></g><g><path d=\"M200.05,118.54h4.19v0.6h-3.53v2.5h3.36v0.59h-3.36v2.66h3.53v0.6h-4.19v-6.94Z\" fill=\"#f7f4ee\"/><path d=\"M205.36,118.54h2.25c2.07,0,3.29,1.27,3.29,3.46h0c0,2.2-1.21,3.48-3.29,3.48h-2.25v-6.94ZM207.57,124.88c1.71,0,2.66-1.03,2.66-2.87h0c0-1.86-0.95-2.88-2.66-2.88h-1.56v5.74h1.56Z\" fill=\"#f7f4ee\"/><path d=\"M211.92,118.54h0.65v6.94h-0.65v-6.94Z\" fill=\"#f7f4ee\"/><path d=\"M215.7,119.14h-2.29v-0.6h5.24v0.6h-2.29v6.34h-0.66v-6.34Z\" fill=\"#f7f4ee\"/><path d=\"M219.48,118.54h0.65v6.94h-0.65v-6.94Z\" fill=\"#f7f4ee\"/><path d=\"M221.16,122.01h0c0-2.2,1.22-3.58,3.15-3.58s3.15,1.38,3.15,3.57h0c0,2.21-1.21,3.59-3.15,3.59s-3.15-1.38-3.15-3.58ZM226.79,122.01h0c0-1.82-0.96-2.97-2.48-2.97s-2.49,1.14-2.49,2.96h0c0,1.83 0.96,2.98,2.49,2.98s2.48-1.16,2.48-2.97Z\" fill=\"#f7f4ee\"/><path d=\"M228.48,118.54h0.65l4.08,5.83h0.02v-5.83h0.65v6.94h-0.65l-4.08-5.83h-0.02v5.83h-0.65v-6.94Z\" fill=\"#f7f4ee\"/></g></g><path d=\"M243.48,182.01c-5.7-7.1-13.86-11-23.02-9.86-7.88 0.99-14.38,6.63-19.36,12.82-17.12,21.28-25.06,58.86-6.57,81.74,4.21,5.21,10.01,9.27,16.57,10.63,20.43,4.24,33.39-14.53,39.2-31.45,1.51-4.41,2.72-9.02,3.55-13.72,3.08-17.42 0.93-36.08-10.38-50.16Z\" fill=\"#f7f4ee\"/><polygon points=\"220 187.01 194.89 245.58 223.44 232.7 203.54 281.4 242.43 217.67 224.36 220.47 261.04 168.49 220 187.01\" fill=\"#c8141b\"/><path d=\"M17.9,193.48l83.58-45.23s-36.38,73.26-46.22,123.41c0,0,28.52-15.73,54.57-39.82,0,0-0.75,16.51,5.9,25.57,0,0-27.53,11.31-103.74,65.39,0,0,57.52-119.47,60.47-143.56,0,0-33.43,24.09-46.71,52.12l-7.87-37.86Z\" fill=\"#f7f4ee\"/><path d=\"M122.53,163.79l-30.87,25.69s7.89,13.97-9.46,46.87c0,0,30.19-18.03,43.71-20.28l-1.8-14.65s-10.14,13.29-29.29,19.83c0,0,6.53-11.27,5.86-29.29,0,0,16.22-12.39,25.24-10.37l-3.38-17.8Z\" fill=\"#f7f4ee\"/><path d=\"M88.84,209.59l20.87-14.34v7.44s-12.17,4.51-21.41,12.62l0.54-5.72Z\" fill=\"#f7f4ee\"/><path d=\"M198.98,328.76h50.89c-16.34-9.84-69.38-46.37-93.34-118.26,0,0,26.08,4.87,33.67-20.8,1.78-6.02,2.13-11.6,1.62-16.61-1.56-15.4-15.78-26.32-31.12-24.26l-20.39,2.73-6.86,101.21s10.52-0.69,18.12,5.8c-1.73-1.48-11.87-22.34-7.1-43.75,0,0,32.78,48.69,54.52,113.94ZM153.31,163.95l10.99-0.59c4.24-0.23,8.44,1.34,11.33,4.46,1.55,1.67,2.8,3.85,3.08,6.62 0.83,8.3-3.15,16.81-10.23,20.8-7.08,3.98-17.71-1.33-17.71-1.33l2.54-29.96Z\" fill=\"#f7f4ee\"/><path d=\"M226.19,285.39c15.05-4.96,26.7-18.07,29.89-33.59-0.22,16.25-13.78,31.47-29.89,33.59h0Z\" fill=\"#f7f4ee\"/><g><path d=\"M81.86,320.61c0.17-0.17 0.34-0.2 0.57-0.08l0.85 0.37c0.28 0.11 0.31 0.37 0.11 0.62-1.3,1.78-1.36,4.7,1.33,4.7s4.53-2.69,6.17-5.6c0.48-0.85,1.22-2.18,2.04-3.73l-4.41 0.2c-0.31,0-0.48-0.17-0.34-0.48l0.31-0.74c0.08-0.2 0.25-0.31 0.48-0.34l4.89-0.34c1.44-2.69,3.03-5.69,4.16-7.84-3.82 0.23-6.62 0.48-8.46 0.65-5.97 0.48-6.93,2.32-6.03,3.65 0.76,1.1,1.81,1.47,2.38,1.59 0.28 0.06 0.45 0.23 0.42 0.51l-0.11 0.79c-0.03 0.23-0.25 0.4-0.51 0.34-1.59-0.45-3.51-1.36-4.39-3.34-1.64-3.68,1.67-5.09,7.58-5.63,4.64-0.42,8.15-0.65,12.31-0.99 0.42-0.03 0.62 0.28 0.42 0.68l-0.76,1.47c-0.28 0.57-2.21,4.02-4.27,7.92l3.17-0.23c0.31-0.03 0.48 0.17 0.34 0.48l-0.42,1.02c-0.08 0.2-0.23 0.34-0.48 0.34l-3.57 0.17-0.74,1.41c-3.73,7.16-6.31,10.58-10.7,10.58-4.84,0-5.18-5.21-2.35-8.15h0Z\" fill=\"#f7f4ee\"/><path d=\"M98.07,320.92c0.51-3.06,3.76-6.9,6.96-6.48,1.41 0.2,1.9,1.64,1.61,3.17-0.59,3.42-3.37,7.5-6.48,7.05-1.67-0.25-2.46-1.75-2.09-3.73h0ZM101.04,321.97c1.64 0.28,3.68-2.12,4.13-4.7 0.11-0.65,0-1.59-0.62-1.7-1.73-0.17-4.02,2.83-4.39,4.81-0.17 0.91 0.14,1.47 0.88,1.59h0Z\" fill=\"#f7f4ee\"/><path d=\"M105.29,323.55c-0.17-0.2-0.11-0.4 0.03-0.59l1.08-1.53c0.17-0.25 0.37-0.23 0.54 0.03 0.42 0.62 0.82 0.93,1.3,1.05 0.85 0.2,1.64-0.28,1.73-1.47 0.08-1.36-1.7-2.49-1.56-4.24 0.2-2.26,2.24-3.48,4.33-3.14 0.51 0.08,1.13 0.4,1.56 0.74 0.2 0.17 0.23 0.37 0.06 0.59l-0.48 0.65c-0.17 0.23-0.37 0.25-0.59 0.08-0.25-0.2-0.57-0.34-0.93-0.4-1.27-0.23-2.04 0.57-2.09,1.47-0.11,1.84,1.64,2.6,1.59,4.75-0.06,2.01-2.12,3.57-4.19,3.28-1.16-0.14-1.84-0.62-2.35-1.27h0Z\" fill=\"#f7f4ee\"/><path d=\"M112.02,323.55c-0.17-0.2-0.11-0.4 0.03-0.59l1.08-1.53c0.17-0.25 0.37-0.23 0.54 0.03 0.42 0.62 0.82 0.93,1.3,1.05 0.85 0.2,1.64-0.28,1.73-1.47 0.08-1.36-1.7-2.49-1.56-4.24 0.2-2.26,2.24-3.48,4.33-3.14 0.51 0.08,1.13 0.4,1.56 0.74 0.2 0.17 0.23 0.37 0.06 0.59l-0.48 0.65c-0.17 0.23-0.37 0.25-0.59 0.08-0.25-0.2-0.57-0.34-0.93-0.4-1.27-0.23-2.04 0.57-2.09,1.47-0.11,1.84,1.64,2.6,1.59,4.75-0.06,2.01-2.12,3.57-4.19,3.28-1.16-0.14-1.84-0.62-2.35-1.27h0Z\" fill=\"#f7f4ee\"/><path d=\"M119.27,321.32c0.28-1.3,1.47-3.25,3.59-6.45 0.14-0.2 0.37-0.25 0.57-0.14l0.88 0.48c0.23 0.14 0.31 0.4 0.14 0.65-1.73,2.72-2.77,4.1-3.03,5.18-0.25 0.88 0.14,1.39 0.93,1.47 0.82 0.08,2.57-0.28,4.33-1.41 0.28-0.17 0.59-0.08 0.71 0.2l0.14 0.37c0.06 0.17 0.03 0.34-0.08 0.45-2.66,2.41-5.12,2.49-6.34,2.29-1.73-0.31-2.15-1.61-1.84-3.08h0ZM126.03,310.99c0.74 0.03,1.24 0.68 0.99,1.56-0.31,1.02-1.36,1.5-2.06,1.36-0.54-0.11-0.93-0.57-0.79-1.27 0.2-1.02,1.08-1.7,1.87-1.64h0Z\" fill=\"#f7f4ee\"/><path d=\"M126.51,320.69c0.48-2.72,2.86-8.52,5.94-12,1.19-1.36,2.72-2.75,3.88-2.75,2.15,0,2.06,2.66 0.42,5.29-1.39,2.24-4.16,6.31-8.32,9.76-0.06 0.96 0.74,1.44,1.47,1.53,1.61 0.14,3.45-0.45,4.61-1.16 0.23-0.14 0.45-0.08 0.57 0.17l0.23 0.45c0.11 0.23 0.08 0.42-0.11 0.59-1.67,1.36-3.82,2.41-6.45,2.15-1.24-0.2-2.77-1.08-2.24-4.05h0ZM135.99,310.05c0.62-1.02 0.79-1.98 0.62-2.21-0.17-0.23-0.62-0.2-1.16 0.31-2.77,2.63-5.46,7.53-6.56,10.98,3.34-3.25,5.97-7.07,7.1-9.08Z\" fill=\"#f7f4ee\"/><path d=\"M144.14,311.81c-1.64-3.68,1.67-5.24,7.58-5.83,6.05-0.59,12.84-1.02,19.21-1.36 0.42-0.03 0.65 0.37 0.45 0.76l-0.74,1.39c-0.2 0.4-0.37 0.42-0.82 0.45-3.31 0.14-6.68 0.31-9.62 0.48-2.94,5.04-6.99,14.52-9.25,20-0.08 0.23-0.28 0.31-0.51 0.23l-1.9-0.65c-0.23-0.08-0.34-0.31-0.25-0.54,1.39-4.05,6.28-12.93,9.73-18.9l-5.66 0.4c-5.97 0.42-6.93,2.35-6.03,3.68 0.76,1.1,2.6,2.01,4.02,2.15 0.25 0.03 0.45 0.25 0.42 0.48l-0.11 0.79c-0.03 0.23-0.25 0.4-0.51 0.34-2.43-0.45-5.15-1.9-6.03-3.88h0Z\" fill=\"#f7f4ee\"/><path d=\"M155.14,320.92c0.51-3.06,3.76-6.9,6.96-6.48,1.41 0.2,1.9,1.64,1.61,3.17-0.59,3.42-3.37,7.5-6.48,7.05-1.67-0.25-2.46-1.75-2.09-3.73ZM158.12,321.97c1.64 0.28,3.68-2.12,4.13-4.7 0.11-0.65,0-1.59-0.62-1.7-1.73-0.17-4.02,2.83-4.39,4.81-0.17 0.91 0.14,1.47 0.88,1.59h0Z\" fill=\"#f7f4ee\"/><path d=\"M171.75,317.67c1.44-2.15 0.99-2.91-1.05-1.1-1.73,1.56-3.37,3.54-5.69,7.27-0.11 0.17-0.31 0.25-0.48 0.2l-1.39-0.42c-0.28-0.08-0.42-0.37-0.28-0.62l3.99-8.06c0.11-0.2 0.34-0.28 0.54-0.2l0.65 0.28c0.23 0.11 0.34 0.37 0.23 0.59l-2.26,4.53c1.13-1.44,2.55-3.23,3.76-4.33,3.37-3.11,5.94-1.64,3.88,2.18-1.19,2.18-2.49,4.19-0.93,4.47,1.24 0.17,2.75-0.79,3.62-1.47 0.2-0.2 0.48-0.14 0.65 0.08l0.17 0.23c0.08 0.14 0.08 0.31,0,0.45-1.59,2.26-3.88,3.03-5.69,2.77-2.35-0.37-2.09-3.28 0.28-6.85h0Z\" fill=\"#f7f4ee\"/><path d=\"M175.49,321.85c0.28-1.73,1.73-2.77,3.34-3.4-1.61-0.82-0.71-3,1.02-3.93,1.61-0.88,3.73-1.1,5.26-0.76 0.28 0.06 0.42 0.31 0.31 0.57l-0.37 0.91c-0.08 0.2-0.28 0.31-0.51 0.25-1.24-0.31-2.8-0.4-3.88 0.23-0.99 0.57-1.5,1.47-0.31,1.67 0.65 0.11,1.22 0.11,2.21 0.03 0.37-0.03 0.68 0.2 0.57 0.57l-0.2 0.59c-0.06 0.14-0.2 0.25-0.37 0.28-2.41 0.2-4.58 0.71-4.95,2.12-0.28,1.3 0.68,2.04,3.4,1.75,1.81-0.17,3.23-0.74,4.41-1.47 0.25-0.14 0.54-0.08 0.65 0.17l0.25 0.51c0.08 0.2 0.08 0.4-0.03 0.48-1.39 0.88-3.25,2.04-5.89,2.55-3.48 0.68-5.26-0.91-4.92-3.11h0Z\" fill=\"#f7f4ee\"/></g><g><path d=\"M252.65,45.12l-0.75-5.39-1.64 0.23 0.66,4.75c-0.65 0.19-1.38 0.17-2.11-0.07-1.02-0.34-1.88-1.07-2.31-1.95-0.85-1.76-0.29-4.15,1.3-5.54,1.51-1.32,3.86-1.76,5.99-1.12,1.68 0.5,3.02,1.61,3.58,2.96 0.6,1.43 0.21,3.2-0.89,4.02l0.99,1.32c1.71-1.28,2.32-3.85,1.43-5.98-0.75-1.8-2.48-3.26-4.63-3.9-2.7-0.81-5.6-0.25-7.56,1.46-1.45,1.27-2.26,3.17-2.26,5.01,0,0.87 0.18,1.73 0.55,2.5 0.63,1.3,1.82,2.32,3.28,2.8,1.36 0.45,2.76 0.37,3.92-0.24l0.44-0.85Z\" fill=\"#f7f4ee\"/><path d=\"M248.84,55.93l1.55 0.57 0.92-2.5,6.63-2.95,2.58 0.45 0.28-1.63-7.5-1.3 0.31-0.83-1.55-0.57-0.41,1.12-6.5-1.13-0.28,1.63,6.2,1.07-1.07,2.91-6.04,2.68 0.67,1.51,4.57-2.03-0.36 0.99ZM252.73,50.16l2.28 0.4-2.9,1.29 0.62-1.68Z\" fill=\"#f7f4ee\"/><rect x=\"246.28\" y=\"57.89\" width=\"13.12\" height=\"1.66\" fill=\"#f7f4ee\"/><polygon points=\"257.92 67.9 249.39 67.13 260.4 63.57 260.15 61.96 244.3 61.96 244.3 63.61 254.89 63.61 245.03 66.79 245.21 68.41 257.77 69.55 257.92 67.9\" fill=\"#f7f4ee\"/></g><g><polygon points=\"5.43 67.02 20.35 73.11 9.4 75.28 9.67 76.63 22.87 74.02 23 72.71 5.95 65.75 5.43 67.02\" fill=\"#f7f4ee\"/><path d=\"M10.99,62.57c-0.25,1.19-0.02,2.27 0.67,3.12,1.25,1.54,3.83,2.08,5.82,2.08,1.8,0,3.38-0.61,4.45-1.69 0.83-0.84,1.28-1.98,1.28-3.08,0-0.6-0.13-1.19-0.41-1.71-0.62-1.17-1.87-1.99-3.7-2.42-1.78-0.42-3.39-0.39-4.76 0.11-1.73 0.62-3.01,2-3.35,3.6ZM18.78,60.21c1.43 0.34,2.37 0.92,2.8,1.73 0.5 0.94 0.23,2.3-0.63,3.17-0.79 0.81-2.06,1.27-3.47,1.28-1.6,0-3.8-0.4-4.75-1.57-0.31-0.38-0.46-0.82-0.46-1.33,0-0.2 0.02-0.41 0.07-0.64 0.24-1.12,1.2-2.13,2.46-2.58,1.12-0.4,2.45-0.42,3.97-0.06Z\" fill=\"#f7f4ee\"/><polygon points=\"23.21 55.75 6.28 54.76 6.2 56.13 23.97 57.18 24.69 56.39 23.86 50.33 22.49 50.51 23.21 55.75\" fill=\"#f7f4ee\"/><path d=\"M10.52,44.81l0.21,1.36c2.28-0.36,4.65-0.2,6.86 0.46 0.59 0.18,1.35 0.44,1.96 0.89 0.56 0.42 0.93 0.98,1.02,1.53 0.15 0.99-0.6,1.98-1.42,2.45-1.04 0.59-2.36 0.66-3.39 0.65-1.61,0-3.21-0.19-4.78-0.54l-0.31,1.35c1.66 0.38,3.37 0.57,5.08 0.58,1.2,0,2.75-0.09,4.07-0.83,1.31-0.74,2.14-2.09,2.14-3.4,0-0.16-0.01-0.31-0.04-0.46-0.14-0.92-0.69-1.78-1.55-2.42-0.78-0.59-1.69-0.9-2.4-1.11-2.41-0.71-4.99-0.89-7.47-0.5Z\" fill=\"#f7f4ee\"/><polygon points=\"9.33 37.69 13.45 39.28 6.19 39.88 6.08 41.24 22.58 45.15 22.9 43.81 10.63 40.9 16.57 40.41 16.76 39.07 12.45 37.41 24.09 36.1 23.93 34.73 9.5 36.36 9.33 37.69\" fill=\"#f7f4ee\"/><polygon points=\"22.58 32.09 18.82 32.37 18.54 29.89 17.17 30.04 17.44 32.47 13.13 32.79 12.26 27.92 10.9 28.16 11.88 33.64 12.62 34.21 17.59 33.84 17.69 34.67 19.06 34.52 18.97 33.74 23.32 33.43 23.96 32.74 23.96 26.99 22.58 26.99 22.58 32.09\" fill=\"#f7f4ee\"/></g><g><polygon points=\"126.58 54.47 126.58 52.86 120.44 52.86 120.48 51.95 118.87 51.9 118.83 52.86 113.79 52.86 113.79 54.47 118.78 54.47 118.26 69.33 119.86 69.39 120.39 54.47 126.58 54.47\" fill=\"#f7f4ee\"/><path d=\"M125.47,56.77c-2.1,1.08-3.54,3.08-3.75,5.22-0.26,2.6,1.28,5.28,3.66,6.37 0.76 0.35,1.56 0.52,2.34 0.52 0.62,0,1.22-0.11,1.78-0.33,1.67-0.67,2.89-2.44,3.05-4.39 0.13-1.66-0.44-3.42-1.61-4.95-0.79-1.03-2.88-3.75-5.45-2.43ZM130.93,64.02c-0.11,1.36-0.93,2.58-2.05,3.03-0.84 0.34-1.88 0.28-2.84-0.16-1.77-0.81-2.92-2.8-2.72-4.74 0.16-1.6,1.27-3.11,2.89-3.95 0.22-0.11 0.43-0.17 0.66-0.17 0.78,0,1.66 0.68,2.78,2.15 0.93,1.21,1.39,2.58,1.29,3.84Z\" fill=\"#f7f4ee\"/><polygon points=\"140.87 52.77 139.57 64.62 135.32 53.78 133.77 54.07 133.77 70.19 135.38 70.19 135.38 58.33 139.26 68.25 140.81 68.05 142.47 52.94 140.87 52.77\" fill=\"#f7f4ee\"/><polygon points=\"152.57 67.11 145.92 67.55 145.92 63.24 149.1 62.29 148.64 60.75 145.92 61.56 145.92 56.37 149.96 55.42 149.6 53.85 144.93 54.95 144.31 55.73 144.31 62.04 142.45 62.6 142.91 64.14 144.31 63.72 144.31 68.41 145.17 69.21 152.67 68.72 152.57 67.11\" fill=\"#f7f4ee\"/></g><path d=\"M11.25,332.07c6.5-4.61,19.62-13.79,26.18-18.32,8.68-6.2,17.5-12.16,26.96-17.16,0,0,0.11 0.17 0.11 0.17-4.12,3.42-8.43,6.55-12.78,9.62-4.35,3.08-8.92,5.82-13.4,8.7-6.69,4.31-20.22,12.93-26.96,17.16,0,0-0.11-0.17-0.11-0.17h0Z\" fill=\"#f7f4ee\"/><g><path d=\"M26.65,109.26c-0.23,0-0.45-0.02-0.68-0.06-1.91-0.33-3.42-2.03-3.53-3.96l1.55-0.09c0.07,1.21,1.05,2.31,2.24,2.52,1.19 0.21,2.49-0.51,2.95-1.62 0.47-1.11 0.06-2.54-0.92-3.24-0.46-0.33-1.02-0.52-1.63-0.73-0.29-0.1-0.58-0.2-0.87-0.32-1.36-0.55-2.24-1.43-2.47-2.48-0.19-0.82 0.04-1.66 0.64-2.36 0.73-0.86,1.92-1.37,3.02-1.3,1.71 0.11,3.13,1.19,4.4,2.34l-1.05,1.15c-0.99-0.9-2.15-1.86-3.45-1.94-0.62-0.04-1.32 0.26-1.74 0.75-0.19 0.22-0.4 0.58-0.3,1,0.16 0.72,1.04,1.18,1.54,1.38 0.26 0.11 0.52 0.2 0.79 0.29 0.68 0.24,1.39 0.48,2.03 0.94,1.57,1.13,2.19,3.32,1.45,5.11-0.66,1.57-2.29,2.61-3.97,2.61Z\" fill=\"#f7f4ee\"/><rect x=\"33.53\" y=\"96.8\" width=\"1.56\" height=\"12.28\" transform=\"translate(-0.96 0.32)rotate(-0.53)\" fill=\"#f7f4ee\"/></g><g><path d=\"M76.91,108.56c-0.83,0-1.68-0.19-2.47-0.57-2.19-1.06-3.62-3.5-3.47-5.93 0.14-2.43,1.85-4.68,4.15-5.48,2.3-0.8,5.03-0.08,6.65,1.74l-1.2,1.07c-1.19-1.35-3.22-1.88-4.92-1.29-1.7 0.59-2.96,2.26-3.07,4.05s0.95,3.6,2.57,4.39c1.24 0.6,2.72 0.53,3.69-0.17 0.85-0.61,1.26-1.78,1.01-2.7-0.43 0.03-0.85 0.04-1.25 0.06-0.59 0.02-1.15 0.04-1.77 0.1l-0.13-1.6c0.66-0.05,1.26-0.08,1.84-0.1 0.59-0.02,1.15-0.04,1.76-0.1l0.76 0.4c0.97,1.69 0.39,4.04-1.29,5.25-0.81 0.59-1.82 0.88-2.87 0.88Z\" fill=\"#f7f4ee\"/><polygon points=\"84.86 108.59 83.97 107.77 84.25 97 85.11 96.22 89.38 96.5 89.28 98.1 85.84 97.88 85.6 106.9 89.06 106.53 89.23 108.13 84.86 108.59\" fill=\"#f7f4ee\"/><rect x=\"84.86\" y=\"99.11\" width=\"1.61\" height=\"5.85\" transform=\"translate(-19.04 184.41)rotate(-88.18)\" fill=\"#f7f4ee\"/></g>";
+const ZSIDE = "<path d=\"M26.72,44.98c0.25-0.25 0.5-0.29 0.84-0.13l1.26 0.55c0.42 0.17 0.46 0.54 0.17 0.92-1.93,2.64-2.01,6.96,1.97,6.96s6.71-3.98,9.14-8.3c0.71-1.26,1.8-3.23,3.02-5.53l-6.54 0.29c-0.46,0-0.71-0.25-0.5-0.71l0.46-1.09c0.13-0.29 0.38-0.46 0.71-0.5l7.25-0.5c2.14-3.98,4.49-8.43,6.16-11.62-5.66 0.34-9.81 0.71-12.54 0.96-8.85 0.71-10.27,3.44-8.93,5.41,1.13,1.64,2.68,2.18,3.52,2.35 0.42 0.08 0.67 0.34 0.63 0.75l-0.17,1.17c-0.04 0.34-0.38 0.59-0.75 0.5-2.35-0.67-5.2-2.01-6.5-4.95-2.43-5.45,2.47-7.55,11.24-8.34,6.88-0.63,12.08-0.96,18.24-1.47 0.63-0.04 0.92 0.42 0.63,1.01l-1.13,2.18c-0.42 0.84-3.27,5.95-6.33,11.74l4.7-0.34c0.46-0.04 0.71 0.25 0.5 0.71l-0.63,1.51c-0.13 0.29-0.34 0.5-0.71 0.5l-5.28 0.25-1.09,2.1c-5.53,10.61-9.35,15.68-15.85,15.68-7.17,0-7.67-7.72-3.48-12.08Z\" fill=\"#f7f4ee\"/><path d=\"M50.75,45.44c0.75-4.53,5.58-10.23,10.32-9.6,2.1 0.29,2.81,2.43,2.39,4.7-0.88,5.07-4.99,11.11-9.6,10.44-2.47-0.38-3.65-2.6-3.1-5.53ZM55.15,46.99c2.43 0.42,5.45-3.14,6.12-6.96 0.17-0.96,0-2.35-0.92-2.52-2.56-0.25-5.95,4.19-6.5,7.13-0.25,1.34 0.21,2.18,1.3,2.35Z\" fill=\"#f7f4ee\"/><path d=\"M61.44,49.34c-0.25-0.29-0.17-0.59 0.04-0.88l1.59-2.26c0.25-0.38 0.55-0.34 0.8 0.04 0.63 0.92,1.22,1.38,1.93,1.55,1.26 0.29,2.43-0.42,2.56-2.18 0.13-2.01-2.52-3.69-2.31-6.29 0.29-3.35,3.31-5.16,6.42-4.65 0.75 0.13,1.68 0.59,2.31,1.09 0.29 0.25 0.34 0.55 0.08 0.88l-0.71 0.96c-0.25 0.34-0.54 0.38-0.88 0.13-0.38-0.29-0.84-0.5-1.38-0.59-1.89-0.34-3.02 0.84-3.1,2.18-0.17,2.73,2.43,3.86,2.35,7.04-0.08,2.98-3.14,5.28-6.21,4.86-1.72-0.21-2.73-0.92-3.48-1.89Z\" fill=\"#f7f4ee\"/><path d=\"M71.42,49.34c-0.25-0.29-0.17-0.59 0.04-0.88l1.59-2.26c0.25-0.38 0.54-0.34 0.8 0.04 0.63 0.92,1.22,1.38,1.93,1.55,1.26 0.29,2.43-0.42,2.56-2.18 0.13-2.01-2.52-3.69-2.31-6.29 0.29-3.35,3.31-5.16,6.42-4.65 0.75 0.13,1.68 0.59,2.31,1.09 0.29 0.25 0.34 0.55 0.08 0.88l-0.71 0.96c-0.25 0.34-0.55 0.38-0.88 0.13-0.38-0.29-0.84-0.5-1.38-0.59-1.89-0.34-3.02 0.84-3.1,2.18-0.17,2.73,2.43,3.86,2.35,7.04-0.08,2.98-3.15,5.28-6.21,4.86-1.72-0.21-2.73-0.92-3.48-1.89Z\" fill=\"#f7f4ee\"/><path d=\"M82.16,46.02c0.42-1.93,2.18-4.82,5.33-9.56 0.21-0.29 0.55-0.38 0.84-0.21l1.3 0.71c0.34 0.21 0.46 0.59 0.21 0.96-2.56,4.03-4.11,6.08-4.49,7.67-0.38,1.3 0.21,2.05,1.38,2.18,1.22 0.13,3.82-0.42,6.42-2.1 0.42-0.25 0.88-0.13,1.05 0.29l0.21 0.54c0.08 0.25 0.04 0.5-0.13 0.67-3.94,3.56-7.59,3.69-9.39,3.4-2.56-0.46-3.19-2.39-2.73-4.57ZM92.18,30.72c1.09 0.04,1.84,1.01,1.47,2.31-0.46,1.51-2.01,2.22-3.06,2.01-0.8-0.17-1.38-0.84-1.17-1.89 0.29-1.51,1.59-2.52,2.77-2.43Z\" fill=\"#f7f4ee\"/><path d=\"M92.89,45.1c0.71-4.03,4.24-12.62,8.81-17.78,1.76-2.01,4.03-4.07,5.74-4.07,3.19,0,3.06,3.94 0.63,7.84-2.05,3.31-6.16,9.35-12.33,14.47-0.08,1.43,1.09,2.14,2.18,2.26,2.39 0.21,5.12-0.67,6.83-1.72 0.34-0.21 0.67-0.13 0.84 0.25l0.34 0.67c0.17 0.34 0.13 0.63-0.17 0.88-2.47,2.01-5.66,3.56-9.56,3.19-1.84-0.29-4.11-1.59-3.31-6ZM106.94,29.33c0.92-1.51,1.17-2.94 0.92-3.27-0.25-0.34-0.92-0.29-1.72 0.46-4.11,3.9-8.09,11.15-9.73,16.27,4.95-4.82,8.85-10.48,10.52-13.46Z\" fill=\"#f7f4ee\"/><path d=\"M36.17,64.59c-2.43-5.45,2.47-7.76,11.24-8.64,8.97-0.88,19.04-1.51,28.47-2.01 0.63-0.04 0.96 0.55 0.67,1.13l-1.09,2.05c-0.29 0.59-0.55 0.63-1.22 0.67-4.91 0.21-9.9 0.46-14.26 0.71-4.36,7.46-10.36,21.51-13.71,29.65-0.13 0.34-0.42 0.46-0.75 0.34l-2.81-0.96c-0.34-0.13-0.5-0.46-0.38-0.8,2.05-6,9.31-19.16,14.42-28.01l-8.39 0.59c-8.85 0.63-10.27,3.48-8.93,5.45,1.13,1.64,3.86,2.98,5.95,3.19 0.38 0.04 0.67 0.38 0.63 0.71l-0.17,1.17c-0.04 0.34-0.38 0.59-0.75 0.5-3.61-0.67-7.63-2.81-8.93-5.74Z\" fill=\"#f7f4ee\"/><path d=\"M52.48,78.09c0.75-4.53,5.58-10.23,10.32-9.6,2.1 0.29,2.81,2.43,2.39,4.7-0.88,5.07-4.99,11.11-9.6,10.44-2.47-0.38-3.65-2.6-3.1-5.53ZM56.89,79.64c2.43 0.42,5.45-3.14,6.12-6.96 0.17-0.96,0-2.35-0.92-2.52-2.56-0.25-5.95,4.19-6.5,7.13-0.25,1.34 0.21,2.18,1.3,2.35Z\" fill=\"#f7f4ee\"/><path d=\"M77.1,73.27c2.14-3.19,1.47-4.32-1.55-1.64-2.56,2.31-4.99,5.24-8.43,10.78-0.17 0.25-0.46 0.38-0.71 0.29l-2.05-0.63c-0.42-0.13-0.63-0.55-0.42-0.92l5.91-11.95c0.17-0.29 0.5-0.42 0.8-0.29l0.96 0.42c0.34 0.17 0.5 0.55 0.34 0.88l-3.35,6.71c1.68-2.14,3.77-4.78,5.58-6.42,4.99-4.61,8.81-2.43,5.74,3.23-1.76,3.23-3.69,6.21-1.38,6.63,1.84 0.25,4.07-1.17,5.37-2.18 0.29-0.29 0.71-0.21 0.96 0.13l0.25 0.34c0.13 0.21 0.13 0.46,0,0.67-2.35,3.35-5.74,4.49-8.43,4.11-3.48-0.55-3.1-4.86 0.42-10.15Z\" fill=\"#f7f4ee\"/><path d=\"M82.63,79.47c0.42-2.56,2.56-4.11,4.95-5.03-2.39-1.22-1.05-4.44,1.51-5.83,2.39-1.3,5.53-1.64,7.8-1.13 0.42 0.08 0.63 0.46 0.46 0.84l-0.54,1.34c-0.13 0.29-0.42 0.46-0.75 0.38-1.85-0.46-4.15-0.59-5.74 0.34-1.47 0.84-2.22,2.18-0.46,2.47 0.96 0.17,1.8 0.17,3.27 0.04 0.55-0.04,1.01 0.29 0.84 0.84l-0.29 0.88c-0.08 0.21-0.29 0.38-0.55 0.42-3.56 0.29-6.79,1.05-7.34,3.14-0.42,1.93,1.01,3.02,5.03,2.6,2.68-0.25,4.78-1.09,6.54-2.18 0.38-0.21 0.8-0.13 0.96 0.25l0.38 0.75c0.13 0.29 0.13 0.59-0.04 0.71-2.05,1.3-4.82,3.02-8.72,3.77-5.16,1.01-7.8-1.34-7.3-4.61Z\" fill=\"#f7f4ee\"/>";
+</script>
+<script>
+/* ---------- the enclosure: a wedge, measured from ZeRO-04/05/06/07.svg (1 art unit = 0.1; the figure is ~2.2× real size) ----------
+   pedal-local coords: x = 0 at the back (jacks) … ZL at the front (footswitch end), y = 0 … ZW (art right → y = 0), z up */
+const ZK = .1, ZL = 33.746, ZW = 26.646, ZH = 11.062;
+const BH = 1.5, ZX0 = 15, ZY0 = 2, FX = ZX0 + ZL;             // floor height (no board drawn: the pedal floats); where the pedal sits
+const BX = FX + 11, BY = ZY0 + ZW + 12;                        // the framed area: room behind for the plugs, in front and to the left for cables
+const CR = .62, CZ = BH + CR;                                  // a 6 mm instrument cable lying on the floor
+const sideL = (xs, ys) => [ZL - (xs - .35) * ZK, (110.97 - ys) * ZK];   // ZeRO-05 side drawing → local (x, z)
+const PROF = [[6.76,110.97],[2.2,108.8],[.35,104],[.35,57.56],[.55,55.76],[1.15,53.96],[1.75,52.16],[2.95,50.56],[4.16,49.16],
+  [5.76,47.96],[7.36,47.16],[9.16,46.56],[207.99,.75],[210.59,.35],[326.41,.35],[328.41,.55],[330.41,1.16],[332.21,1.96],
+  [333.81,3.16],[335.21,4.56],[336.21,6.16],[337.21,7.96],[337.61,9.76],[337.81,11.76],[337.81,104],[336,108.8],[331.41,110.97]].map(([a,b]) => sideL(a,b));
+const SL_A = sideL(207.99, .75), SL_B = sideL(9.16, 46.56);
+const SLU = norm([SL_B[0] - SL_A[0], 0, SL_B[1] - SL_A[1]]);          // down the slope, toward the front
+const SLN = [-SLU[2], 0, SLU[0]];                                      // the slope's outward normal
+const artFlat = (ax, ay) => [ZL - (346.74 - ay) * ZK, ZW - ax * ZK, ZH];
+const artSlope = (ax, ay) => { const s = (ay - 139.01) * ZK; return [SL_A[0] + s * SLU[0], ZW - ax * ZK, SL_A[1] + s * SLU[2]]; };
+
+/* ---------- pose: the pedal can tip up on its front edge so the jacks on the back face up ---------- */
+const TILT_MAX = 70 * Math.PI / 180;
+let zc = 1, zs = 0;
+const zT = ([x, y, z]) => { const dx = x - ZL; return [FX + dx * zc + z * zs, ZY0 + y, BH + z * zc - dx * zs]; };
+const zTN = ([x, y, z]) => [x * zc + z * zs, y, z * zc - x * zs];
+const add = (a, b, k = 1) => a.map((v, i) => v + b[i] * k);
+const lerp3 = (a, b, t) => a.map((v, i) => v + (b[i] - v) * t);
+const artM = (O, U, V) => { const o = P(...zT(O)), a = Dv(...zTN(U)), b = Dv(...zTN(V));
+  return `matrix(${a[0].toFixed(5)} ${a[1].toFixed(5)} ${b[0].toFixed(5)} ${b[1].toFixed(5)} ${f(o[0])} ${f(o[1])})`; };
+function frame(axis){ const a = norm(axis), u = norm(cross(a, Math.abs(a[2]) < .9 ? [0,0,1] : [0,1,0])), v = cross(a, u); return [a, u, v]; }
+const ringAt = (c, axis, h, pts2) => { const [a, u, v] = frame(axis); return pts2.map(([p, q]) => zT(add(add(add(c, a, h), u, p), v, q))); };
+// the half of a ring around a cylinder that faces the viewer (knurl, threads, grooves): world centre + world axis
+function ringLine(c, axis, r, w = .55, n = 28){
+  const [, u, v] = frame(axis); let d = '', run = [];
+  for (let i = 0; i <= n; i++){ const t = i / n * 2 * Math.PI, nr = add(u.map(x => x * Math.cos(t)), v, Math.sin(t));
+    if (vis(nr)) run.push(add(c, nr, r)); else { if (run.length > 1) d += pd(run, false); run = []; } }
+  if (run.length > 1) d += pd(run, false);
+  return d ? `<path d="${d}" fill="none" stroke="${INK}" stroke-width="${w}" stroke-linecap="round"/>` : '';
+}
+// coaxial parts along one axis (world): [from, to, r, r1, material, sides] — sorted so the nearer end is drawn last
+function stack(o, dir, parts, w = .9){
+  return byDepth(parts.map(([a, b, r, r1, m, n = 20]) => ({ at: add(o, dir, (a + b) / 2), svg: rod(add(o, dir, a), add(o, dir, b), r, m, toneI, w, r1, n) })));
+}
+
+/* ---------- parts on the top ---------- */
+const KNOBS = [[55.06, 50.83], [134.32, 101.9], [213.47, 50.83]];   // VOLUME, TONE, GAIN (art centres)
+const BOLT = [[71.14,41.76],[46.01,82.65],[52.44,54.95],[41.78,58.23],[52.39,21.55],[72.99,21.56],[60.56,44.94]].map(([x, y]) => [x - 55.06, y - 50.83]);
+const LED = artFlat(133.23, 40.17), TOG = artFlat(53.87, 102.43), FSW = artSlope(133.23, 282.44);
+const KNOB_M = { l:'#fbfaf6', m:'#e3e0d8', d:'#b8b4a9' };
+const STEEL = { l:'#f2f3f3', m:'#c3c8ca', d:'#8a9295' }, KNURL = { l:'#c9cdcf', m:'#9ea5a8', d:'#6d7477' };
+const PRESETS = { Alcino: [7, 6, 10], Crunch: [6, 5, 6], Suave: [5, 7, 2] };
+
+function knob(i, v){
+  // the bolt's sharp tip is the pointer: at 5 it points to the back (top) of the pedal; 0 → 7 o'clock, 10 → 5 o'clock, clockwise
+  const [ax, ay] = KNOBS[i], c = artFlat(ax, ay), rot = (164 + (v - 5) * 28) * Math.PI / 180, R = 2.45, h = 1.9;
+  const scal = Array.from({ length: 42 }, (_, j) => { const t = j / 42 * 2 * Math.PI, r = R * (1 + .055 * Math.cos(7 * t - rot)); return [r * Math.cos(t), r * Math.sin(t)]; });
+  const A = ringAt(c, [0,0,1], 0, scal), B = ringAt(c, [0,0,1], h, scal);
+  let s = loft(A, B, n => toneI(n, KNOB_M)) + fill(pd(B), toneI(zTN([0,0,1]), KNOB_M)) + ink(pd(B), .8) + hullInk([...A, ...B], 1.3);
+  const cs = Math.cos(rot), sn = Math.sin(rot);
+  const bolt = BOLT.map(([dx, dy]) => { const x2 = dx * cs - dy * sn, y2 = dx * sn + dy * cs; return zT([c[0] + y2 * ZK, c[1] - x2 * ZK, ZH + h + .03]); });
+  s += fill(pd(bolt), 'url(#glit)') + ink(pd(bolt), .7);
+  return act('knob', s, `data-i="${i}"`);
+}
+// 5 mm LED in a chrome bezel
+function led(st){
+  const lit = st.on && st.pl.pw === 1, o = zT(LED), up = zTN([0,0,1]);
+  let s = stack(o, up, [[0, .3, .9, .9, STEEL, 20], [.3, .45, .62, .62, STEEL, 18]]);
+  if (lit){ const g = P(...add(o, up, .9)); s += `<circle cx="${f(g[0])}" cy="${f(g[1])}" r="2.6" fill="url(#zled)"/>`; }
+  s += rod(add(o, up, .45), add(o, up, .95), .5, matOf(lit ? '#ff3b2f' : '#6e1f1a'), toneI, .8, .3, 14);
+  if (lit){ const q = P(...add(add(o, up, .85), [.12, .12, 0])); s += `<circle cx="${f(q[0])}" cy="${f(q[1])}" r=".14" fill="#fff4e0"/>`; }
+  return s;
+}
+// SI / GE: mini toggle — hex nut, threaded bushing, a bat lever leaning to the art's left (SI) or right (GE)
+function toggleSw(st){
+  const o = zT(TOG), up = zTN([0,0,1]), th = st.lev * 28 * Math.PI / 180;
+  let s = stack(o, up, [[0, .32, .85, .85, STEEL, 6], [.32, 1.1, .5, .5, STEEL, 16]]);
+  for (const h of [.5, .7, .9]) s += ringLine(add(o, up, h), up, .5, .4);
+  const lv = zTN([0, Math.sin(th), Math.cos(th)]), b = add(o, up, 1.1);
+  s += rod(b, add(b, lv, 2.1), .19, STEEL, toneI, .9, .13, 12) + rod(add(b, lv, 2.0), add(b, lv, 2.35), .2, STEEL, toneI, .8, .2, 12);
+  return act('toggle', s);
+}
+// 3PDT footswitch: washer, big hex nut, threaded bushing, collar and the chamfered button that sinks when stomped
+function footswitch(st){
+  const o = zT(FSW), n = zTN(SLN), p = .35 * Math.sin(Math.PI * Math.min(1, st.press)), top = 3.3 - p;
+  let s = stack(o, n, [[0, .12, 1.95, 1.95, STEEL, 28], [.12, .7, 1.75, 1.75, STEEL, 6], [.7, 1.6, 1.3, 1.3, STEEL, 24]], 1);
+  for (const h of [.85, 1.05, 1.25, 1.45]) s += ringLine(add(o, n, h), n, 1.3, .45);
+  s += stack(o, n, [[1.6, 1.85, 1.12, 1.12, STEEL, 24], [1.85, top - .28, 1.02, .98, STEEL, 24], [top - .28, top, .98, .8, STEEL, 24]], 1);
+  return act('stomp', s);
+}
+
+/* ---------- the back: INPUT, POWER (DC 2.1 mm) and OUTPUT, positions from ZeRO-07.svg ---------- */
+const backL = (bx, by) => [0, (bx - .35) * ZK, (110.77 - by) * ZK];
+const JACK = { in: { c: backL(62.9, 59.77), name: 'INPUT', fs: 1.7 }, pw: { c: backL(133.8, 59.77), name: 'POWER', fs: 1.15 },
+               out:{ c: backL(204.6, 59.77), name: 'OUTPUT', fs: 1.7 } };
+const OUTN = [-1, 0, 0];
+const FACE = { in: .87, out: .87, pw: .75 };                   // how far the jack stands out of the panel (where a plug seats)
+function backPanel(){
+  let s = '';
+  const n = zTN(OUTN);
+  for (const k of ['in', 'pw', 'out']){
+    const j = JACK[k], o = zT(j.c);
+    if (k === 'pw'){                                          // DC jack: hex nut, short bushing, black insert with the centre pin
+      s += stack(o, n, [[0, .45, 1.2, 1.2, STEEL, 6], [.45, .75, .85, .85, STEEL, 18]]);
+      s += fill(pd(ringAt(add(j.c, OUTN, .76), OUTN, 0, ellUV(0, 0, .6, .6, 16))), '#191817') + fill(pd(ringAt(add(j.c, OUTN, .77), OUTN, 0, ellUV(0, 0, .16, .16, 8))), STEEL.m);
+    } else {                                                  // 1/4" jack: washer, hex nut, threaded bushing lip, the hole
+      s += stack(o, n, [[0, .12, 1.65, 1.65, STEEL, 24], [.12, .62, 1.45, 1.45, STEEL, 6], [.62, .87, 1.0, 1.0, STEEL, 20]]);
+      s += ringLine(add(o, n, .74), n, 1.0, .4);
+      s += fill(pd(ringAt(add(j.c, OUTN, .88), OUTN, 0, ellUV(0, 0, .72, .72, 18))), '#151413');
+    }
+    const t = P(...zT([-.02, j.c[1], (110.77 - 34.65) * ZK])), U = Dv(...zTN([0, 1, 0])), V = Dv(...zTN([0, 0, -1]));
+    s += `<text transform="${txM(t, U, V)}" font-size="${j.fs}" fill="#f7f4ee" text-anchor="middle" font-family="-apple-system,'SF Pro Display','Helvetica Neue',Arial,sans-serif" font-weight="700">${j.name}</text>`;
+  }
+  return s;
+}
+
+/* ---------- plugs and cables: guitar → INPUT, OUTPUT → amp, 9 V supply → POWER ---------- */
+function smooth3(pts, it=3){
+  for (let k=0;k<it;k++){ const o=[pts[0]];
+    for (let i=0;i<pts.length-1;i++){ const a=pts[i], b=pts[i+1];
+      o.push(a.map((v,j)=>v*.75+b[j]*.25), a.map((v,j)=>v*.25+b[j]*.75)); }
+    o.push(pts[pts.length-1]); pts=o; }
+  return pts;
+}
+function tube(q, r, m){
+  const d = pd(q, false), sw = w => `style="stroke-width:${f(w)}"`, cap = 'fill="none" stroke-linecap="round" stroke-linejoin="round"';
+  const hl = 'M' + q.map(p => { const [X,Y] = P(...p); return f(X - r*.35)+' '+f(Y - r*.35); }).join('L');
+  return `<path d="${d}" ${cap} stroke="${INK}" ${sw(2*r + 2.4*INK_K)}/>` + `<path d="${d}" ${cap} stroke="${m.m}" ${sw(2*r)}/>`
+    + `<path d="${hl}" ${cap} stroke="${m.l}" ${sw(r*.5)} opacity=".8"/>`;
+}
+// the loose end of a cable fades out on the floor: a radial mask, clear around b, opaque from a outward
+const fadeOff = (svg, id, a, b) => { const A = P(...a), B = P(...b), r = Math.hypot(A[0] - B[0], A[1] - B[1]);
+  return `<defs><radialGradient id="g${id}" gradientUnits="userSpaceOnUse" cx="${f(B[0])}" cy="${f(B[1])}" r="${f(r)}"><stop offset="0" stop-color="#000"/><stop offset="1" stop-color="#fff"/></radialGradient>`
+    + `<mask id="m${id}" maskUnits="userSpaceOnUse"><rect x="-1000" y="-1000" width="3000" height="3000" fill="url(#g${id})"/></mask></defs><g mask="url(#m${id})">${svg}</g>`; };
+const RUB = { l:'#5b5650', m:'#2f2c29', d:'#1b1917' };
+const PZC = BH + .42;                                          // the thin DC cable lying on the floor
+const CAB = {
+  in: { len: 11.5, r: CR, rest: { tip: [FX + 8.5, 17, BH + 1.4], dir: norm([.05, -1, 0]),
+          after: [[FX+9.15,4.6,CZ],[FX+9.2,3.8,CZ],[FX+9.2,3,CZ],[FX+9.1,2.3,CZ],[FX+9,1.7,CZ],[FX+8.8,1.2,CZ]] },
+        route: [[2,1.2,CZ],[24,1.2,CZ],[44,1.2,CZ],[FX+7,1.5,CZ]], end: [[FX+8.6,.8,CZ],[FX+10,-.6,CZ],[FX+13,-1.8,CZ],[FX+18,-2.6,CZ]], fade: true },
+  out:{ len: 11.5, r: CR, rest: { tip: [24, ZY0 + ZW + 4.8, BH + 1.4], dir: norm([1, .3, 0]),
+          after: [[36.6,37.1,CZ],[38,37.5,CZ],[39.4,37.9,CZ],[40.8,38.4,CZ],[42,38.8,CZ],[43,39.2,CZ]] },
+        route: [[2,33,CZ],[16,34,CZ],[30,35.5,CZ],[40,37,CZ]], end: [[44,39.6,CZ],[44.8,42,CZ],[45.4,45.5,CZ],[45.8,50,CZ]], fade: true },
+  // DC plug rests well to the left of the INPUT plug and further forward, its cable trailing off to the front-left
+  pw: { len: 5.6, r: .42, rest: { tip: [FX + 9, 30.5, BH + 1], dir: norm([0, 1, 0]),
+          after: [[FX+9,36.8,PZC],[FX+9.2,37.6,PZC],[FX+9.7,38.3,PZC],[FX+10.4,38.8,PZC],[FX+11.3,39.2,PZC],[FX+12.3,39.5,PZC],[FX+13.4,39.8,PZC]] },
+        route: [[3,20,PZC],[4.5,31.5,PZC],[24,31.6,PZC],[40,31.6,PZC],[FX+.5,31.8,PZC]], end: [[FX+15,40.2,PZC],[FX+18,41,PZC],[FX+22,42.2,PZC]], fade: true },
+};
+function plugPose(st, k){
+  const c = CAB[k], e = ease(st.pl[k]), j = JACK[k];
+  const tip = lerp3(c.rest.tip, zT(add(j.c, OUTN, FACE[k])), e); tip[2] += 6 * Math.sin(Math.PI * e);
+  return { tip, dir: norm(lerp3(c.rest.dir, zTN(OUTN), e)), e };
+}
+function cablePts(st, k){
+  const c = CAB[k], pp = plugPose(st, k), tail = add(pp.tip, pp.dir, c.len), lift = 6 * Math.sin(Math.PI * pp.e);
+  const plugged = [add(tail, pp.dir, .9), [tail[0] + pp.dir[0] * 2.2, tail[1] + (k === 'in' ? -1.2 : 1.2), BH + 1.8], ...c.route];
+  const mid = c.rest.after.map((p, i) => { const q = lerp3(p, plugged[i], pp.e); q[2] += lift * Math.max(0, 1 - i / 3); return q; });
+  return smooth3([tail, ...mid, ...c.end]);
+}
+function cableSvg(st, k, signal){
+  const q = cablePts(st, k), c = CAB[k];
+  const s = tube(q, c.r, RUB) + (signal ? signal(q) : '');
+  return c.fade ? fadeOff(s, k, c.end[0], c.end[c.end.length - 1]) : s;
+}
+// straight 1/4" (P10) plug: tip, insulator, sleeve (inside the jack once plugged), flange, metal barrel with a knurled band,
+// tapered rubber boot with grooves.  DC plug: 5.5 mm barrel, plastic body, boot.
+function plugSvg(st, k){
+  const pp = plugPose(st, k), o = pp.tip, d = pp.dir, at = x => add(o, d, x), out = pp.e < .98;
+  if (k === 'pw'){
+    let s = stack(o, d, [...(out ? [[-2.2, 0, .6, .6, STEEL, 16]] : []), [0, 3.2, 1.0, .95, RUB, 18], [3.2, 5.6, .8, .48, RUB, 16]]);
+    for (const x of [1.2, 1.8]) s += ringLine(at(x), d, .98, .45);
+    return s;
+  }
+  let s = stack(o, d, [
+    ...(out ? [[-6.85, -6.2, .3, .6, STEEL, 14], [-6.2, -5.5, .6, .6, STEEL, 14], [-5.5, -5.25, .45, .45, STEEL, 14],
+               [-5.25, -4.6, .62, .62, RUB, 14], [-4.6, 0, .7, .7, STEEL, 16]] : []),
+    [0, .45, 1.05, 1.05, STEEL, 20], [.45, 1.3, 1.4, 1.4, STEEL, 22], [1.3, 3.6, 1.42, 1.42, KNURL, 22],
+    [3.6, 6.8, 1.4, 1.3, STEEL, 22], [6.8, 11.5, 1.15, .72, RUB, 20] ], 1);
+  for (const x of [1.6, 2.05, 2.5, 2.95, 3.35]) s += ringLine(at(x), d, 1.42, .4);
+  for (const x of [7.8, 8.8, 9.8, 10.7]) s += ringLine(at(x), d, 1.15 - (x - 6.8) / 4.7 * .43, .45);
+  return s;
+}
+const dotsOn = (q, u, col, r, jit) => { const n = q.length, p = q[Math.max(0, Math.min(n - 1, Math.round((n - 1) * u)))], [X, Y] = P(...p);
+  return `<circle cx="${f(X + jit[0])}" cy="${f(Y + jit[1])}" r="${f(r)}" fill="${col}" stroke="${INK}" stroke-width=".6"/>`; };
+
+/* ---------- scene ---------- */
+function scene(st, m){
+  const phi = ease(st.tilt) * TILT_MAX; zc = Math.cos(phi); zs = Math.sin(phi);
+  const A = PROF.map(([x, z]) => zT([x, 0, z])), B = PROF.map(([x, z]) => zT([x, ZW, z]));
+  const backVis = vis(zTN([-1, 0, 0]));
+  let s = '';                                                  // no board, no cast shadow: the pedal floats
+
+  // signal while playing
+  const pt = st.playT, live = st.on && st.pl.pw === 1, col = st.mode === 'SI' ? '#ff3b2f' : '#ff9a2f';
+  const sigIn = pt == null ? null : q => { let d = ''; for (let i = 0; i < 4; i++){ const u = 1 - (pt / 1.1 - i * .1); if (u >= 0 && u <= 1) d += dotsOn(q, u, '#ffcf6a', .55, [0, 0]); } return d; };
+  const sigOut = pt == null || (st.on && !live) ? null : q => { let d = ''; const g = st.k[2] / 10, v = st.k[0] / 10;
+    for (let i = 0; i < 6; i++){ const u = (pt - 1.1) / 1.4 - i * .09; if (u < 0 || u > 1) continue;
+      const jit = st.on ? [Math.sin(i * 7 + pt * 40) * .6 * g, Math.cos(i * 5 + pt * 33) * .6 * g] : [0, 0];
+      d += dotsOn(q, u, st.on ? col : '#ffcf6a', st.on ? .45 + .5 * v : .55, jit); } return d; };
+
+  // cables lying on the board (and those plugged in behind) go first; the pedal covers what is behind it
+  const moving = k => st.pl[k] > 0 && st.pl[k] < 1;
+  for (const k of ['pw', 'out', 'in']) s += cableSvg(st, k, k === 'in' ? sigIn : k === 'out' ? sigOut : null);
+  for (const k of ['pw', 'out', 'in']) if (!moving(k) && !(st.pl[k] === 1 && backVis)) s += plugSvg(st, k);
+
+  // the body
+  const bm = PALS.preto;
+  s += loft(A, B, n => tone(n, bm));
+  s += fill(pd(B), tone([0, 1, 0], bm));
+  s += `<g transform="${artM([-.35 * ZK, ZW, 110.97 * ZK], [ZK, 0, 0], [0, 0, -ZK])}">${ZSIDE}</g>`;
+  s += `<g transform="${artM([ZL - 346.74 * ZK, ZW, ZH], [0, -ZK, 0], [ZK, 0, 0])}"><use href="#ztop" clip-path="url(#zcf)"/></g>`;
+  const so = [SL_A[0] - 139.01 * ZK * SLU[0], ZW, SL_A[1] - 139.01 * ZK * SLU[2]];
+  s += `<g transform="${artM(so, [0, -ZK, 0], [ZK * SLU[0], 0, ZK * SLU[2]])}"><use href="#ztop" clip-path="url(#zcs)"/></g>`;
+  const fold = sideL(209.3, .5), seam = (110.97 - 99.57) * ZK;
+  s += line([zT([fold[0], 0, fold[1]]), zT([fold[0], ZW, fold[1]])], .7);
+  s += line([zT([ZL, 0, seam]), zT([ZL, ZW, seam])], .7) + line([zT([sideL(6.76,0)[0], ZW, seam]), zT([sideL(331.41,0)[0], ZW, seam])], .7);
+  if (backVis) s += backPanel();
+  s += ink(pd(B), 1.8) + hullInk([...A, ...B], 2.8);
+
+  // controls on the top
+  s += byDepth([
+    ...KNOBS.map((p, i) => ({ at: zT(add(artFlat(...p), [0,0,1], 1)), svg: knob(i, st.k[i]) })),
+    { at: zT(add(LED, [0,0,1], .5)), svg: led(st) },
+    { at: zT(add(TOG, [0,0,1], .5)), svg: toggleSw(st) },
+    { at: zT(add(FSW, SLN, 1)), svg: footswitch(st) } ]);
+  for (const k of ['pw', 'out', 'in']) if (moving(k) || (st.pl[k] === 1 && backVis)) s += plugSvg(st, k);
+  return s;
+}
+
+/* ---------- behaviour ---------- */
+let ui, looping = false;
+const STEP_T = { tilt: .8, plug: .7 };
+function settled(st){ return st.tilt === st.tiltT && ['in','out','pw'].every(k => st.pl[k] === st.plT[k]) && st.lev === (st.mode === 'SI' ? 1 : -1)
+  && st.k.every((v, i) => v === st.kt[i]) && st.press === 0 && st.playT == null && !st.queue.length; }
+function kick(){
+  if (looping) return; looping = true;
+  let last = performance.now();
+  ui.animate(() => {
+    const st = ui.st, n = performance.now(), dt = Math.min(.05, Math.max(0, (n - last) / 1000)); last = n;
+    const to = (v, t, rate) => v < t ? Math.min(t, v + rate * dt) : Math.max(t, v - rate * dt);
+    st.tilt = to(st.tilt, st.tiltT, 1 / STEP_T.tilt);
+    for (const k of ['in', 'out', 'pw']) st.pl[k] = to(st.pl[k], st.plT[k], 1 / STEP_T.plug);
+    st.lev = to(st.lev, st.mode === 'SI' ? 1 : -1, 6);
+    st.k = st.k.map((v, i) => to(v, st.kt[i], 9));
+    if (st.press > 0){ const was = st.press; st.press += dt / .32; if (was < .5 && st.press >= .5){ st.on = !st.on; onStomp(st); } if (st.press >= 1) st.press = 0; }
+    if (st.playT != null){ st.playT += dt; if (st.playT > 2.9) st.playT = null; }
+    // queued steps run one after the other: each starts when everything before it has finished moving
+    if (st.queue.length && st.tilt === st.tiltT && ['in','out','pw'].every(k => st.pl[k] === st.plT[k]) && st.press === 0){
+      if (st.hold > 0) st.hold -= dt; else st.queue.shift()(st);
+    }
+    if (settled(st)){ looping = false; return false; }
+    return true;
+  });
+}
+function onStomp(st){ tell('flash', { key: st.on ? 'on' : 'off' }); tell('state'); }
+const layDown = st => { if (st.tiltT) st.queue.push(s => { s.tiltT = 0; }); };
+function stomp(st){
+  if (st.queue.length) return;
+  if (st.tiltT){ tell('flash', { key: 'layDown' }); layDown(st); }
+  st.queue.push(s => { s.press = .001; });
+  kick();
+}
+
+PALS.preto = { l:'#45423f', m:'#2d2b29', d:'#1b1a19' };
+ui = mountFigure({
+  fig:'03', title:'ZeRO — Alcino Edition', hint:'',
+  size:[BX, BY, 24], palette:'preto',                          // framing only: tight around the pedal, with room for it to tip up
+  state:{ tilt:0, tiltT:0, pl:{ in:1, out:1, pw:1 }, plT:{ in:1, out:1, pw:1 }, on:false, press:0, mode:'SI', lev:1,
+          k:[0, 0, 0], kt:[0, 0, 0], preset:null, playT:null, queue:[], hold:0 },     // knobs start at zero
+  scene,
+  credit: false,
+  buttonsLabel:'Pedal',
+  // cables always plugged in, effect off by default; only one button — the knobs, the SI/GE toggle and the footswitch are still clickable on the pedal itself
+  buttons:[],
+  acts:{
+    knob:(st, el) => { const i = +el.dataset.i; st.kt[i] = (Math.round(st.kt[i]) + 1) % 11; st.preset = null; kick(); tell('state', { touched: 'k' + i }); },
+    toggle:(st) => { st.mode = st.mode === 'SI' ? 'GE' : 'SI'; kick(); tell('state', { touched: 'mode' }); },
+    stomp:(st) => stomp(st),
+  },
+  params:(st, q) => {
+    if (q.has('tilt')) st.tilt = st.tiltT = +q.get('tilt');
+    for (const k of ['in', 'out', 'pw']) if (q.has(k)) st.pl[k] = st.plT[k] = +q.get(k);
+    if (q.get('all') === '1') for (const k of ['in', 'out', 'pw']) st.pl[k] = st.plT[k] = 1;
+    if (q.get('on') === '1') st.on = true;
+    if (q.get('mode') === 'GE'){ st.mode = 'GE'; st.lev = -1; }
+    if (PRESETS[q.get('preset')]){ st.preset = q.get('preset'); st.k = PRESETS[st.preset].slice(); st.kt = st.k.slice(); }
+    if (q.has('play')) st.playT = +q.get('play');
+    if (q.has('k')){ const k = q.get('k').split(',').map(Number); if (k.length === 3 && k.every(v => v >= 0 && v <= 10)){ st.k = k; st.kt = k.slice(); } }
+  },
+});
+// black only, straight lines: no colour swatches, no wobble slider, no hand-drawn displacement
+document.querySelector('.controls').style.display = 'none';
+document.getElementById('wob').setAttribute('scale', '0');
+document.getElementById('fdefs').insertAdjacentHTML('beforeend',
+  `<g id="ztop">${ZTOP}</g><clipPath id="zcf"><rect x="0" y="9" width="267" height="129"/></clipPath><clipPath id="zcs"><rect x="0" y="138" width="267" height="210"/></clipPath>`
+  + `<pattern id="glit" width="1.1" height="1.1" patternUnits="userSpaceOnUse"><rect width="1.1" height="1.1" fill="#d61f1f"/><circle cx=".25" cy=".3" r=".13" fill="#ff8f86"/><circle cx=".8" cy=".75" r=".1" fill="#ffffff" opacity=".7"/><circle cx=".7" cy=".2" r=".07" fill="#8f0f10"/></pattern>`
+  + `<radialGradient id="zled"><stop offset="0" stop-color="#ff4a3a" stop-opacity=".75"/><stop offset="1" stop-color="#ff4a3a" stop-opacity="0"/></radialGradient>`);
+// embutida no site: fundo transparente, a figura ocupa a janela inteira, sem título, botões nem avisos próprios
+document.head.insertAdjacentHTML('beforeend', `<style>
+  html,body{height:100%;overflow:hidden}
+  body{background:none;padding:0;display:block}
+  header,.actions,#readout,.toast,.controls{display:none!important}
+  .stage{position:absolute;inset:0;max-width:none}
+  #fig{width:100%;height:100%;max-width:none;margin:0}</style>`);
+// enquadramento centrado no corpo do pedal (os cabos podem sair do quadro). Virado ("Ver conexões"),
+// o quadro acompanha o pedal até mostrar os plugues de cima; st.tilt vai de 0 a 1 durante a animação
+const VB_DEITADO = [37.85, 9.35, 68, 68], VB_VIRADO = [51.1, 0, 69, 69];
+let vbTilt = -1;
+(function frameFig(){
+  const t = ui.st.tilt;
+  if (t !== vbTilt){
+    vbTilt = t;
+    const e = t * t * (3 - 2 * t);
+    document.getElementById('fig').setAttribute('viewBox', VB_DEITADO.map((v, i) => (v + (VB_VIRADO[i] - v) * e).toFixed(2)).join(' '));
+  }
+  requestAnimationFrame(frameFig);
+})();
+
+/* ---------- conversa com a página ---------- */
+function tell(type, extra){
+  if (parent === window) return;
+  const st = ui.st;
+  parent.postMessage(Object.assign({ ft: 'zero-figura', type, k: st.kt.map(Math.round), mode: st.mode, tilt: st.tiltT, on: st.on }, extra || {}), '*');
+}
+addEventListener('message', e => {
+  const m = e.data, st = ui.st;
+  if (e.source !== parent || !m || m.ft !== 'zero-pagina') return;
+  if (m.type === 'knob' && st.kt[m.i] != null){ st.kt[m.i] = Math.max(0, Math.min(10, +m.v)); st.preset = null; kick(); }
+  if (m.type === 'mode' && (m.mode === 'SI' || m.mode === 'GE')){ st.mode = m.mode; kick(); }
+  if (m.type === 'tilt' && !st.queue.length){ st.tiltT = st.tiltT ? 0 : 1; kick(); }
+  tell('state');
+});
+ui.render();
+tell('ready');
+</script></body></html>

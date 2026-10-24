@@ -1,0 +1,304 @@
+{
+  "pecas": [
+    {
+      "id": "megalodon",
+      "numero": "FT-001",
+      "nome": "Megalodon",
+      "nomeCientifico": "Carcharocles saturatus",
+      "tipo": "pedal",
+      "classe": { "pt": "Pedal, overdrive/distortion", "en": "Pedal, overdrive/distortion" },
+      "resumo": {
+        "pt": "Overdrive e distortion de dois estágios, inspirado no clássico overdrive boutique. Vai do crunch macio a uma distorção cheia de mordida girando um knob só.",
+        "en": "Two-stage overdrive and distortion inspired by the classic boutique overdrive. It goes from a soft crunch to a distortion with real bite, all with one knob."
+      },
+      "habitat": { "pt": "Do blues sujo ao rock pesado", "en": "From dirty blues to heavy rock" },
+      "dieta": { "pt": "Guitarras, de preferência altas", "en": "Guitars, preferably loud" },
+      "situacao": { "pt": "Primeira edição, sob encomenda", "en": "First edition, made to order" },
+      "carimbo": { "pt": "1ª edição", "en": "1st edition" },
+      "acao": "encomendar",
+      "exposicao": "exposicao-megalodon",
+      "foto": "megalodon-angle",
+      "fotoAlt": {
+        "pt": "Megalodon em ângulo sobre uma mesa de madeira.",
+        "en": "Megalodon at an angle on a wooden table."
+      },
+      "figura": "assets/figuras/megalodon.html",
+      "figuraEstatica": "assets/figuras/megalodon-estatico",
+      "figuraVirar": false,
+      "selos": [
+        { "pt": "Pedal 100% analógico", "en": "100% analog pedal" },
+        { "pt": "Pedal handmade", "en": "Handmade pedal" },
+        { "pt": "True bypass", "en": "True bypass" }
+      ],
+      "painel": {
+        "knobs": [
+          {
+            "nome": "Level",
+            "inicio": 5,
+            "texto": {
+              "pt": "é o volume de saída. Deixa no mesmo nível do som limpo ou empurra o amp pra frente.",
+              "en": "is the output volume. Match your clean sound or push the amp harder."
+            }
+          },
+          {
+            "nome": "Sustain",
+            "inicio": 5,
+            "texto": {
+              "pt": "é o drive principal. Quanto mais pra direita, mais saturação e mais tempo a nota segura.",
+              "en": "is the main drive. The further right, the more saturation and the longer notes hold."
+            }
+          },
+          {
+            "nome": "Hi-Cut",
+            "inicio": 5,
+            "texto": {
+              "pt": "controla o brilho. Pra direita, mais brilhante e definido. Pra esquerda, mais quente e suave.",
+              "en": "shapes the brightness. To the right, brighter and more defined. To the left, warmer and smoother."
+            }
+          },
+          {
+            "nome": "Stage 2",
+            "inicio": 5,
+            "texto": {
+              "pt": "solta a segunda fileira de dentes, com até 9 dB a mais de ganho. Todo pra esquerda, só overdrive. Girando pra direita, vira distorção, com mais peso e presença.",
+              "en": "releases the second row of teeth, with up to 9 dB of extra gain. All the way left, pure overdrive. Turn it right and it becomes distortion, with more weight and presence."
+            }
+          }
+        ]
+      },
+      "ficha": {
+        "desenho": "assets/fichas/megalodon-colorido.svg",
+        "edicao": { "pt": "Pedal primeira edição", "en": "First edition pedal" },
+        "controles": [
+          {
+            "nome": "level",
+            "funcao": { "pt": "volume", "en": "volume" },
+            "texto": {
+              "pt": ["Define o volume do pedal quando ele está ligado.", "Gire para a direita para aumentar o volume e para a esquerda para diminuir."],
+              "en": ["Sets the pedal's volume when it is on.", "Turn right to raise the volume and left to lower it."]
+            }
+          },
+          {
+            "nome": "sustain",
+            "funcao": { "pt": "drive principal", "en": "main drive" },
+            "texto": {
+              "pt": ["Controla a quantidade de overdrive do pedal.", "Quanto mais você gira para a direita, mais saturado e com mais sustain o som fica.", "Em regulagens baixas, o som é leve e dinâmico. Em regulagens altas, fica mais forte e encorpado."],
+              "en": ["Controls how much overdrive the pedal adds.", "The further right you turn it, the more saturated the sound gets and the longer notes sustain.", "At low settings the sound is light and dynamic. At high settings it gets stronger and fuller."]
+            }
+          },
+          {
+            "nome": "hi-cut",
+            "funcao": { "pt": "brilho", "en": "brightness" },
+            "texto": {
+              "pt": ["Ajusta a quantidade de agudos do som.", "Para a direita, o som fica mais brilhante e definido.", "Para a esquerda, o som fica mais quente e suave."],
+              "en": ["Sets how much treble comes through.", "To the right, the sound gets brighter and more defined.", "To the left, it gets warmer and smoother."]
+            }
+          },
+          {
+            "nome": "stage 2",
+            "funcao": { "pt": "distorção adicional", "en": "extra distortion" },
+            "texto": {
+              "pt": ["Adiciona 9 dB de ganho, levando o efeito overdrive para uma distorção.", "Para a esquerda, você tem apenas o overdrive suave do pedal.", "Ao girar para a direita, o som ganha mais agressividade, peso e presença."],
+              "en": ["Adds 9 dB of gain, pushing the overdrive into distortion.", "All the way left, you only get the pedal's smooth overdrive.", "Turn it right and the sound gains aggression, weight and presence."]
+            }
+          }
+        ]
+      },
+      "videos": [
+        { "titulo": { "pt": "Megalodon na bancada de testes", "en": "Megalodon on the test bench" }, "youtube": "" }
+      ],
+      "audios": [
+        { "titulo": { "pt": "Desligado", "en": "Bypassed" }, "arquivo": "" },
+        { "titulo": { "pt": "Sustain baixo", "en": "Low sustain" }, "arquivo": "" },
+        { "titulo": { "pt": "Sustain alto", "en": "High sustain" }, "arquivo": "" },
+        { "titulo": { "pt": "Stage 2 no máximo", "en": "Stage 2 maxed" }, "arquivo": "" }
+      ]
+    },
+    {
+      "id": "kraken",
+      "numero": "FT-002",
+      "nome": "Kraken",
+      "nomeCientifico": "Architeuthis valvularis",
+      "tipo": "amplificador",
+      "classe": { "pt": "Amplificador valvulado", "en": "Tube amplifier" },
+      "resumo": {
+        "pt": "Cabeçote valvulado inspirado no clássico britânico dos anos 80. Ainda está saindo da rocha: primeiro em cabeçote, depois também em combo.",
+        "en": "Tube amp head inspired by the classic British amp of the 80s. It's still coming out of the rock: head first, then a combo too."
+      },
+      "habitat": { "pt": "Hard rock, punk e afins", "en": "Hard rock, punk and friends" },
+      "dieta": { "pt": "Power chords e volume alto", "en": "Power chords at high volume" },
+      "situacao": { "pt": "Em desenvolvimento", "en": "In development" },
+      "carimbo": { "pt": "Em escavação", "en": "Excavating" },
+      "acao": "lista-de-espera",
+      "exposicao": "exposicao-kraken",
+      "foto": "",
+      "figura": "assets/figuras/kraken.html",
+      "figuraEstatica": "assets/figuras/kraken-estatico",
+      "figuraVirar": false,
+      "selos": [
+        { "pt": "Amplificador 100% valvulado", "en": "100% tube amplifier" },
+        { "pt": "Amplificador handmade", "en": "Handmade amplifier" }
+      ],
+      "painel": {
+        "knobs": [
+          {
+            "nome": "Presence",
+            "figuraKnob": 0,
+            "inicio": 5,
+            "texto": {
+              "pt": "realça os agudos mais altos lá na etapa de potência, dando brilho e ar ao som. Pra esquerda, mais escuro e macio. Pra direita, mais cortante.",
+              "en": "lifts the very top end in the power amp, adding sparkle and air. To the left, darker and smoother. To the right, more cutting."
+            }
+          },
+          {
+            "nome": "Master Volume",
+            "figuraKnob": 4,
+            "inicio": 0,
+            "texto": {
+              "pt": "é o volume geral do amplificador, depois da distorção. Com o Pre-amp alto e o Master baixo, dá pra ter o som saturado em volume de casa.",
+              "en": "is the amp's overall volume, after the distortion. With the Pre-amp high and the Master low, you get the saturated sound at bedroom volume."
+            }
+          },
+          {
+            "nome": "Pre-amp Volume",
+            "figuraKnob": 5,
+            "inicio": 0,
+            "texto": {
+              "pt": "é o ganho do pré-amplificador: quanto o sinal satura antes do Master. Baixo, mais limpo. Alto, crunch e distorção cheia.",
+              "en": "is the preamp gain: how hard the signal saturates before the Master. Low, cleaner. High, crunch and full distortion."
+            }
+          }
+        ]
+      },
+      "ficha": null,
+      "videos": [
+        { "titulo": { "pt": "Primeiro teste do Kraken", "en": "Kraken's first test" }, "youtube": "" }
+      ],
+      "audios": [
+        { "titulo": { "pt": "Limpo", "en": "Clean" }, "arquivo": "" },
+        { "titulo": { "pt": "Crunch", "en": "Crunch" }, "arquivo": "" },
+        { "titulo": { "pt": "Ganho alto", "en": "High gain" }, "arquivo": "" }
+      ]
+    },
+    {
+      "id": "zero",
+      "numero": "FT-L01",
+      "nome": "ZeRO",
+      "subtitulo": "Alcino Edition",
+      "nomeCientifico": "Zerodon alcinoi",
+      "tipo": "pedal",
+      "classe": { "pt": "Pedal sob medida, Laboratório Âmbar", "en": "Custom pedal, Amber Lab" },
+      "resumo": {
+        "pt": "Pedal criado para o ZeRO a partir do disco Alcino, com Volume, Tone, Gain e uma chave Si/Ge pra alternar entre silício e germânio.",
+        "en": "A pedal built for ZeRO based on the album Alcino, with Volume, Tone, Gain and a Si/Ge switch to swap between silicon and germanium."
+      },
+      "criadoPara": { "texto": "@iamzerobadass", "link": "https://instagram.com/iamzerobadass" },
+      "situacao": { "pt": "Em desenvolvimento", "en": "In development" },
+      "carimbo": { "pt": "Peça única", "en": "One of a kind" },
+      "acao": "laboratorio",
+      "exposicao": "exposicao-zero",
+      "foto": "zero-front",
+      "fotoAlt": {
+        "pt": "Pedal ZeRO Alcino Edition, preto, com o nome ZeRO em letras brancas e um raio vermelho.",
+        "en": "ZeRO Alcino Edition pedal, black, with the name ZeRO in white letters and a red lightning bolt."
+      },
+      "figura": "assets/figuras/zero.html",
+      "figuraEstatica": "assets/figuras/zero-estatico",
+      "selos": [
+        { "pt": "Pedal 100% analógico", "en": "100% analog pedal" },
+        { "pt": "Pedal handmade", "en": "Handmade pedal" },
+        { "pt": "True bypass", "en": "True bypass" }
+      ],
+      "painel": {
+        "knobs": [
+          {
+            "nome": "Volume",
+            "texto": {
+              "pt": "controla o volume de saída do pedal, o nível do sinal que chega no amplificador.",
+              "en": "sets the pedal's output volume, the level of the signal that reaches your amp."
+            }
+          },
+          {
+            "nome": "Tone",
+            "texto": {
+              "pt": "cuida do brilho e da tonalidade. Pra esquerda, mais encorpado e fechado. Pra direita, mais aberto e brilhante.",
+              "en": "shapes the brightness and color. To the left, fuller and darker. To the right, more open and bright."
+            }
+          },
+          {
+            "nome": "Gain",
+            "texto": {
+              "pt": "regula a saturação, de um overdrive leve e quente até uma distorção agressiva, com mais sustain e presença.",
+              "en": "sets the saturation, from a light, warm overdrive to an aggressive distortion with more sustain and presence."
+            }
+          }
+        ],
+        "chave": {
+          "nome": "Si / Ge",
+          "opcoes": [
+            {
+              "valor": "SI",
+              "nome": "Si",
+              "texto": {
+                "pt": "é o silício: timbre mais moderno, definido e aberto, com mais agressividade. Favorece distorções de alto ganho.",
+                "en": "is silicon: a more modern, defined and open tone with more aggression. It suits high-gain distortion."
+              }
+            },
+            {
+              "valor": "GE",
+              "nome": "Ge",
+              "texto": {
+                "pt": "é o germânio: timbre mais vintage, quente e áspero, com cara de fuzz clássico e uma saturação mais orgânica.",
+                "en": "is germanium: a more vintage tone, warm and gritty, with a classic fuzz character and a more organic saturation."
+              }
+            }
+          ]
+        }
+      },
+      "ficha": {
+        "desenho": "assets/fichas/zero-arte.svg",
+        "controles": [
+          {
+            "nome": "volume",
+            "funcao": { "pt": "volume de saída", "en": "output level" },
+            "texto": {
+              "pt": ["Controla o volume de saída do pedal, permitindo ajustar o nível do sinal enviado ao amplificador."],
+              "en": ["Controls the pedal's output volume, so you can set the level of the signal sent to the amplifier."]
+            }
+          },
+          {
+            "nome": "gain",
+            "funcao": { "pt": "saturação", "en": "saturation" },
+            "texto": {
+              "pt": ["Regula a intensidade da saturação, indo de um overdrive leve e quente a uma distorção mais agressiva, com maior sustain e presença."],
+              "en": ["Sets the amount of saturation, from a light, warm overdrive to a more aggressive distortion with more sustain and presence."]
+            }
+          },
+          {
+            "nome": "si / ge",
+            "funcao": { "pt": "chave de caráter sonoro", "en": "voicing switch" },
+            "texto": {
+              "pt": ["Si (silício): timbre mais moderno, definido e aberto, com maior agressividade e uma sonoridade que favorece distorções de alto ganho.", "Ge (germânio): timbre mais vintage, quente e áspero, com características clássicas de fuzz e uma saturação mais orgânica."],
+              "en": ["Si (silicon): a more modern, defined and open tone, with more aggression and a voice that suits high-gain distortion.", "Ge (germanium): a more vintage tone, warm and gritty, with classic fuzz character and a more organic saturation."]
+            }
+          },
+          {
+            "nome": "tone",
+            "funcao": { "pt": "brilho", "en": "brightness" },
+            "texto": {
+              "pt": ["Controla o brilho e a tonalidade do som, do timbre mais encorpado e fechado ao mais aberto e brilhante."],
+              "en": ["Controls the brightness and color of the sound, from a fuller, darker tone to a more open, brighter one."]
+            }
+          }
+        ]
+      },
+      "videos": [
+        { "titulo": { "pt": "ZeRO e o Alcino Edition", "en": "ZeRO and the Alcino Edition" }, "youtube": "" }
+      ],
+      "audios": [
+        { "titulo": { "pt": "Silício", "en": "Silicon" }, "arquivo": "" },
+        { "titulo": { "pt": "Germânio", "en": "Germanium" }, "arquivo": "" }
+      ]
+    }
+  ]
+}

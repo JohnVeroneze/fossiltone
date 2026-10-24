@@ -70,14 +70,14 @@
       "zero.p2": "Volume, Tone e Gain, uma chave Si/Ge pra alternar entre silício e germânio, e a tracklist do disco gravada no fundo da caixa.",
       "zero.status": "Em desenvolvimento",
       "form.title": "Crie sua espécie",
-      "form.lead": "Conte o que você procura. A ficha ao lado vai se montando, e o botão abre o WhatsApp com tudo preenchido. A gente responde com o orçamento.",
+      "form.lead": "Conte o que você procura. A ficha ao lado vai se montando. Envie e a gente responde com o orçamento pelo WhatsApp ou por e-mail.",
       "form.type": "O que vamos criar?", "form.pedal": "Pedal", "form.amp": "Amplificador",
       "form.instrument": "Pra qual instrumento?", "form.guitar": "Guitarra", "form.bass": "Baixo",
       "form.custom": "O que você quer personalizar?", "form.art": "Arte e pintura", "form.mods": "Mods de circuito",
       "form.ref": "Timbre de referência", "form.refPh": "Um pedal, um amp, um disco, uma banda",
       "form.details": "Conte mais (opcional)", "form.detailsPh": "Estilo que você toca, o que falta no seu som, ideia de arte",
       "form.name": "Seu nome",
-      "form.send": "Enviar pelo WhatsApp", "form.hint": "O WhatsApp abre com a mensagem pronta. É só enviar.",
+      "form.send": "Enviar ficha",
       "form.stampDraft": "Rascunho", "form.stampReady": "Catalogada",
       "form.none": "Nenhuma, quero o clássico",
       "wa.hello": "Olá, Fossil Tone! Quero criar uma nova espécie.",
@@ -153,6 +153,83 @@
       "fig.ampJackIn": "O cabo já está em {jack}",
       "panel.aria": "Controles do {name}",
       "selos.aria": "Características",
+      "nav.restore": "Manutenção",
+      "menu.restore": "Manutenção",
+      "depth.permian": "Permiano",
+      "form.whatsapp": "WhatsApp",
+      "form.email": "E-mail",
+      "form.contactHint": "Usamos seu contato só para responder o seu pedido.",
+      "form.waLink": "Prefiro falar pelo WhatsApp",
+      "form.sending": "Enviando…",
+      "form.done": "Ficha recebida! A gente responde com o orçamento pelo WhatsApp ou por e-mail.",
+      "form.error": "Não deu pra enviar agora.",
+      "form.errorLink": "Enviar pelo WhatsApp",
+      "form.tooMany": "Recebemos vários envios seguidos. Tente de novo em alguns minutos.",
+      "form.invalidName": "Escreva seu nome.",
+      "form.invalidWa": "Escreva um WhatsApp com DDD.",
+      "form.invalidEmail": "Escreva um e-mail válido.",
+      "form.invalidRef": "Conte um timbre de referência.",
+      "form.again": "Enviar outra ficha",
+      "form.stampSent": "Recebida",
+      "wait.whatsappLabel": "WhatsApp (opcional)",
+      "wait.invalidWa": "Confira o WhatsApp, com DDD.",
+      "rest.kicker": "Oficina de restauração",
+      "rest.title": "Manutenção",
+      "rest.lead": "Fóssil também precisa de cuidado. Anos de palco, ensaio alto e estrada cansam qualquer pedal ou amplificador.",
+      "rest.p": "A gente diagnostica, troca o que for preciso e devolve pronto pra tocar. Atendemos peças da Fossil Tone e de outras marcas.",
+      "rest.shopTitle": "Peças de reposição",
+      "rest.shopLead": "Knobs, chaves, jacks e válvulas pra quem prefere trocar em casa. Escolha as peças e a gente confirma estoque e frete.",
+      "rest.loading": "Abrindo o almoxarifado…",
+      "rest.empty": "O catálogo de peças está sendo montado. Descreva abaixo a peça que você procura.",
+      "rest.loadError": "Não deu pra abrir o catálogo agora. Descreva abaixo a peça que você procura.",
+      "rest.add": "Adicionar",
+      "rest.added": "Na lista",
+      "rest.addAria": "Adicionar {name} à lista",
+      "rest.remove": "Tirar {name} da lista",
+      "rest.soldOut": "Esgotado",
+      "rest.onOrder": "Sob encomenda",
+      "rest.priceAsk": "Sob consulta",
+      "rest.listTitle": "Sua lista de peças",
+      "rest.qty": "Quantidade de {name}",
+      "rest.other": "Precisa de outra peça? (opcional)",
+      "rest.otherPh": "Ex.: knob creme para eixo liso de 6 mm",
+      "rest.total": "Total estimado",
+      "rest.totalNote": "sem frete",
+      "rest.shopSend": "Pedir as peças",
+      "rest.shopNeed": "Escolha uma peça ou descreva a que você precisa.",
+      "rest.shopDone": "Pedido recebido! A gente confirma estoque, frete e pagamento pelo WhatsApp ou por e-mail.",
+      "rest.fixTitle": "Pedir manutenção",
+      "rest.fixLead": "Conte o que está acontecendo. A gente responde com o diagnóstico inicial e o orçamento.",
+      "rest.equip": "O que precisa de manutenção?",
+      "rest.pedal": "Pedal",
+      "rest.amp": "Amplificador",
+      "rest.model": "Marca e modelo",
+      "rest.modelPh": "Ex.: Fossil Tone Megalodon, Marshall JCM800",
+      "rest.problems": "O que está acontecendo?",
+      "rest.pNoSound": "Sem som",
+      "rest.pPower": "Não liga",
+      "rest.pNoise": "Chiado ou ruído",
+      "rest.pIntermittent": "Falha de vez em quando",
+      "rest.pKnob": "Knob ou potenciômetro",
+      "rest.pJack": "Jack ou conector",
+      "rest.pSwitch": "Chave ou footswitch",
+      "rest.pTube": "Válvula",
+      "rest.pOther": "Outro",
+      "rest.age": "Há quanto tempo está em uso?",
+      "rest.agePick": "Escolha",
+      "rest.ageLt1": "Menos de 1 ano",
+      "rest.age1": "1 a 3 anos",
+      "rest.age3": "3 a 10 anos",
+      "rest.age10": "Mais de 10 anos",
+      "rest.ageUnknown": "Não sei",
+      "rest.desc": "Descreva o problema",
+      "rest.descPh": "Quando começou, em que situação acontece, se já foi aberto antes",
+      "rest.fixSend": "Enviar pedido de manutenção",
+      "rest.fixDone": "Pedido recebido! A gente responde pelo WhatsApp ou por e-mail com os próximos passos.",
+      "rest.invalidModel": "Diga a marca e o modelo.",
+      "rest.invalidDesc": "Conte o que está acontecendo.",
+      "rest.waFix": "Olá, Fossil Tone! Preciso de manutenção.",
+      "rest.waParts": "Olá, Fossil Tone! Quero comprar peças de reposição.",
       "footer.joke": "Nenhum dinossauro foi ferido na fabricação destes pedais."
     },
     en: {
@@ -216,14 +293,14 @@
       "zero.p2": "Volume, Tone and Gain, a Si/Ge switch to swap between silicon and germanium, and the album tracklist on the back of the enclosure.",
       "zero.status": "In development",
       "form.title": "Create your species",
-      "form.lead": "Tell us what you're after. The card fills in as you go, and the button opens WhatsApp with everything filled in. We'll reply with a quote.",
+      "form.lead": "Tell us what you're after. The card fills in as you go. Send it and we'll reply with a quote on WhatsApp or by email.",
       "form.type": "What are we creating?", "form.pedal": "Pedal", "form.amp": "Amplifier",
       "form.instrument": "For which instrument?", "form.guitar": "Guitar", "form.bass": "Bass",
       "form.custom": "What do you want to customize?", "form.art": "Art and paint", "form.mods": "Circuit mods",
       "form.ref": "Reference tone", "form.refPh": "A pedal, an amp, a record, a band",
       "form.details": "Tell us more (optional)", "form.detailsPh": "What you play, what's missing from your sound, art ideas",
       "form.name": "Your name",
-      "form.send": "Send on WhatsApp", "form.hint": "WhatsApp opens with the message ready. Just hit send.",
+      "form.send": "Send card",
       "form.stampDraft": "Draft", "form.stampReady": "Catalogued",
       "form.none": "None, I want the classic",
       "wa.hello": "Hi, Fossil Tone! I'd like to create a new species.",
@@ -299,6 +376,83 @@
       "fig.ampJackIn": "The cable is already in {jack}",
       "panel.aria": "{name} controls",
       "selos.aria": "Features",
+      "nav.restore": "Repairs",
+      "menu.restore": "Repairs",
+      "depth.permian": "Permian",
+      "form.whatsapp": "WhatsApp",
+      "form.email": "Email",
+      "form.contactHint": "We only use your contact to reply to your request.",
+      "form.waLink": "I'd rather talk on WhatsApp",
+      "form.sending": "Sending…",
+      "form.done": "Card received! We'll reply with a quote on WhatsApp or by email.",
+      "form.error": "We couldn't send it right now.",
+      "form.errorLink": "Send it on WhatsApp",
+      "form.tooMany": "We got several submissions in a row. Please try again in a few minutes.",
+      "form.invalidName": "Please write your name.",
+      "form.invalidWa": "Please enter a WhatsApp number with area code.",
+      "form.invalidEmail": "Please enter a valid email.",
+      "form.invalidRef": "Tell us a reference tone.",
+      "form.again": "Send another card",
+      "form.stampSent": "Received",
+      "wait.whatsappLabel": "WhatsApp (optional)",
+      "wait.invalidWa": "Please check the WhatsApp number, with area code.",
+      "rest.kicker": "Restoration workshop",
+      "rest.title": "Repairs",
+      "rest.lead": "Fossils need care too. Years of gigs, loud rehearsals and the road wear out any pedal or amp.",
+      "rest.p": "We diagnose it, replace what's needed and send it back ready to play. We service Fossil Tone gear and other brands.",
+      "rest.shopTitle": "Replacement parts",
+      "rest.shopLead": "Knobs, switches, jacks and tubes for those who'd rather swap them at home. Pick your parts and we'll confirm stock and shipping.",
+      "rest.loading": "Opening the parts room…",
+      "rest.empty": "The parts catalog is still being put together. Describe the part you need below.",
+      "rest.loadError": "We couldn't open the catalog right now. Describe the part you need below.",
+      "rest.add": "Add",
+      "rest.added": "On the list",
+      "rest.addAria": "Add {name} to the list",
+      "rest.remove": "Remove {name} from the list",
+      "rest.soldOut": "Sold out",
+      "rest.onOrder": "Made to order",
+      "rest.priceAsk": "Price on request",
+      "rest.listTitle": "Your parts list",
+      "rest.qty": "Quantity of {name}",
+      "rest.other": "Need another part? (optional)",
+      "rest.otherPh": "E.g. cream knob for a 6 mm smooth shaft",
+      "rest.total": "Estimated total",
+      "rest.totalNote": "before shipping",
+      "rest.shopSend": "Request these parts",
+      "rest.shopNeed": "Pick a part or describe the one you need.",
+      "rest.shopDone": "Request received! We'll confirm stock, shipping and payment on WhatsApp or by email.",
+      "rest.fixTitle": "Request a repair",
+      "rest.fixLead": "Tell us what's going on. We'll reply with a first diagnosis and a quote.",
+      "rest.equip": "What needs repair?",
+      "rest.pedal": "Pedal",
+      "rest.amp": "Amplifier",
+      "rest.model": "Brand and model",
+      "rest.modelPh": "E.g. Fossil Tone Megalodon, Marshall JCM800",
+      "rest.problems": "What's going on?",
+      "rest.pNoSound": "No sound",
+      "rest.pPower": "Won't turn on",
+      "rest.pNoise": "Hiss or noise",
+      "rest.pIntermittent": "Cuts out now and then",
+      "rest.pKnob": "Knob or pot",
+      "rest.pJack": "Jack or connector",
+      "rest.pSwitch": "Switch or footswitch",
+      "rest.pTube": "Tube",
+      "rest.pOther": "Something else",
+      "rest.age": "How long has it been in use?",
+      "rest.agePick": "Choose",
+      "rest.ageLt1": "Less than a year",
+      "rest.age1": "1 to 3 years",
+      "rest.age3": "3 to 10 years",
+      "rest.age10": "Over 10 years",
+      "rest.ageUnknown": "Not sure",
+      "rest.desc": "Describe the problem",
+      "rest.descPh": "When it started, when it happens, whether it's been opened before",
+      "rest.fixSend": "Send repair request",
+      "rest.fixDone": "Request received! We'll reply on WhatsApp or by email with the next steps.",
+      "rest.invalidModel": "Tell us the brand and model.",
+      "rest.invalidDesc": "Tell us what's going on.",
+      "rest.waFix": "Hi, Fossil Tone! I need a repair.",
+      "rest.waParts": "Hi, Fossil Tone! I'd like to buy replacement parts.",
       "footer.joke": "No dinosaurs were harmed in the making of these pedals."
     }
   };
@@ -353,6 +507,7 @@
     ["colecao", 340, "depth.miocene"],
     ["laboratorio", 1450, "depth.jurassic"],
     ["orcamento", 2100, "depth.triassic"],
+    ["manutencao", 2900, "depth.permian"],
     ["contato", 6000, "depth.magma"]
   ];
   var topbar = document.getElementById("topbar");
@@ -615,10 +770,83 @@
   });
   onLang(function () { showKnob(currentKnob); });
 
+  /* ---------- envio dos formulários para o painel ----------
+     Os pedidos caem na caixa de entrada do painel admin (tabela "contatos" do Supabase).
+     A chave publicável só permite criar contatos e ler produtos publicados: quem lê os
+     pedidos é o painel, depois do login com senha e Google Authenticator. */
+
+  var API = "https://mlyahqfoslwzbwjoxaas.supabase.co/rest/v1/";
+  var API_KEY = "sb_publishable_VAVTupljhEVyXcpzL5Bj_w_9WB8JEH7";
+  var EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+  // "(19) 99122-6377" vira "5519991226377"; números de fora do Brasil vão com o DDI
+  function whatsappDigits(v) {
+    var d = String(v || "").replace(/\D/g, "");
+    if ((d.length === 10 || d.length === 11) && d.indexOf("55") !== 0) d = "55" + d;
+    return /^\d{10,15}$/.test(d) ? d : null;
+  }
+
+  // resolve "ok", "duplicado" (já estava na lista) ou "limite" (muitos envios seguidos)
+  function sendContact(data) {
+    data.idioma = lang;
+    return fetch(API + "contatos", {
+      method: "POST",
+      headers: { apikey: API_KEY, "Content-Type": "application/json", Prefer: "return=minimal" },
+      body: JSON.stringify(data)
+    }).then(function (r) {
+      if (r.ok) return "ok";
+      if (r.status === 409) return "duplicado";
+      return r.json().catch(function () { return {}; }).then(function (j) {
+        if (/muitos envios/.test(j.message || "")) return "limite";
+        throw new Error(j.message || String(r.status));
+      });
+    });
+  }
+
+  function apiGet(path) {
+    return fetch(API + path, { headers: { apikey: API_KEY } }).then(function (r) {
+      if (!r.ok) throw new Error(String(r.status));
+      return r.json();
+    });
+  }
+
+  // marca o primeiro campo com problema e devolve a chave do aviso
+  function checkFields(rules) {
+    for (var i = 0; i < rules.length; i++) {
+      var r = rules[i];
+      r[0].removeAttribute("aria-invalid");
+    }
+    for (var j = 0; j < rules.length; j++) {
+      if (!rules[j][1]()) {
+        rules[j][0].setAttribute("aria-invalid", "true");
+        rules[j][0].focus();
+        return rules[j][2];
+      }
+    }
+    return "";
+  }
+
+  // aviso abaixo do botão; no erro, oferece o WhatsApp com a mensagem pronta
+  function formStatus(el, key, isError, waText) {
+    el.classList.toggle("is-error", !!isError);
+    el.textContent = key ? t(key) : "";
+    if (waText) {
+      var a = document.createElement("a");
+      a.href = WA + "?text=" + encodeURIComponent(waText);
+      a.target = "_blank"; a.rel = "noopener";
+      a.textContent = t("form.errorLink");
+      el.appendChild(document.createTextNode(" "));
+      el.appendChild(a);
+    }
+  }
+
   /* ---------- crie sua espécie ---------- */
 
   var form = document.getElementById("species-form");
   var sendLink = document.getElementById("send-wa");
+  var sendBtn = document.getElementById("send-form");
+  var formStatusEl = document.getElementById("form-status");
+  var formSent = false;
   var catalogNo = "FT-" + String(100 + Math.floor(Math.random() * 900));
   var wasReady = false;
 
@@ -637,7 +865,9 @@
       custom: fd.getAll("custom"),
       ref: (fd.get("ref") || "").trim(),
       details: (fd.get("details") || "").trim(),
-      name: (fd.get("name") || "").trim()
+      name: (fd.get("name") || "").trim(),
+      whatsapp: (fd.get("whatsapp") || "").trim(),
+      email: (fd.get("email") || "").trim()
     };
   }
 
@@ -666,6 +896,7 @@
     if (d.ref) lines.push(t("wa.ref") + ": " + d.ref);
     if (d.details) lines.push(t("wa.details") + ": " + d.details);
     if (d.name) lines.push("", t("wa.name") + ": " + d.name);
+    if (d.email) lines.push(t("form.email") + ": " + d.email);
     return lines.join("\n");
   }
 
@@ -686,7 +917,7 @@
     // a ficha é carimbada quando tem nome e referência
     var ready = !!(d.name && d.ref);
     var stamp = document.getElementById("nc-stamp");
-    stamp.textContent = t(ready ? "form.stampReady" : "form.stampDraft");
+    stamp.textContent = t(formSent ? "form.stampSent" : ready ? "form.stampReady" : "form.stampDraft");
     if (ready && !wasReady) { stamp.classList.remove("is-ready"); void stamp.offsetWidth; }
     stamp.classList.toggle("is-ready", ready);
     wasReady = ready;
@@ -694,10 +925,58 @@
     sendLink.href = WA + "?text=" + encodeURIComponent(waMessage(d));
   }
 
-  form.addEventListener("input", updateCard);
+  function resetSent() {
+    if (!formSent) return;
+    formSent = false;
+    sendBtn.textContent = t("form.send");
+  }
+
+  form.addEventListener("input", function () { resetSent(); formStatus(formStatusEl, ""); updateCard(); });
   form.addEventListener("change", updateCard);
-  form.addEventListener("submit", function (e) { e.preventDefault(); sendLink.focus(); });
-  onLang(updateCard);
+  form.addEventListener("submit", function (e) {
+    e.preventDefault();
+    if (sendBtn.disabled) return;
+    var d = readForm();
+    var waNum = whatsappDigits(d.whatsapp);
+    var problem = checkFields([
+      [form.elements.name, function () { return d.name.length >= 2; }, "form.invalidName"],
+      [form.elements.ref, function () { return d.ref.length >= 2; }, "form.invalidRef"],
+      [form.elements.whatsapp, function () { return !!waNum; }, "form.invalidWa"],
+      [form.elements.email, function () { return EMAIL_RE.test(d.email); }, "form.invalidEmail"]
+    ]);
+    if (problem) { formStatus(formStatusEl, problem, true); return; }
+    if (form.elements.site.value) { formStatus(formStatusEl, "form.done"); return; }   // robô
+
+    sendBtn.disabled = true;
+    formStatus(formStatusEl, "form.sending");
+    sendContact({
+      tipo: "especie",
+      nome: d.name,
+      email: d.email,
+      whatsapp: waNum,
+      produto: d.type === "amp" ? "amplificador" : "pedal",
+      mensagem: d.details || null,
+      dados: {
+        ficha: catalogNo,
+        nomeCientifico: scientificName(d),
+        tipo: d.type === "amp" ? "amplificador" : "pedal",
+        instrumento: d.instrument === "bass" ? "baixo" : "guitarra",
+        personalizar: d.custom.map(function (c) { return c === "art" ? "arte" : "mods"; }),
+        referencia: d.ref
+      }
+    }).then(function (res) {
+      if (res === "limite") { formStatus(formStatusEl, "form.tooMany", true); return; }
+      formSent = true;
+      updateCard();
+      formStatus(formStatusEl, "form.done");
+      // a próxima ficha ganha outro número
+      catalogNo = "FT-" + String(100 + Math.floor(Math.random() * 900));
+      sendBtn.textContent = t("form.again");
+    }).catch(function () {
+      formStatus(formStatusEl, "form.error", true, waMessage(d));
+    }).then(function () { sendBtn.disabled = false; });
+  });
+  onLang(function () { updateCard(); if (formSent) sendBtn.textContent = t("form.again"); });
 
   // "Encomendar um Megalodon" já preenche o formulário
   document.querySelectorAll("[data-preset]").forEach(function (a) {
@@ -988,6 +1267,12 @@
     lang: function () { return lang; },
     onLang: onLang,
     // preenche o "Crie sua espécie" a partir do dossiê de uma peça
+    sendContact: sendContact,
+    apiGet: apiGet,
+    whatsappDigits: whatsappDigits,
+    checkFields: checkFields,
+    formStatus: formStatus,
+    emailOk: function (v) { return EMAIL_RE.test(String(v || "").trim()); },
     preset: function (type, ref) {
       var radio = form.querySelector("input[name='type'][value='" + type + "']");
       if (radio) radio.checked = true;

@@ -680,37 +680,55 @@
 
   /* ---------- lista de espera do Kraken ---------- */
 
-  // igual ao "Crie sua espécie": o botão é um link wa.me com a mensagem pronta
+  // o envio cai na caixa de entrada do painel admin; se falhar, oferece o WhatsApp
   var wForm = document.getElementById("waitlist");
   var wStatus = document.getElementById("waitlist-status");
   var wName = document.getElementById("w-name");
   var wEmail = document.getElementById("w-contact");
-  var wLink = document.getElementById("wait-wa");
+  var wWa = document.getElementById("w-wa");
+  var wBtn = document.getElementById("wait-send");
   var wState = "";
 
-  function renderWait() {
+  function waitText() {
     var lines = [t("wait.msg"), "", t("wa.name") + ": " + wName.value.trim(), t("wait.contactLabel") + ": " + wEmail.value.trim()];
-    wLink.href = "https://wa.me/" + (config.whatsapp || "5519991226377") + "?text=" + encodeURIComponent(lines.join("\n"));
-    var keys = { whatsapp: "wait.whatsapp", invalidName: "wait.invalidName", invalidContact: "wait.invalidContact" };
-    wStatus.classList.toggle("is-error", wState === "invalidName" || wState === "invalidContact");
-    wStatus.textContent = wState ? t(keys[wState]) : "";
+    if (wWa.value.trim()) lines.push("WhatsApp: " + wWa.value.trim());
+    return lines.join("\n");
   }
 
-  wForm.addEventListener("input", function () { wState = ""; renderWait(); });
-  wForm.addEventListener("submit", function (e) { e.preventDefault(); wLink.focus(); });
+  function renderWait() {
+    var errors = { invalidName: 1, invalidContact: 1, invalidWa: 1, error: 1, tooMany: 1 };
+    var keys = { sending: "wait.sending", done: "wait.done", already: "wait.already", error: "wait.error",
+      tooMany: "form.tooMany", invalidName: "wait.invalidName", invalidContact: "wait.invalidContact", invalidWa: "wait.invalidWa" };
+    FT.formStatus(wStatus, wState ? keys[wState] : "", !!errors[wState], wState === "error" ? waitText() : null);
+    wForm.classList.toggle("is-done", wState === "done" || wState === "already");
+  }
 
-  wLink.addEventListener("click", function (e) {
-    wName.removeAttribute("aria-invalid");
-    wEmail.removeAttribute("aria-invalid");
-    if (wName.value.trim().length < 2) {
-      e.preventDefault(); wState = "invalidName"; wName.setAttribute("aria-invalid", "true"); renderWait(); wName.focus(); return;
-    }
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(wEmail.value.trim())) {
-      e.preventDefault(); wState = "invalidContact"; wEmail.setAttribute("aria-invalid", "true"); renderWait(); wEmail.focus(); return;
-    }
-    renderWait();
-    wState = "whatsapp";
-    setTimeout(renderWait, 0);
+  wForm.addEventListener("input", function () { if (wState !== "done" && wState !== "already") { wState = ""; renderWait(); } });
+  wForm.addEventListener("submit", function (e) {
+    e.preventDefault();
+    if (wBtn.disabled) return;
+    var waNum = FT.whatsappDigits(wWa.value);
+    var problem = FT.checkFields([
+      [wName, function () { return wName.value.trim().length >= 2; }, "invalidName"],
+      [wEmail, function () { return FT.emailOk(wEmail.value); }, "invalidContact"],
+      [wWa, function () { return !wWa.value.trim() || !!waNum; }, "invalidWa"]
+    ]);
+    if (problem) { wState = problem; renderWait(); return; }
+    if (wForm.elements.site.value) { wState = "done"; renderWait(); return; }   // robô
+
+    wBtn.disabled = true;
+    wState = "sending"; renderWait();
+    FT.sendContact({
+      tipo: "lista_espera",
+      nome: wName.value.trim(),
+      email: wEmail.value.trim().toLowerCase(),
+      whatsapp: waNum,
+      produto: wForm.getAttribute("data-produto") || "kraken"
+    }).then(function (res) {
+      wState = res === "duplicado" ? "already" : res === "limite" ? "tooMany" : "done";
+    }).catch(function () {
+      wState = "error";
+    }).then(function () { wBtn.disabled = false; renderWait(); });
   });
 
   /* ---------- início ---------- */

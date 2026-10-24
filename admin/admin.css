@@ -203,6 +203,16 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .gate__link { justify-self: start; padding: 0; border: 0; background: none; color: var(--rust); font-family: var(--f-type); font-size: .92rem; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
 .gate__erro { margin: 0; padding: .55rem .75rem; border-left: 3px solid var(--ember); background: rgba(212, 64, 28, .1); color: #8a2410; font-size: .98rem; }
 .gate__erro.is-ok { border-color: #5d7a2d; background: rgba(126, 154, 75, .15); color: #3e5418; }
+.gate__step { margin: 0 0 -.5rem; font-family: var(--f-type); font-size: .85rem; color: var(--rust); }
+.gate__passos { margin: -.2rem 0 0; padding-left: 1.3rem; display: grid; gap: .25rem; font-size: 1rem; }
+.mfa-qr { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 1rem; align-items: center; }
+.mfa-qr img { width: 150px; height: 150px; padding: 8px; background: #fff; border-radius: 4px; box-shadow: 0 0 0 1.5px rgba(42, 26, 14, .25); }
+.mfa-qr img:not([src]) { visibility: hidden; }
+.mfa-qr__alt { margin: 0; display: grid; gap: .35rem; font-size: .92rem; }
+.mfa-qr__alt code { font-family: var(--f-type); font-size: .82rem; letter-spacing: .04em; overflow-wrap: anywhere; padding: .35rem .5rem; background: rgba(42, 26, 14, .08); border-radius: 3px; }
+@media (max-width: 420px) { .mfa-qr { grid-template-columns: 1fr; justify-items: start; } }
+.gate__form .codigo { font-family: var(--f-display); font-weight: 800; font-size: 1.8rem; letter-spacing: .4em; text-align: center; padding: .35em .5em .3em; }
+
 .gate__demo { display: grid; justify-items: start; gap: .9rem; padding: 1.2rem 1.3rem; border: 1px dashed var(--line); }
 .gate__demo p { margin: 0; color: var(--muted); font-size: .98rem; }
 

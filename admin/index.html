@@ -10,7 +10,7 @@
   <link rel="icon" href="../assets/favicon.png" type="image/png">
   <link rel="preload" href="../assets/fonts/big-shoulders-display-latin.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="../assets/fonts/newsreader-latin.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="stylesheet" href="admin.css?v=3">
+  <link rel="stylesheet" href="admin.css?v=4">
 </head>
 <body>
 
@@ -74,6 +74,43 @@
       <button class="btn" type="submit">Salvar senha</button>
     </form>
 
+    <form class="gate__form" id="form-mfa-cadastro" novalidate hidden>
+      <p class="gate__step">Passo 2 de 2 · segurança</p>
+      <h1 class="gate__title">Ative a verificação em duas etapas</h1>
+      <ol class="gate__passos">
+        <li>Instale o <b>Google Authenticator</b> no celular.</li>
+        <li>No app, toque em <b>+</b> e em <b>Ler código QR</b>.</li>
+        <li>Digite abaixo o código de 6 dígitos que aparecer.</li>
+      </ol>
+      <div class="mfa-qr">
+        <img id="mfa-qr" alt="Código QR para cadastrar a Fossil Tone no Google Authenticator" width="180" height="180">
+        <p class="mfa-qr__alt">Sem câmera? Escolha <b>Inserir chave de configuração</b> e digite:
+          <code id="mfa-segredo"></code>
+          <button class="gate__link" type="button" id="mfa-copiar">Copiar chave</button>
+        </p>
+      </div>
+      <div class="field">
+        <label for="mfa-cadastro-codigo">Código de 6 dígitos</label>
+        <input id="mfa-cadastro-codigo" name="codigo" class="codigo" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" required>
+      </div>
+      <p class="gate__erro" id="mfa-cadastro-erro" role="alert" hidden></p>
+      <button class="btn" type="submit">Ativar e entrar</button>
+      <button class="gate__link" type="button" data-sair-gate>Usar outra conta</button>
+    </form>
+
+    <form class="gate__form" id="form-mfa-codigo" novalidate hidden>
+      <p class="gate__step">Passo 2 de 2 · segurança</p>
+      <h1 class="gate__title">Código de verificação</h1>
+      <p class="gate__texto">Abra o <b>Google Authenticator</b> e digite o código de 6 dígitos da Fossil Tone.</p>
+      <div class="field">
+        <label for="mfa-codigo">Código</label>
+        <input id="mfa-codigo" name="codigo" class="codigo" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" required>
+      </div>
+      <p class="gate__erro" id="mfa-codigo-erro" role="alert" hidden></p>
+      <button class="btn" type="submit">Confirmar</button>
+      <button class="gate__link" type="button" data-sair-gate>Usar outra conta</button>
+    </form>
+
     <div class="gate__demo" id="gate-demo" hidden>
       <span class="stamp stamp--static">Sem servidor</span>
       <p>O login ainda não está ligado ao Supabase. Você pode abrir o painel com dados de exemplo, que ficam guardados só neste navegador.</p>
@@ -129,7 +166,7 @@
 <div class="toast" id="toast" role="status" hidden></div>
 
 <script src="config.js?v=2"></script>
-<script src="dados.js?v=1"></script>
-<script src="admin.js?v=4"></script>
+<script src="dados.js?v=2"></script>
+<script src="admin.js?v=5"></script>
 </body>
 </html>

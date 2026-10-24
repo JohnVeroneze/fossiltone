@@ -86,7 +86,8 @@
      ========================================================== */
 
   function mostrarForm(id) {
-    ["form-entrar", "form-recuperar", "form-nova-senha"].forEach((f) => { $("#" + f).hidden = f !== id; });
+    ["form-entrar", "form-recuperar", "form-nova-senha", "form-mfa-cadastro", "form-mfa-codigo"].forEach((f) => { $("#" + f).hidden = f !== id; });
+    $("#gate-demo").hidden = window.FTDados.configurado() || id !== "form-entrar";
     $$(".gate__erro").forEach((e) => { e.hidden = true; });
     const campo = $("#" + id + " input");
     if (campo) campo.focus();
@@ -104,6 +105,38 @@
     $("#gate").hidden = false;
     $("#gate-demo").hidden = window.FTDados.configurado();
     document.title = "Entrar · Gabinete · Fossil Tone";
+  }
+
+  /* depois da senha: segundo fator (Google Authenticator) antes de abrir o painel */
+  let depoisDoCodigo = null;
+  let fatorNovo = null;
+
+  async function continuar() {
+    const estado = await fonte.estadoMfa();
+    if (estado === "ok") {
+      if (depoisDoCodigo) { const f = depoisDoCodigo; depoisDoCodigo = null; return f(); }
+      return abrirApp(await fonte.sessao());
+    }
+    abrirGate();
+    if (estado === "verificar") return mostrarForm("form-mfa-codigo");
+    mostrarForm("form-mfa-cadastro");
+    $("#mfa-qr").removeAttribute("src");
+    $("#mfa-segredo").textContent = "…";
+    try {
+      fatorNovo = await fonte.cadastrarMfa();
+      $("#mfa-qr").src = fatorNovo.qr;
+      $("#mfa-segredo").textContent = fatorNovo.segredo;
+    } catch (e) { erroGate("mfa-cadastro-erro", e.message); }
+  }
+
+  async function sairDaConta() {
+    await fonte.sair();
+    if (!window.FTDados.configurado()) fonte = null;
+    fecharGaveta();
+    depoisDoCodigo = null;
+    history.replaceState(null, "", location.pathname);
+    abrirGate();
+    mostrarForm("form-entrar");
   }
 
   async function abrirApp(sessao) {
@@ -127,9 +160,9 @@
       const btn = $("button[type=submit]", f);
       btn.disabled = true;
       try {
-        const s = await fonte.entrar(email, senha);
+        await fonte.entrar(email, senha);
         f.senha.value = "";
-        await abrirApp(s);
+        await continuar();
       } catch (e) { erroGate("entrar-erro", e.message); }
       finally { btn.disabled = false; }
     });
@@ -157,11 +190,62 @@
       try {
         await fonte.novaSenha(senha);
         history.replaceState(null, "", location.pathname);
-        const s = await fonte.sessao();
-        await abrirApp(s);
+        await continuar();
         toast("Senha atualizada.");
       } catch (e) { erroGate("nova-senha-erro", e.message); }
     });
+
+    function lerCodigo(form, erroId) {
+      const codigo = form.codigo.value.replace(/\D/g, "");
+      if (codigo.length !== 6) { erroGate(erroId, "O código tem 6 dígitos."); return null; }
+      return codigo;
+    }
+
+    $("#form-mfa-cadastro").addEventListener("submit", async (ev) => {
+      ev.preventDefault();
+      const f = ev.currentTarget;
+      const codigo = lerCodigo(f, "mfa-cadastro-erro");
+      if (!codigo) return;
+      if (!fatorNovo) return erroGate("mfa-cadastro-erro", "O código QR não carregou. Recarregue a página.");
+      const btn = $("button[type=submit]", f);
+      btn.disabled = true;
+      try {
+        await fonte.confirmarCodigo(codigo, fatorNovo.id);
+        fatorNovo = null;
+        f.codigo.value = "";
+        await continuar();
+        toast("Verificação em duas etapas ativada.");
+      } catch (e) { erroGate("mfa-cadastro-erro", e.message); f.codigo.select(); }
+      finally { btn.disabled = false; }
+    });
+
+    $("#form-mfa-codigo").addEventListener("submit", async (ev) => {
+      ev.preventDefault();
+      const f = ev.currentTarget;
+      const codigo = lerCodigo(f, "mfa-codigo-erro");
+      if (!codigo) return;
+      const btn = $("button[type=submit]", f);
+      btn.disabled = true;
+      try {
+        await fonte.confirmarCodigo(codigo);
+        f.codigo.value = "";
+        await continuar();
+      } catch (e) { erroGate("mfa-codigo-erro", e.message); f.codigo.select(); }
+      finally { btn.disabled = false; }
+    });
+
+    // envia sozinho ao completar os 6 dígitos
+    $$(".gate__form .codigo").forEach((inp) => inp.addEventListener("input", () => {
+      inp.value = inp.value.replace(/\D/g, "").slice(0, 6);
+      if (inp.value.length === 6) inp.form.requestSubmit();
+    }));
+
+    $("#mfa-copiar").addEventListener("click", async () => {
+      try { await navigator.clipboard.writeText($("#mfa-segredo").textContent); toast("Chave copiada."); }
+      catch (e) { toast("Não deu para copiar. Selecione a chave e copie.", true); }
+    });
+
+    $$("[data-sair-gate]").forEach((b) => b.addEventListener("click", sairDaConta));
 
     $("#btn-demo").addEventListener("click", async () => {
       fonte = window.FTDados.demo();
@@ -169,14 +253,7 @@
       await abrirApp(s);
     });
 
-    $("#btn-sair").addEventListener("click", async () => {
-      await fonte.sair();
-      if (!window.FTDados.configurado()) fonte = null;
-      fecharGaveta();
-      history.replaceState(null, "", location.pathname);
-      abrirGate();
-      mostrarForm("form-entrar");
-    });
+    $("#btn-sair").addEventListener("click", sairDaConta);
 
     $("#btn-reiniciar-demo").addEventListener("click", async () => {
       if (!confirm("Apagar as mudanças da demonstração e voltar aos dados de exemplo?")) return;
@@ -811,11 +888,24 @@
         <div class="actions"><button class="btn" type="submit">Salvar configurações</button></div>
       </form>
       <section class="panel" style="max-width:760px;margin-top:1rem">
+        <h2 class="panel__title" style="margin-bottom:.6rem">Verificação em duas etapas</h2>
+        <div id="mfa-status"><p class="loading" style="padding:0">Consultando…</p></div>
+      </section>
+      <section class="panel" style="max-width:760px;margin-top:1rem">
         <h2 class="panel__title" style="margin-bottom:.6rem">Acesso ao painel</h2>
         ${fonte.modo === "demo"
           ? "<p>Na demonstração não há login. Quando o Supabase estiver ligado, quem pode entrar é definido lá, na tabela <b>admins</b>. O passo a passo está em <b>backend/COMO-CONFIGURAR-PAINEL-ADMIN.md</b>.</p>"
           : "<p>Novos administradores são criados no Supabase: <b>Authentication › Users › Add user</b> e depois uma linha na tabela <b>admins</b>. O passo a passo está em <b>backend/COMO-CONFIGURAR-PAINEL-ADMIN.md</b>.</p>"}
       </section>`;
+
+    tentar(() => fonte.fatoresMfa()).then((fatores) => {
+      const el = $("#mfa-status", view);
+      if (!el) return;
+      if (fonte.modo === "demo") { el.innerHTML = "<p>Na demonstração não há segundo fator. Com o Supabase ligado, todo administrador precisa do Google Authenticator para entrar.</p>"; return; }
+      el.innerHTML = fatores && fatores.length
+        ? `<p><span class="stamp st-ativo">Ativa</span></p><p>${fatores.map((f) => `${esc(f.nome || "Autenticador")}, cadastrado em ${data(f.desde)}`).join("<br>")}</p><p class="kpi__note">Trocou de celular ou perdeu o aparelho? No Supabase, abra <b>Authentication › Users</b>, escolha o seu usuário e remova o fator MFA. No próximo login o painel mostra um novo código QR.</p>`
+        : "<p>Nenhum autenticador encontrado.</p>";
+    });
 
     const form = $("#form-config", view);
     form.addEventListener("submit", async (ev) => {
@@ -897,12 +987,21 @@
       erroGate("entrar-erro", e.message);
       return;
     }
+    // link de "esqueci a senha": se a conta já tem o autenticador, pede o código antes da nova senha
+    const recuperar = async () => {
+      abrirGate();
+      depoisDoCodigo = () => { abrirGate(); mostrarForm("form-nova-senha"); };
+      const estado = await tentar(() => fonte.estadoMfa());
+      if (estado === "verificar") return mostrarForm("form-mfa-codigo");
+      depoisDoCodigo = null;
+      mostrarForm("form-nova-senha");
+    };
     let recuperando = /type=recovery/.test(location.hash);
-    fonte.aoRecuperar(() => { recuperando = true; abrirGate(); mostrarForm("form-nova-senha"); });
-    if (recuperando) { mostrarForm("form-nova-senha"); return; }
+    fonte.aoRecuperar(() => { if (!recuperando) { recuperando = true; recuperar(); } });
+    if (recuperando) return recuperar();
 
     const s = await fonte.sessao();
-    if (s && await tentar(() => fonte.ehAdmin())) return abrirApp(s);
+    if (s && await tentar(() => fonte.ehAdmin())) return tentar(continuar);
     if (s) await fonte.sair();
     mostrarForm("form-entrar");
   }

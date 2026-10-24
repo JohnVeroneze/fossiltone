@@ -63,7 +63,7 @@
 
       async entrar(email, senha) {
         erro(await sb.auth.signInWithPassword({ email, password: senha }));
-        const admin = erro(await sb.rpc("is_admin"));
+        const admin = erro(await sb.rpc("sou_admin"));
         if (!admin) {
           await sb.auth.signOut();
           throw new Error("Este usuário não tem acesso ao painel.");
@@ -71,8 +71,45 @@
         return { email };
       },
 
+      // está na lista de admins (o banco só libera os dados depois do segundo fator)
       async ehAdmin() {
-        return erro(await sb.rpc("is_admin")) === true;
+        return erro(await sb.rpc("sou_admin")) === true;
+      },
+
+      /* ---------- verificação em duas etapas ----------
+         "ok": sessão já passou pelo código; "verificar": tem o app, falta o código;
+         "cadastrar": ainda não ligou o Google Authenticator */
+      async estadoMfa() {
+        const nivel = erro(await sb.auth.mfa.getAuthenticatorAssuranceLevel());
+        if (nivel.currentLevel === "aal2") return "ok";
+        const fatores = erro(await sb.auth.mfa.listFactors());
+        return fatores.totp.some((f) => f.status === "verified") ? "verificar" : "cadastrar";
+      },
+
+      async cadastrarMfa() {
+        // uma tentativa anterior não concluída bloquearia o nome do fator
+        const fatores = erro(await sb.auth.mfa.listFactors());
+        for (const f of fatores.all.filter((x) => x.factor_type === "totp" && x.status !== "verified")) {
+          erro(await sb.auth.mfa.unenroll({ factorId: f.id }));
+        }
+        const d = erro(await sb.auth.mfa.enroll({ factorType: "totp", issuer: "Fossil Tone", friendlyName: "Google Authenticator" }));
+        return { id: d.id, qr: d.totp.qr_code, segredo: d.totp.secret };
+      },
+
+      async confirmarCodigo(codigo, factorId) {
+        let id = factorId;
+        if (!id) {
+          const fatores = erro(await sb.auth.mfa.listFactors());
+          const f = fatores.totp.find((x) => x.status === "verified");
+          if (!f) throw new Error("Nenhum autenticador cadastrado.");
+          id = f.id;
+        }
+        erro(await sb.auth.mfa.challengeAndVerify({ factorId: id, code: codigo }));
+      },
+
+      async fatoresMfa() {
+        const fatores = erro(await sb.auth.mfa.listFactors());
+        return fatores.totp.filter((f) => f.status === "verified").map((f) => ({ nome: f.friendly_name, desde: f.created_at }));
       },
 
       async sair() { await sb.auth.signOut(); },
@@ -132,6 +169,8 @@
     if (/duplicate key/i.test(msg)) return "Já existe um registro com esse código ou e-mail.";
     if (/row-level security/i.test(msg)) return "Sem permissão para essa ação.";
     if (/Failed to fetch/i.test(msg)) return "Sem conexão com o servidor.";
+    if (/Invalid TOTP code|invalid.*code/i.test(msg)) return "Código incorreto. Confira o relógio do celular e use o código atual.";
+    if (/AAL2 session is required/i.test(msg)) return "Confirme o código do Google Authenticator antes.";
     return msg;
   }
 
@@ -246,6 +285,8 @@
         return { email: "demonstracao" };
       },
       async ehAdmin() { return true; },
+      async estadoMfa() { return "ok"; },
+      async fatoresMfa() { return []; },
       async sair() {
         logado = false;
         try { sessionStorage.removeItem(DEMO_KEY + "-sessao"); } catch (e) { /* idem */ }

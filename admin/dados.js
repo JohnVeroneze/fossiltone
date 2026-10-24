@@ -9,9 +9,9 @@
   "use strict";
 
   const SUPABASE_JS = "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js";
-  const DEMO_KEY = "ft-admin-demo-v1";
+  const DEMO_KEY = "ft-admin-demo-v2";
 
-  const TABELAS = ["produtos", "clientes", "pedidos", "itens_pedido", "cupons", "configuracoes"];
+  const TABELAS = ["produtos", "clientes", "pedidos", "itens_pedido", "cupons", "configuracoes", "contatos"];
 
   const ORDEM = {
     produtos: ["numero", true],
@@ -19,7 +19,8 @@
     pedidos: ["criado_em", false],
     itens_pedido: ["nome", true],
     cupons: ["criado_em", false],
-    configuracoes: ["chave", true]
+    configuracoes: ["chave", true],
+    contatos: ["criado_em", false]
   };
 
   function carregarScript(src) {
@@ -236,9 +237,18 @@
       { id: uuid(), codigo: "FRETE50", tipo: "valor", valor: 50, ativo: false, validade: null, limite_usos: null, usos: 2, criado_em: quando(20) }
     ];
 
+    const contatos = [
+      { id: uuid(), tipo: "especie", status: "novo", nome: "Caio Bernardes", email: "caio.b@exemplo.com", whatsapp: "5511987650012", produto: "pedal", mensagem: "Toco stoner e doom. Quero um fuzz bem grave que não suma na mixagem.", dados: { ficha: "FT-482", nomeCientifico: "Caiosaurus monstruosus", tipo: "pedal", instrumento: "guitarra", personalizar: ["arte", "mods"], referencia: "Big Muff verde russo" }, idioma: "pt", notas: null, cliente_id: null, criado_em: quando(0, 2), atualizado_em: quando(0, 2) },
+      { id: uuid(), tipo: "manutencao", status: "novo", nome: "Helena Duarte", email: "helena.d@exemplo.com", whatsapp: "5519998761234", produto: "Fender Hot Rod Deluxe", mensagem: "Começou a chiar muito e às vezes corta o som no meio do show.", dados: { equipamento: "amplificador", problemas: ["ruido", "intermitente", "valvula"], tempoDeUso: "mais_10" }, idioma: "pt", notas: null, cliente_id: null, criado_em: quando(0, 6), atualizado_em: quando(0, 6) },
+      { id: uuid(), tipo: "pecas", status: "em_conversa", nome: "Diego Arantes", email: "diego.arantes@exemplo.com", whatsapp: "5531984201180", produto: null, mensagem: "Knob creme para eixo liso", dados: { itens: [{ slug: "knob-davies-1900", numero: "RP-01", nome: "Knob estilo Davies 1900H", quantidade: 4, preco: 35 }], total: 140 }, idioma: "pt", notas: "Mandei foto dos knobs creme.", cliente_id: clientes[2].id, criado_em: quando(1, 3), atualizado_em: quando(0, 20) },
+      { id: uuid(), tipo: "lista_espera", status: "novo", nome: "Tomás Reis", email: "tomas.reis@exemplo.com", whatsapp: null, produto: "kraken", mensagem: null, dados: {}, idioma: "pt", notas: null, cliente_id: null, criado_em: quando(2, 1), atualizado_em: quando(2, 1) },
+      { id: uuid(), tipo: "lista_espera", status: "novo", nome: "Sam Carter", email: "sam.carter@example.com", whatsapp: "14155550142", produto: "kraken", mensagem: null, dados: {}, idioma: "en", notas: null, cliente_id: null, criado_em: quando(4, 5), atualizado_em: quando(4, 5) },
+      { id: uuid(), tipo: "especie", status: "concluido", nome: "Bianca Tavares", email: "bianca.t@exemplo.com", whatsapp: "5519991027733", produto: "pedal", mensagem: null, dados: { ficha: "FT-317", nomeCientifico: "Biancasaurus pictus", tipo: "pedal", instrumento: "baixo", personalizar: ["arte"], referencia: "Darkglass B7K" }, idioma: "pt", notas: "Virou o pedido #1012.", cliente_id: clientes[1].id, criado_em: quando(9, 4), atualizado_em: quando(3) }
+    ];
+
     const configuracoes = [{ chave: "loja", valor: { nome: "Fossil Tone", email: "fossiltonefx@gmail.com", whatsapp: "5519991226377", freteFixo: 38.9, freteGratisAcima: 1500, prazoProducaoDias: 15, pix: "" } }];
 
-    return { produtos, clientes, pedidos, itens_pedido: itens, cupons, configuracoes };
+    return { produtos, clientes, pedidos, itens_pedido: itens, cupons, configuracoes, contatos };
   }
 
   function fonteDemo() {

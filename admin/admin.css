@@ -161,6 +161,23 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .st-entregue { color: #A9C474; }
 .st-cancelado, .st-esgotado { color: var(--ember); }
 .st-arquivado { color: rgba(191, 162, 122, .55); }
+.st-novo { color: var(--ember); }
+.st-em_conversa { color: var(--honey); }
+.st-concluido { color: #A9C474; }
+
+/* etiqueta do formulário de origem de cada contato */
+.tipo {
+  display: inline-block; padding: .18em .6em .14em; border-radius: 999px;
+  font-family: var(--f-display); font-weight: 700; font-size: .92rem; letter-spacing: .02em; white-space: nowrap;
+  background: rgba(239, 227, 200, .1); color: var(--paper);
+}
+.tipo--especie { background: rgba(242, 159, 13, .18); color: var(--honey); }
+.tipo--lista_espera { background: rgba(127, 176, 230, .16); color: #A9CBF0; }
+.tipo--manutencao { background: rgba(212, 64, 28, .2); color: #F3A086; }
+.tipo--pecas { background: rgba(169, 196, 116, .18); color: #C6DB9C; }
+.table tr.is-new td:first-child { box-shadow: inset 3px 0 0 var(--ember); }
+.table .resumo { max-width: 34ch; color: var(--muted); font-size: .95rem; }
+.sheet__row--wide { grid-template-columns: 1fr; }
 
 /* ==========================================================
    ENTRADA
@@ -410,7 +427,10 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .drawer .st-pago, .drawer .st-ativo, .drawer .st-em_producao, .drawer .st-sob_encomenda { color: #b56a00; }
 .drawer .st-enviado { color: #2f629b; }
 .drawer .st-entregue { color: #4f6b1f; }
-.drawer .st-cancelado, .drawer .st-esgotado { color: #a8301a; }
+.drawer .st-cancelado, .drawer .st-esgotado, .drawer .st-novo { color: #a8301a; }
+.drawer .st-em_conversa { color: #b56a00; }
+.drawer .st-concluido { color: #4f6b1f; }
+.drawer .actions .btn { text-decoration: none; }
 
 .sheet { display: grid; gap: .1rem; }
 .sheet__row { display: grid; grid-template-columns: 9rem minmax(0, 1fr); gap: 1rem; padding: .45rem 0; border-bottom: 1px dotted rgba(42, 26, 14, .3); }

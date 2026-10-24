@@ -116,7 +116,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 
 /* ---------- campos ---------- */
 
-.field { display: grid; gap: .35rem; min-width: 0; }
+.field { display: grid; gap: .35rem; min-width: 0; align-content: start; }
 .field label, .field .label {
   font-family: var(--f-display); font-weight: 700; font-size: 1.05rem; letter-spacing: .02em; color: var(--paper);
 }
@@ -418,6 +418,20 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .items .qtd { width: 4.2rem; }
 .items .rm { border: 0; background: none; color: #a8301a; font-size: 1.3rem; cursor: pointer; padding: 0 .3rem; }
 
+/* no celular, cada item vira duas linhas: produto em cima, quantidade e preço embaixo */
+@media (max-width: 560px) {
+  .items--edit, .items--edit tbody, .items--edit tfoot { display: block; }
+  .items--edit thead { display: none; }
+  .items--edit tbody tr { display: grid; grid-template-columns: 4rem minmax(0, 1fr) auto auto; gap: .45rem; align-items: center; padding: .55rem 0; border-bottom: 1px dotted rgba(42, 26, 14, .3); }
+  .items--edit tbody td { padding: 0; border: 0; }
+  .items--edit tbody td:first-child { grid-column: 1 / -1; }
+  .items--edit tbody input[data-campo="preco_unitario"] { width: 100% !important; }
+  .items--edit tfoot tr { display: flex; justify-content: space-between; align-items: center; gap: 1rem; padding: .3rem 0; }
+  .items--edit tfoot td { padding: 0; }
+  .items--edit tfoot td:empty { display: none; }
+  .items--edit tfoot input { width: 7.5rem; }
+}
+
 .actions { display: flex; flex-wrap: wrap; gap: .6rem; align-items: center; padding-top: .6rem; }
 .actions .spacer { flex: 1; }
 .link-btn { padding: 0; border: 0; background: none; color: var(--rust); font-family: var(--f-display); font-weight: 700; font-size: 1.02rem; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; justify-self: start; }
@@ -447,7 +461,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 @media (max-width: 900px) {
   .app { grid-template-columns: 1fr; }
   .side {
-    position: sticky; top: 0; z-index: 100; height: auto;
+    position: sticky; top: 0; z-index: 100; height: auto; min-width: 0;
     flex-direction: row; flex-wrap: wrap; align-items: center; gap: .5rem 1rem;
     padding: .7rem var(--gutter) 0;
     border-right: 0; border-bottom: 1px solid var(--line);
@@ -458,7 +472,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
   .side__foot { margin: 0 0 0 auto; padding: 0; display: flex; align-items: center; gap: 1rem; }
   .side__user { display: none; }
   .side__nav {
-    order: 3; flex: 1 1 100%;
+    order: 3; flex: 1 1 100%; min-width: 0;
     display: flex; gap: .2rem; overflow-x: auto; scrollbar-width: none;
     margin: 0 calc(var(--gutter) * -1); padding: 0 var(--gutter) .1rem;
   }

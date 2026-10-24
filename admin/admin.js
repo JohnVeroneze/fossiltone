@@ -415,7 +415,7 @@
         </div>
         <div>
           <p class="sheet__title">Itens</p>
-          <table class="items">
+          <table class="items items--edit">
             <thead><tr><th>Produto</th><th class="num">Qtd.</th><th class="num">Preço un.</th><th class="num">Total</th><th></th></tr></thead>
             <tbody id="itens"></tbody>
             <tfoot>

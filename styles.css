@@ -666,6 +666,37 @@ h1, h2, h3, h4 { margin: 0; font-weight: inherit; }
 .dig__strata .s3 { fill: #44240F; }
 .dig__strata .pebble { fill: #9A6634; }
 
+/* ---------- fósseis enterrados no fundo das camadas de solo ----------
+   Traço claro em baixa opacidade, atrás do conteúdo. Alguns ficam na borda da
+   seção e somem atrás da camada seguinte, como se ainda estivessem saindo da terra. */
+
+.about, .collection, .create, .restore { position: relative; isolation: isolate; }
+.fossils {
+  position: absolute; inset: 0; z-index: -1; pointer-events: none;
+  background-repeat: no-repeat;
+  opacity: .07;
+}
+.about .fossils {
+  background-image: url("assets/fosseis/amonite.svg"), url("assets/fosseis/samambaia.svg");
+  background-position: right -60px top 40px, left 3% bottom -70px;
+  background-size: clamp(160px, 22vw, 300px) auto, clamp(90px, 10vw, 140px) auto;
+}
+.collection .fossils {
+  background-image: url("assets/fosseis/peixe.svg"), url("assets/fosseis/trilobita.svg"), url("assets/fosseis/osso.svg");
+  background-position: left -80px top 32%, right -30px top 62%, left 30% bottom -26px;
+  background-size: clamp(220px, 28vw, 380px) auto, clamp(110px, 12vw, 170px) auto, clamp(180px, 20vw, 280px) auto;
+}
+.create .fossils {
+  background-image: url("assets/fosseis/osso.svg"), url("assets/fosseis/amonite.svg");
+  background-position: left -50px top 70%, right 4% bottom -90px;
+  background-size: clamp(170px, 18vw, 260px) auto, clamp(150px, 18vw, 240px) auto;
+}
+.restore .fossils {
+  background-image: url("assets/fosseis/trilobita.svg"), url("assets/fosseis/samambaia.svg");
+  background-position: left -40px bottom 12%, right -20px top 20%;
+  background-size: clamp(100px, 11vw, 150px) auto, clamp(90px, 10vw, 130px) auto;
+}
+
 /* ---------- laboratório: sala branca de laboratório genético, enterrada no Jurássico ----------
    Única seção clara do site. Entra por uma faixa de aço com listras de segurança,
    tem paredes em painéis, um monitor de fósforo âmbar com os 4 passos e a vitrine
@@ -675,7 +706,7 @@ h1, h2, h3, h4 { margin: 0; font-weight: inherit; }
   --wall: #E8EBE8; --seam: #CDD3CF; --steel: #9AA39F; --steel-light: #C3C9C5; --lab-ink: #16201D; --lab-text: #3B4642;
   --floor: clamp(34px, 5vw, 60px);
   position: relative;
-  padding-block: calc(var(--section) + 22px) calc(var(--section) + var(--floor));
+  padding-block: calc(var(--section) + 22px) calc(var(--section) + var(--floor) + 22px);
   color: var(--lab-text);
   background:
     linear-gradient(to top, var(--resin) var(--floor), transparent var(--floor)),
@@ -691,10 +722,12 @@ h1, h2, h3, h4 { margin: 0; font-weight: inherit; }
     linear-gradient(var(--steel) 0 4px, transparent 4px 16px, #7d8783 16px 22px),
     repeating-linear-gradient(135deg, var(--amber) 0 14px, var(--lab-ink) 14px 28px);
 }
-/* piso de aço; abaixo dele a terra do Triássico */
+/* saída: as mesmas listras de segurança da entrada; abaixo delas a terra do Triássico */
 .lab::after {
-  content: ""; position: absolute; left: 0; right: 0; bottom: var(--floor); height: 8px;
-  background: linear-gradient(#7d8783, var(--steel) 3px, #6c7672);
+  content: ""; position: absolute; left: 0; right: 0; bottom: var(--floor); height: 22px;
+  background:
+    linear-gradient(#7d8783 0 6px, transparent 6px 18px, var(--steel) 18px 22px),
+    repeating-linear-gradient(135deg, var(--amber) 0 14px, var(--lab-ink) 14px 28px);
 }
 
 .lab__head { display: grid; gap: clamp(1.25rem, 2.5vw, 2rem); }
@@ -716,22 +749,25 @@ h1, h2, h3, h4 { margin: 0; font-weight: inherit; }
 @media (max-width: 480px) { .h2--lab { white-space: normal; line-height: 1.05; } }
 
 /* monitor do sequenciador: tela escura com fósforo âmbar e linhas de varredura */
-.monitor {
-  --phosphor: #F7B23B; --phosphor-dim: #9C7433;
+/* telas do laboratório (monitor dos passos e programa da incubadora): fósforo verde de terminal */
+.monitor, .incubator {
+  --phosphor: #9DFFB4; --phosphor-dim: #6FD892; --ph: 157, 255, 180;
   position: relative;
-  margin-top: clamp(3rem, 6vw, 4.5rem);
-  padding: clamp(1.1rem, 2.5vw, 1.8rem) clamp(1rem, 3vw, 2.2rem);
   border: 12px solid var(--steel-light); border-radius: 16px;
-  background: radial-gradient(90% 120% at 50% 30%, #2a1d0f, #140d07 75%);
-  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .6), inset 0 0 40px rgba(0, 0, 0, .6), 0 18px 40px rgba(22, 32, 29, .22);
-  font-family: "VT323", ui-monospace, monospace;
+  background: radial-gradient(90% 120% at 50% 30%, #0e2a19, #04120a 75%);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .6), inset 0 0 50px rgba(0, 0, 0, .65), 0 18px 40px rgba(22, 32, 29, .22);
   color: var(--phosphor);
-  text-shadow: 0 0 6px rgba(247, 178, 59, .45);
   overflow: hidden;
 }
-.monitor::after {
-  content: ""; position: absolute; inset: 0; pointer-events: none;
-  background: repeating-linear-gradient(rgba(0, 0, 0, .22) 0 1px, transparent 1px 3px);
+.monitor::after, .incubator::after {
+  content: ""; position: absolute; inset: 0; pointer-events: none; z-index: 2;
+  background: repeating-linear-gradient(rgba(0, 0, 0, .2) 0 1px, transparent 1px 3px);
+}
+.monitor {
+  margin-top: clamp(3rem, 6vw, 4.5rem);
+  padding: clamp(1.1rem, 2.5vw, 1.8rem) clamp(1rem, 3vw, 2.2rem);
+  font-family: "VT323", ui-monospace, monospace;
+  text-shadow: 0 0 6px rgba(var(--ph), .4);
 }
 .monitor__cmd { margin: 0 0 1rem; font-size: 1.45rem; line-height: 1.2; color: var(--phosphor-dim); }
 .monitor__cmd::before { content: "> "; }
@@ -748,25 +784,31 @@ h1, h2, h3, h4 { margin: 0; font-weight: inherit; }
   counter-increment: step;
   display: grid; grid-template-columns: 2.6rem minmax(9rem, 13rem) minmax(0, 1fr) minmax(7rem, 11rem) 8.5rem;
   align-items: baseline; column-gap: 1.25rem;
-  padding: .55rem 0; border-top: 1px dashed rgba(247, 178, 59, .22);
+  padding: .55rem 0; border-top: 1px dashed rgba(var(--ph), .22);
 }
 .steps li::before { content: counter(step, decimal-leading-zero); font-size: 1.5rem; }
 .steps h3 { margin: 0; font-family: inherit; font-weight: 400; font-size: 1.75rem; line-height: 1.1; color: var(--phosphor); }
 .steps p { margin: 0; font-size: 1.3rem; line-height: 1.2; color: var(--phosphor-dim); }
 /* barra = 12 células iguais; cada uma acende inteira, em sequência (o main.js monta as células) */
 .steps__bar { align-self: center; display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 3px; height: 12px; }
-.steps__bar i { background: rgba(247, 178, 59, .14); }
-.steps__bar i.on { background: var(--phosphor); box-shadow: 0 0 6px rgba(247, 178, 59, .5); }
+.steps__bar i { background: rgba(var(--ph), .12); }
+.steps__bar i.on { background: var(--phosphor); box-shadow: 0 0 6px rgba(var(--ph), .55); }
 .steps__state { font-size: 1.35rem; text-align: right; }
 .steps li.is-wait h3, .steps li.is-wait::before, .steps li.is-wait .steps__state { color: var(--phosphor-dim); }
 /* antes de aparecer na tela: tudo apagado; depois, uma célula por vez, uma barra depois da outra */
-.monitor.is-idle .steps__bar i.on { background: rgba(247, 178, 59, .14); box-shadow: none; }
+.monitor.is-idle .steps__bar i.on { background: rgba(var(--ph), .12); box-shadow: none; }
 @media (prefers-reduced-motion: no-preference) {
   .monitor.is-run .steps__bar i.on { animation: celula 60ms linear both; animation-delay: calc(var(--i, 0) * .9s + var(--c, 0) * 70ms); }
+  /* o último quadradinho do passo em curso fica piscando, como se fosse completar */
+  .monitor.is-run .steps__bar i.blink {
+    animation: celula 60ms linear both, pisca 1.1s steps(1, end) infinite;
+    animation-delay: calc(var(--i, 0) * .9s + var(--c, 0) * 70ms), calc(var(--i, 0) * .9s + var(--c, 0) * 70ms + .4s);
+  }
 }
+@keyframes pisca { 50% { background: rgba(var(--ph), .12); box-shadow: none; } }
 @keyframes celula {
-  0%, 49% { background: rgba(247, 178, 59, .14); box-shadow: none; }
-  50%, 100% { background: var(--phosphor); box-shadow: 0 0 6px rgba(247, 178, 59, .5); }
+  0%, 49% { background: rgba(var(--ph), .12); box-shadow: none; }
+  50%, 100% { background: var(--phosphor); box-shadow: 0 0 6px rgba(var(--ph), .55); }
 }
 @media (max-width: 960px) {
   .steps li { grid-template-columns: 2.6rem minmax(0, 1fr) minmax(6rem, 9rem) 9.5rem; row-gap: .2rem; }
@@ -817,19 +859,67 @@ h1, h2, h3, h4 { margin: 0; font-weight: inherit; }
 .case__info .species-name { margin-bottom: 1.4rem; }
 @media (max-width: 860px) { .case { grid-template-columns: 1fr; } }
 
-/* incubadora do ZeRO: janela escura com moldura de aço, iluminada por dentro em âmbar */
+/* incubadora do ZeRO: a vitrine aberta num programa interno, na mesma tela verde do monitor */
 .incubator {
-  padding: clamp(1.25rem, 3.5vw, 2.75rem);
-  border: 12px solid var(--steel-light, #C3C9C5); border-radius: 20px;
-  background:
-    radial-gradient(70% 55% at 30% 15%, rgba(242, 159, 13, .2), transparent 70%),
-    var(--resin-deep);
-  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .6), inset 0 0 60px rgba(0, 0, 0, .55), 0 22px 50px rgba(22, 32, 29, .25);
-  color: var(--text);
-  overflow: hidden;
+  --pad: clamp(1.25rem, 3.5vw, 2.75rem);
+  padding: 0 var(--pad) var(--pad);
+  border-radius: 20px;
+  row-gap: clamp(1.5rem, 3vw, 2.25rem);
 }
 .incubator.spot::before { display: none; }
-@media (max-width: 600px) { .incubator { border-width: 8px; border-radius: 14px; } }
+/* o botão Examinar fica embaixo de tudo, sem subir por cima dos knobs */
+.case.incubator > .specimen__actions { margin-top: 0; }
+/* barra de título do programa */
+.incubator__bar {
+  grid-column: 1 / -1;
+  display: flex; align-items: center; gap: 1rem;
+  margin: 0 calc(var(--pad) * -1);
+  padding: .55rem var(--pad);
+  border-bottom: 1px solid rgba(var(--ph), .3);
+  background: rgba(var(--ph), .08);
+  font-family: "VT323", ui-monospace, monospace; font-size: 1.3rem; line-height: 1.1;
+  color: var(--phosphor-dim);
+}
+.incubator__bar b { font-weight: 400; color: var(--phosphor); }
+.incubator__bar span:last-child { margin-left: auto; display: flex; gap: .4rem; }
+.incubator__bar i { width: 12px; height: 12px; border: 1.5px solid rgba(var(--ph), .6); }
+/* fotos com moldura de tela; a varredura passa por cima delas também */
+.incubator .case__photos img { border-radius: 2px; box-shadow: 0 0 0 1px rgba(var(--ph), .45); filter: saturate(.85); }
+/* textos da ficha na fonte do terminal */
+.incubator .case__info, .incubator .case__info p { font-family: "VT323", ui-monospace, monospace; }
+.incubator .case__info > p:not(.case__kicker) { font-size: 1.4rem; line-height: 1.3; color: var(--phosphor-dim); }
+.incubator .case__kicker { font-size: 1.3rem; color: var(--phosphor-dim); }
+.incubator .case__kicker::before { content: "> "; }
+.incubator .species-name { font-family: "VT323", ui-monospace, monospace; font-weight: 400; color: var(--phosphor); text-shadow: 0 0 10px rgba(var(--ph), .45); }
+.incubator .species-name--zero span { font-family: inherit; font-style: normal; color: var(--phosphor-dim); }
+.incubator .card {
+  transform: none; max-width: none;
+  background: rgba(var(--ph), .05); box-shadow: none;
+  border: 1px dashed rgba(var(--ph), .4);
+  font-family: "VT323", ui-monospace, monospace; font-size: 1.3rem;
+  color: var(--phosphor); padding-bottom: 1rem;
+}
+.incubator .card__head { color: var(--phosphor-dim); border-bottom-color: rgba(var(--ph), .4); font-size: 1.2rem; }
+.incubator .card__rows { background-image: repeating-linear-gradient(to bottom, transparent 0 calc(var(--row) - 1px), rgba(var(--ph), .15) calc(var(--row) - 1px) var(--row)); }
+.incubator .card__rows dt { color: var(--phosphor-dim); }
+.incubator .card__rows a { color: var(--phosphor); text-decoration-color: rgba(var(--ph), .6); }
+.incubator .card__hole { display: none; }
+.incubator .knobs__title { font-family: "VT323", ui-monospace, monospace; font-weight: 400; font-size: 1.5rem; color: var(--phosphor); }
+.incubator .knob span { font-family: "VT323", ui-monospace, monospace; font-size: 1.15rem; }
+.incubator .knob { color: var(--phosphor-dim); }
+.incubator .knob[aria-pressed="true"] { color: var(--phosphor); }
+.incubator .knobs__desc { font-family: "VT323", ui-monospace, monospace; font-size: 1.35rem; line-height: 1.3; color: var(--phosphor-dim); }
+.incubator .knobs__desc b { font-family: inherit; font-weight: 400; color: var(--phosphor); }
+.incubator .btn--ghost { color: var(--phosphor); font-family: "VT323", ui-monospace, monospace; font-weight: 400; font-size: 1.4rem; }
+.incubator .btn--ghost::before { background: var(--phosphor); }
+.incubator .btn--ghost:hover, .incubator .btn--ghost:focus-visible { background: var(--phosphor); color: #04120a; }
+.incubator .info-btn { color: var(--phosphor); border-color: rgba(var(--ph), .6); }
+@media (max-width: 600px) {
+  .incubator { border-width: 8px; border-radius: 14px; }
+  /* barra de título em duas linhas curtas, sem os botões de janela */
+  .incubator__bar { flex-wrap: wrap; gap: .1rem .8rem; font-size: 1.15rem; }
+  .incubator__bar span:last-child { display: none; }
+}
 
 /* ---------- crie sua espécie ---------- */
 

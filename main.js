@@ -497,7 +497,7 @@
       var on = Math.round((parseFloat(getComputedStyle(li).getPropertyValue("--fill")) || 0) * 12);
       for (var c = 0; c < 12; c++) {
         var cell = document.createElement("i");
-        if (c < on) cell.className = "on";
+        if (c < on) cell.className = c === on - 1 && on < 12 ? "on blink" : "on";
         cell.style.setProperty("--c", c);
         bar.appendChild(cell);
       }

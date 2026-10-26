@@ -21,7 +21,7 @@
   <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
   <link rel="preload" href="assets/fonts/big-shoulders-display-latin.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="assets/fonts/newsreader-latin.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="stylesheet" href="styles.css?v=50">
+  <link rel="stylesheet" href="styles.css?v=53">
 </head>
 <body>
 
@@ -180,6 +180,7 @@
 
   <!-- SOBRE -->
   <section class="about" id="sobre" aria-labelledby="sobre-t">
+    <div class="fossils" aria-hidden="true"></div>
     <div class="wrap about__grid">
       <div class="about__head">
         <h2 class="h2" id="sobre-t" data-i18n="about.title">A gente escava som</h2>
@@ -198,6 +199,7 @@
 
   <!-- COLEÇÃO -->
   <section class="collection" id="colecao" aria-labelledby="colecao-t">
+    <div class="fossils" aria-hidden="true"></div>
     <svg class="strata strata--clay" viewBox="0 0 1200 60" preserveAspectRatio="none" aria-hidden="true">
       <path class="b1" d="M0 20 C150 6 300 30 470 18 S800 2 960 16 S1130 26 1200 14 V60 H0Z"/>
       <path class="b2" d="M0 34 C180 24 330 44 520 32 S860 20 1010 32 S1150 38 1200 30 V60 H0Z"/>
@@ -420,10 +422,9 @@
         </div>
       </div>
 
-      <div class="section-rule section-rule--piece" aria-hidden="true"><span></span></div>
-
       <!-- a vitrine do ZeRO fica dentro de uma incubadora: janela escura com moldura de aço na parede branca -->
       <article class="case spot incubator" id="exposicao-zero" aria-labelledby="zero-t">
+        <div class="incubator__bar" aria-hidden="true"><b>incubadora_02</b><span data-i18n="lab.incubator">espécime FT-L01, em incubação</span><span><i></i><i></i><i></i></span></div>
         <div class="case__photos">
           <picture class="case__main">
             <source type="image/avif" srcset="assets/img/zero-front-800.avif 800w, assets/img/zero-front-1200.avif 1200w" sizes="(min-width: 861px) 600px, (min-width: 700px) 46vw, calc(100vw - 32px)">
@@ -464,6 +465,7 @@
 
   <!-- CRIE SUA ESPÉCIE -->
   <section class="create" id="orcamento" aria-labelledby="create-t">
+    <div class="fossils" aria-hidden="true"></div>
     <svg class="strata strata--shale" viewBox="0 0 1200 60" preserveAspectRatio="none" aria-hidden="true">
       <path class="b1" d="M0 24 C200 12 380 30 600 20 S960 8 1200 22 V60 H0Z"/>
       <path class="b2" d="M0 36 C220 28 400 44 620 34 S980 24 1200 36 V60 H0Z"/>
@@ -610,6 +612,7 @@
 
   <!-- MANUTENÇÃO: só apresenta o serviço; peças e pedido de conserto ficam em manutencao.html -->
   <section class="restore" id="manutencao" aria-labelledby="restore-t">
+    <div class="fossils" aria-hidden="true"></div>
     <svg class="strata strata--slate" viewBox="0 0 1200 60" preserveAspectRatio="none" aria-hidden="true">
       <path class="b1" d="M0 18 C150 8 330 28 520 16 S860 6 1040 20 S1160 24 1200 14 V60 H0Z"/>
       <path class="b2" d="M0 32 C170 24 350 42 540 30 S880 22 1060 34 S1170 36 1200 28 V60 H0Z"/>
@@ -680,8 +683,8 @@
 <dialog class="sheet dossier" id="dossier" aria-labelledby="dossier-title"></dialog>
 <dialog class="sheet ficha" id="ficha-dialog" aria-labelledby="ficha-title"></dialog>
 
-<script src="base.js?v=4"></script>
-<script src="main.js?v=21"></script>
+<script src="base.js?v=5"></script>
+<script src="main.js?v=22"></script>
 <script src="acervo.js?v=17"></script>
 </body>
 </html>

@@ -490,6 +490,19 @@
   /* ---------- laboratório: as barras do monitor enchem quando ele aparece ---------- */
 
   var monitor = document.querySelector(".monitor");
+  // cada barra vira 12 células do mesmo tamanho; acesas = --fill do passo (1, 1, .6, 0)
+  if (monitor) {
+    monitor.querySelectorAll(".steps li").forEach(function (li) {
+      var bar = li.querySelector(".steps__bar");
+      var on = Math.round((parseFloat(getComputedStyle(li).getPropertyValue("--fill")) || 0) * 12);
+      for (var c = 0; c < 12; c++) {
+        var cell = document.createElement("i");
+        if (c < on) cell.className = "on";
+        cell.style.setProperty("--c", c);
+        bar.appendChild(cell);
+      }
+    });
+  }
   if (monitor && !reduceMotion) {
     monitor.classList.add("is-idle");
     var monitorFrame = 0;

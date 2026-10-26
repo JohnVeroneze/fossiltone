@@ -480,8 +480,9 @@ button, input, select, textarea { font: inherit; color: inherit; }
   box-shadow: 0 10px 22px rgba(0, 0, 0, .35);
 }
 .modelo:hover, .modelo:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
-.modelo__foto { display: grid; place-items: center; aspect-ratio: 4 / 3; background: rgba(42, 26, 14, .12); margin-bottom: .5rem; }
-.modelo__foto img { width: 100%; height: 100%; object-fit: cover; }
+/* a foto fica presa no 4:3: sem o overflow, uma foto em pé esticava o card */
+.modelo__foto { position: relative; display: grid; place-items: center; aspect-ratio: 4 / 3; overflow: hidden; background: rgba(42, 26, 14, .12); margin-bottom: .5rem; }
+.modelo__foto img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
 .modelo__foto span { font-family: var(--f-type); font-size: .85rem; color: rgba(42, 26, 14, .6); }
 .modelo__no, .modelo__nome, .modelo__conta { padding-inline: 1rem; }
 .modelo__no { font-family: var(--f-type); font-size: .85rem; color: var(--rust); }

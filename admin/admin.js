@@ -963,11 +963,12 @@
     $("#lista", view).innerHTML = !lista.length ? '<p class="empty">Nenhum modelo no acervo.</p>' : `<ul class="modelos">${lista.map((a) => {
       const capa = capaDe(a.id);
       const n = (t) => midiasDe(a.id, t).length;
+      const conta = (q, um, varios) => `${q} ${q === 1 ? um : varios}`;
       return `<li><button class="modelo" type="button" data-modelo="${esc(a.id)}">
         <span class="modelo__foto">${capa ? `<img src="${esc(urlMidia(capa, "card", "media", "mini"))}" alt="" loading="lazy">` : "<span>sem foto</span>"}</span>
         <span class="modelo__no">${esc(a.numero || "")}</span>
         <span class="modelo__nome">${esc(a.nome)}${a.subtitulo ? ` <small>${esc(a.subtitulo)}</small>` : ""}</span>
-        <span class="modelo__conta">${n("foto")} fotos · ${n("video")} vídeos · ${n("audio")} áudios</span>
+        <span class="modelo__conta">${conta(n("foto"), "foto", "fotos")} · ${conta(n("video"), "vídeo", "vídeos")} · ${conta(n("audio"), "áudio", "áudios")}</span>
         ${a.publicado ? '<span class="stamp st-ativo">No fichário</span>' : '<span class="stamp st-rascunho">Fora do fichário</span>'}
       </button></li>`;
     }).join("")}</ul>`;

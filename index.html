@@ -21,7 +21,7 @@
   <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
   <link rel="preload" href="assets/fonts/big-shoulders-display-latin.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="assets/fonts/newsreader-latin.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="stylesheet" href="styles.css?v=37">
+  <link rel="stylesheet" href="styles.css?v=38">
 </head>
 <body>
 
@@ -600,7 +600,7 @@
     </div>
   </section>
 
-  <!-- MANUTENÇÃO: peças de reposição e pedido de conserto (os dois vão para o painel admin) -->
+  <!-- MANUTENÇÃO: só apresenta o serviço; peças e pedido de conserto ficam em manutencao.html -->
   <section class="restore" id="manutencao" aria-labelledby="restore-t">
     <svg class="strata strata--slate" viewBox="0 0 1200 60" preserveAspectRatio="none" aria-hidden="true">
       <path class="b1" d="M0 18 C150 8 330 28 520 16 S860 6 1040 20 S1160 24 1200 14 V60 H0Z"/>
@@ -619,121 +619,17 @@
         </div>
       </header>
 
-      <div class="restore__grid">
-        <!-- 1. loja de peças de reposição: produtos do tipo "peça" publicados no painel -->
-        <form class="restore__panel parts" id="parts-form" novalidate>
-          <div class="restore__panel-head">
-            <span class="restore__no">01</span>
-            <h3 class="restore__title" data-i18n="rest.shopTitle">Peças de reposição</h3>
-            <p class="restore__sub" data-i18n="rest.shopLead">Knobs, chaves, jacks e válvulas pra quem prefere trocar em casa. Escolha as peças e a gente confirma estoque e frete.</p>
-          </div>
-
-          <ul class="parts__list" id="parts-list" aria-live="polite">
-            <li class="parts__msg" data-i18n="rest.loading">Abrindo o almoxarifado…</li>
-          </ul>
-
-          <div class="parts__cart" id="parts-cart" hidden>
-            <p class="parts__cart-title" data-i18n="rest.listTitle">Sua lista de peças</p>
-            <ul class="parts__cart-list" id="parts-cart-list"></ul>
-            <p class="parts__total"><span data-i18n="rest.total">Total estimado</span> <b id="parts-total"></b> <small data-i18n="rest.totalNote">sem frete</small></p>
-          </div>
-
-          <div class="field">
-            <label for="pt-other" data-i18n="rest.other">Precisa de outra peça? (opcional)</label>
-            <input id="pt-other" name="outra" type="text" maxlength="200" autocomplete="off" data-i18n-ph="rest.otherPh" placeholder="Ex.: knob creme para eixo liso de 6 mm">
-          </div>
-
-          <div class="field">
-            <label for="pt-name" data-i18n="form.name">Seu nome</label>
-            <input id="pt-name" name="nome" type="text" autocomplete="name" maxlength="80" required>
-          </div>
-          <div class="form__pair">
-            <div class="field">
-              <label for="pt-wa" data-i18n="form.whatsapp">WhatsApp</label>
-              <input id="pt-wa" name="whatsapp" type="tel" inputmode="tel" autocomplete="tel" maxlength="20" placeholder="(19) 99999-9999" required>
-            </div>
-            <div class="field">
-              <label for="pt-email" data-i18n="form.email">E-mail</label>
-              <input id="pt-email" name="email" type="email" autocomplete="email" maxlength="120" required>
-            </div>
-          </div>
-          <div class="hp" aria-hidden="true"><label>Site <input name="site" type="text" tabindex="-1" autocomplete="off"></label></div>
-
-          <button class="btn" type="submit" data-i18n="rest.shopSend">Pedir as peças</button>
-          <p class="form__status" role="status"></p>
-        </form>
-        <!-- 2. pedido de manutenção -->
-        <form class="restore__panel fix" id="fix-form" novalidate>
-          <div class="restore__panel-head">
-            <span class="restore__no">02</span>
-            <h3 class="restore__title" data-i18n="rest.fixTitle">Pedir manutenção</h3>
-            <p class="restore__sub" data-i18n="rest.fixLead">Conte o que está acontecendo. A gente responde com o diagnóstico inicial e o orçamento.</p>
-          </div>
-
-          <fieldset>
-            <legend data-i18n="rest.equip">O que precisa de manutenção?</legend>
-            <div class="chips">
-              <label><input type="radio" name="equip" value="pedal" checked><span data-i18n="rest.pedal">Pedal</span></label>
-              <label><input type="radio" name="equip" value="amp"><span data-i18n="rest.amp">Amplificador</span></label>
-            </div>
-          </fieldset>
-
-          <div class="field">
-            <label for="fx-model" data-i18n="rest.model">Marca e modelo</label>
-            <input id="fx-model" name="modelo" type="text" maxlength="80" autocomplete="off" data-i18n-ph="rest.modelPh" placeholder="Ex.: Fossil Tone Megalodon, Marshall JCM800" required>
-          </div>
-
-          <fieldset>
-            <legend data-i18n="rest.problems">O que está acontecendo?</legend>
-            <div class="chips chips--sm">
-              <label><input type="checkbox" name="problema" value="sem_som"><span data-i18n="rest.pNoSound">Sem som</span></label>
-              <label><input type="checkbox" name="problema" value="nao_liga"><span data-i18n="rest.pPower">Não liga</span></label>
-              <label><input type="checkbox" name="problema" value="ruido"><span data-i18n="rest.pNoise">Chiado ou ruído</span></label>
-              <label><input type="checkbox" name="problema" value="intermitente"><span data-i18n="rest.pIntermittent">Falha de vez em quando</span></label>
-              <label><input type="checkbox" name="problema" value="potenciometro"><span data-i18n="rest.pKnob">Knob ou potenciômetro</span></label>
-              <label><input type="checkbox" name="problema" value="jack"><span data-i18n="rest.pJack">Jack ou conector</span></label>
-              <label><input type="checkbox" name="problema" value="chave"><span data-i18n="rest.pSwitch">Chave ou footswitch</span></label>
-              <label class="only-amp"><input type="checkbox" name="problema" value="valvula"><span data-i18n="rest.pTube">Válvula</span></label>
-              <label><input type="checkbox" name="problema" value="outro"><span data-i18n="rest.pOther">Outro</span></label>
-            </div>
-          </fieldset>
-
-          <div class="field">
-            <label for="fx-age" data-i18n="rest.age">Há quanto tempo está em uso?</label>
-            <select id="fx-age" name="tempo">
-              <option value="" data-i18n="rest.agePick">Escolha</option>
-              <option value="menos_1" data-i18n="rest.ageLt1">Menos de 1 ano</option>
-              <option value="1_3" data-i18n="rest.age1">1 a 3 anos</option>
-              <option value="3_10" data-i18n="rest.age3">3 a 10 anos</option>
-              <option value="mais_10" data-i18n="rest.age10">Mais de 10 anos</option>
-              <option value="nao_sei" data-i18n="rest.ageUnknown">Não sei</option>
-            </select>
-          </div>
-
-          <div class="field">
-            <label for="fx-desc" data-i18n="rest.desc">Descreva o problema</label>
-            <textarea id="fx-desc" name="descricao" rows="4" maxlength="1500" data-i18n-ph="rest.descPh" placeholder="Quando começou, em que situação acontece, se já foi aberto antes" required></textarea>
-          </div>
-
-          <div class="field">
-            <label for="fx-name" data-i18n="form.name">Seu nome</label>
-            <input id="fx-name" name="nome" type="text" autocomplete="name" maxlength="80" required>
-          </div>
-          <div class="form__pair">
-            <div class="field">
-              <label for="fx-wa" data-i18n="form.whatsapp">WhatsApp</label>
-              <input id="fx-wa" name="whatsapp" type="tel" inputmode="tel" autocomplete="tel" maxlength="20" placeholder="(19) 99999-9999" required>
-            </div>
-            <div class="field">
-              <label for="fx-email" data-i18n="form.email">E-mail</label>
-              <input id="fx-email" name="email" type="email" autocomplete="email" maxlength="120" required>
-            </div>
-          </div>
-          <div class="hp" aria-hidden="true"><label>Site <input name="site" type="text" tabindex="-1" autocomplete="off"></label></div>
-
-          <button class="btn" type="submit" data-i18n="rest.fixSend">Enviar pedido de manutenção</button>
-          <p class="form__status" role="status"></p>
-        </form>
+      <div class="restore__teaser">
+        <ul class="restore__services">
+          <li><span class="restore__svc-no">01</span><span data-i18n="rest.s1">Diagnóstico e orçamento antes de qualquer conserto</span></li>
+          <li><span class="restore__svc-no">02</span><span data-i18n="rest.s2">Troca de jacks, chaves, potenciômetros e knobs</span></li>
+          <li><span class="restore__svc-no">03</span><span data-i18n="rest.s3">Válvulas e revisão completa de amplificadores</span></li>
+          <li><span class="restore__svc-no">04</span><span data-i18n="rest.s4">Fossil Tone e outras marcas</span></li>
+        </ul>
+        <div class="restore__actions">
+          <a class="btn" href="manutencao.html#conserto" data-i18n="rest.ctaFix">Solicitar orçamento</a>
+          <a class="btn btn--ghost" href="manutencao.html#pecas" data-i18n="rest.ctaParts">Ver peças de reposição</a>
+        </div>
       </div>
     </div>
   </section>
@@ -776,8 +672,8 @@
 <dialog class="sheet dossier" id="dossier" aria-labelledby="dossier-title"></dialog>
 <dialog class="sheet ficha" id="ficha-dialog" aria-labelledby="ficha-title"></dialog>
 
-<script src="main.js?v=14"></script>
-<script src="acervo.js?v=14"></script>
-<script src="manutencao.js?v=1"></script>
+<script src="base.js?v=1"></script>
+<script src="main.js?v=15"></script>
+<script src="acervo.js?v=15"></script>
 </body>
 </html>

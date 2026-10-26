@@ -1,4 +1,4 @@
-/* Fossil Tone — manutenção: loja de peças de reposição e pedido de conserto.
+/* Fossil Tone — página de manutenção (manutencao.html): peças de reposição e pedido de conserto.
    As peças saem dos produtos do tipo "peça" publicados no painel admin;
    os dois formulários caem na caixa de entrada do painel. */
 (function () {
@@ -58,7 +58,7 @@
         form.classList.add("is-sent");
         FT.formStatus(status, doneKey);
         form.reset();
-        if (form.id === "parts-form") { cart = {}; renderParts(); }
+        if (form.id === "pecas") { cart = {}; renderParts(); }
         syncAmp();
       }).catch(function () {
         FT.formStatus(status, "form.error", true, waText(payload));
@@ -68,7 +68,7 @@
 
   /* ---------- 1. peças de reposição ---------- */
 
-  var partsForm = document.getElementById("parts-form");
+  var partsForm = document.getElementById("pecas");
   var list = document.getElementById("parts-list");
   var cartBox = document.getElementById("parts-cart");
   var cartList = document.getElementById("parts-cart-list");
@@ -165,11 +165,11 @@
   FT.apiGet("produtos?select=slug,numero,nome,descricao,preco,preco_promocional,status&tipo=eq.peca&status=in.(ativo,sob_encomenda,esgotado)&order=numero.asc")
     .then(function (rows) { parts = rows || []; })
     .catch(function () { parts = []; loadError = true; })
-    .then(function () { renderParts(); if (FT.relayout) FT.relayout(); });
+    .then(renderParts);
 
   /* ---------- 2. pedido de manutenção ---------- */
 
-  var fixForm = document.getElementById("fix-form");
+  var fixForm = document.getElementById("conserto");
 
   // "Válvula" só aparece para amplificador
   function syncAmp() {
@@ -205,4 +205,5 @@
   });
 
   FT.onLang(renderParts);
+  FT.applyLang();
 })();

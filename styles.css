@@ -1197,7 +1197,7 @@ h1, h2, h3, h4 { margin: 0; font-weight: inherit; }
 .channels { width: fit-content; max-width: 100%; }
 .channels a { display: grid; grid-template-columns: 10.5rem minmax(0, 1fr); align-items: center; gap: .4rem 1.75rem; padding: 1.1rem .25rem; text-decoration: none; text-align: left; }
 .channels__k {
-  justify-self: start;
+  justify-self: start; align-self: center;
   padding: .32em .7em .26em;
   border: 1px solid rgba(242, 159, 13, .55); border-radius: 3px;
   font-family: var(--f-type); font-size: .98rem; letter-spacing: .12em; text-transform: uppercase; line-height: 1;

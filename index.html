@@ -21,7 +21,7 @@
   <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
   <link rel="preload" href="assets/fonts/big-shoulders-display-latin.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="assets/fonts/newsreader-latin.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="stylesheet" href="styles.css?v=41">
+  <link rel="stylesheet" href="styles.css?v=47">
 </head>
 <body>
 
@@ -383,6 +383,7 @@
   </section>
 
   <!-- LABORATÓRIO -->
+  <!-- LABORATÓRIO: sala branca de laboratório genético enterrada no Jurássico -->
   <section class="lab" id="laboratorio" aria-labelledby="lab-t">
     <svg class="strata strata--rock" viewBox="0 0 1200 60" preserveAspectRatio="none" aria-hidden="true">
       <path class="b1" d="M0 16 C120 28 260 4 420 14 S720 30 900 12 S1110 4 1200 18 V60 H0Z"/>
@@ -391,6 +392,7 @@
     </svg>
     <div class="wrap">
       <header class="lab__head">
+        <p class="lab__plate" data-i18n="lab.plate">Setor B, nível −1.450 m</p>
         <h2 class="h2 h2--lab" id="lab-t" data-i18n="lab.title">Laboratório Âmbar</h2>
         <div class="lab__intro">
           <p class="lab__lead" data-i18n="lab.lead">Você já viu esse filme: tiram o DNA de um mosquito preso no âmbar e um dinossauro volta à vida. Aqui, o DNA é o seu som.</p>
@@ -398,12 +400,17 @@
         </div>
       </header>
 
-      <ol class="steps">
-        <li><h3 data-i18n="lab.s1t">Extração</h3><p data-i18n="lab.s1">Você conta o timbre que procura, suas referências e o que falta no seu setup.</p></li>
-        <li><h3 data-i18n="lab.s2t">Sequenciamento</h3><p data-i18n="lab.s2">A gente define com você o circuito, os mods e a arte.</p></li>
-        <li><h3 data-i18n="lab.s3t">Incubação</h3><p data-i18n="lab.s3">Montagem à mão, componente por componente, e pintura.</p></li>
-        <li><h3 data-i18n="lab.s4t">Eclosão</h3><p data-i18n="lab.s4">Sua espécie nasce, passa nos testes e vai pra sua casa.</p></li>
-      </ol>
+      <!-- os 4 passos na tela do sequenciador (fósforo âmbar); as barras enchem quando o monitor aparece -->
+      <div class="monitor">
+        <p class="monitor__cmd"><span data-i18n="lab.monitor">sequenciando o DNA do seu timbre</span><span class="monitor__cursor" aria-hidden="true">_</span></p>
+        <ol class="steps">
+          <li style="--fill:1;--i:0"><h3 data-i18n="lab.s1t">Extração</h3><p data-i18n="lab.s1">Você conta o timbre que procura, suas referências e o que falta no seu setup.</p><span class="steps__bar" aria-hidden="true"></span><span class="steps__state" aria-hidden="true" data-i18n="lab.stDone">completo</span></li>
+          <li style="--fill:1;--i:1"><h3 data-i18n="lab.s2t">Sequenciamento</h3><p data-i18n="lab.s2">A gente define com você o circuito, os mods e a arte.</p><span class="steps__bar" aria-hidden="true"></span><span class="steps__state" aria-hidden="true" data-i18n="lab.stDone">completo</span></li>
+          <li style="--fill:.6;--i:2"><h3 data-i18n="lab.s3t">Incubação</h3><p data-i18n="lab.s3">Montagem à mão, componente por componente, e pintura.</p><span class="steps__bar" aria-hidden="true"></span><span class="steps__state" aria-hidden="true" data-i18n="lab.stRun">em curso</span></li>
+          <li class="is-wait" style="--fill:0;--i:3"><h3 data-i18n="lab.s4t">Eclosão</h3><p data-i18n="lab.s4">Sua espécie nasce, passa nos testes e vai pra sua casa.</p><span class="steps__bar" aria-hidden="true"></span><span class="steps__state" aria-hidden="true" data-i18n="lab.stWait">aguardando você</span></li>
+        </ol>
+        <p class="monitor__dna" aria-hidden="true">ATGCGTACCTAGGATCCGTAAGCTTGCATGCCTGCAGGTCGACTCTAGAGGATCCCCGGGTACCGAGCTCGAATTCACTGGCCGTCGTTTTACAACGTCGTGACTGGGAAAACCCTGGCG</p>
+      </div>
 
       <div class="lab__cta">
         <p class="lab__cta-text" data-i18n="lab.ctaText">Tem um timbre na cabeça? A gente extrai o DNA dele e cria a sua espécie.</p>
@@ -415,7 +422,8 @@
 
       <div class="section-rule section-rule--piece" aria-hidden="true"><span></span></div>
 
-      <article class="case spot" id="exposicao-zero" aria-labelledby="zero-t">
+      <!-- a vitrine do ZeRO fica dentro de uma incubadora: janela escura com moldura de aço na parede branca -->
+      <article class="case spot incubator" id="exposicao-zero" aria-labelledby="zero-t">
         <div class="case__photos">
           <picture class="case__main">
             <source type="image/avif" srcset="assets/img/zero-front-800.avif 800w, assets/img/zero-front-1200.avif 1200w" sizes="(min-width: 861px) 600px, (min-width: 700px) 46vw, calc(100vw - 32px)">
@@ -672,8 +680,8 @@
 <dialog class="sheet dossier" id="dossier" aria-labelledby="dossier-title"></dialog>
 <dialog class="sheet ficha" id="ficha-dialog" aria-labelledby="ficha-title"></dialog>
 
-<script src="base.js?v=3"></script>
-<script src="main.js?v=16"></script>
+<script src="base.js?v=4"></script>
+<script src="main.js?v=20"></script>
 <script src="acervo.js?v=17"></script>
 </body>
 </html>

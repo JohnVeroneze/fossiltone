@@ -487,6 +487,27 @@
 
 
 
+  /* ---------- laboratório: as barras do monitor enchem quando ele aparece ---------- */
+
+  var monitor = document.querySelector(".monitor");
+  if (monitor && !reduceMotion) {
+    monitor.classList.add("is-idle");
+    var monitorFrame = 0;
+    var checkMonitor = function () {
+      monitorFrame = 0;
+      var r = monitor.getBoundingClientRect();
+      // metade de cima do monitor dentro da tela: as barras começam a encher
+      if (r.top < window.innerHeight * 0.75 && r.bottom > window.innerHeight * 0.25) {
+        monitor.classList.remove("is-idle");
+        monitor.classList.add("is-run");
+        window.removeEventListener("scroll", onMonitorScroll);
+      }
+    };
+    var onMonitorScroll = function () { if (!monitorFrame) monitorFrame = requestAnimationFrame(checkMonitor); };
+    window.addEventListener("scroll", onMonitorScroll, { passive: true });
+    checkMonitor();
+  }
+
   var labWa = document.getElementById("lab-wa");
   onLang(function () { labWa.href = WA + "?text=" + encodeURIComponent(t("lab.ctaMsg")); });
 

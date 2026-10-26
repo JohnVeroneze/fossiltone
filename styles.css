@@ -20,6 +20,11 @@
   font-weight: 400; font-style: italic; font-display: swap;
 }
 @font-face {
+  font-family: "VT323";
+  src: url("assets/fonts/vt323-latin.woff2") format("woff2");
+  font-weight: 400; font-style: normal; font-display: swap;
+}
+@font-face {
   font-family: "Special Elite";
   src: url("assets/fonts/special-elite-latin.woff2") format("woff2");
   font-weight: 400; font-style: normal; font-display: swap;
@@ -661,60 +666,134 @@ h1, h2, h3, h4 { margin: 0; font-weight: inherit; }
 .dig__strata .s3 { fill: #44240F; }
 .dig__strata .pebble { fill: #9A6634; }
 
-/* ---------- laboratório ---------- */
+/* ---------- laboratório: sala branca de laboratório genético, enterrada no Jurássico ----------
+   Única seção clara do site. Entra por uma faixa de aço com listras de segurança,
+   tem paredes em painéis, um monitor de fósforo âmbar com os 4 passos e a vitrine
+   do ZeRO dentro de uma incubadora. Embaixo, um piso de aço e a terra volta. */
 
 .lab {
+  --wall: #E8EBE8; --seam: #CDD3CF; --steel: #9AA39F; --steel-light: #C3C9C5; --lab-ink: #16201D; --lab-text: #3B4642;
+  --floor: clamp(34px, 5vw, 60px);
   position: relative;
-  padding-block: var(--section);
+  padding-block: calc(var(--section) + 22px) calc(var(--section) + var(--floor));
+  color: var(--lab-text);
   background:
-    radial-gradient(60% 50% at 85% 10%, rgba(242, 159, 13, .14), transparent 70%),
-    var(--resin-deep);
+    linear-gradient(to top, var(--resin) var(--floor), transparent var(--floor)),
+    repeating-linear-gradient(90deg, transparent 0 239px, var(--seam) 239px 240px),
+    repeating-linear-gradient(0deg, transparent 0 179px, rgba(205, 211, 207, .7) 179px 180px),
+    var(--wall);
   --hole-bg: var(--resin-deep);
 }
-/* título numa linha só e os dois parágrafos lado a lado embaixo dele (o ^ do Â não encosta em nada) */
-.lab__head { display: grid; gap: clamp(1.5rem, 3vw, 2.5rem); }
+/* entrada: trilho de aço, listras de segurança e outro trilho */
+.lab::before {
+  content: ""; position: absolute; left: 0; right: 0; top: 0; height: 22px;
+  background:
+    linear-gradient(var(--steel) 0 4px, transparent 4px 16px, #7d8783 16px 22px),
+    repeating-linear-gradient(135deg, var(--amber) 0 14px, var(--lab-ink) 14px 28px);
+}
+/* piso de aço; abaixo dele a terra do Triássico */
+.lab::after {
+  content: ""; position: absolute; left: 0; right: 0; bottom: var(--floor); height: 8px;
+  background: linear-gradient(#7d8783, var(--steel) 3px, #6c7672);
+}
+
+.lab__head { display: grid; gap: clamp(1.25rem, 2.5vw, 2rem); }
 .lab__head > * { min-width: 0; }
-.h2--lab { font-size: clamp(2.6rem, 7.6vw, 7.2rem); line-height: 1; white-space: nowrap; color: var(--honey); }
+.lab__plate {
+  justify-self: start; margin: 0;
+  padding: .35em .75em .3em;
+  border: 1.5px solid var(--steel); border-radius: 3px; background: #F3F5F3;
+  font-family: var(--f-display); font-weight: 800; font-size: 1rem; letter-spacing: .05em; color: #4C5652;
+}
+/* título numa linha só e os dois parágrafos lado a lado embaixo dele */
+.h2--lab { font-size: clamp(2.6rem, 7.6vw, 7.2rem); line-height: 1; white-space: nowrap; color: var(--lab-ink); }
 .lab__intro { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem clamp(2rem, 6vw, 6rem); align-items: start; }
 .lab__intro p { margin: 0; }
-.lab__lead { font-size: 1.6rem; line-height: 1.4; font-style: italic; color: var(--paper); }
-.lab__intro p:last-child { font-size: 1.2rem; color: var(--text); max-width: 50ch; }
+.lab__lead { font-size: 1.6rem; line-height: 1.4; font-style: italic; color: var(--lab-ink); }
+.lab__intro p:last-child { font-size: 1.2rem; color: var(--lab-text); max-width: 50ch; }
 @media (max-width: 860px) { .lab__intro { grid-template-columns: 1fr; } }
 /* celular estreito: o título pode quebrar, com espaço para o acento */
 @media (max-width: 480px) { .h2--lab { white-space: normal; line-height: 1.05; } }
 
-.steps {
-  list-style: none; margin: clamp(3.5rem, 7vw, 5.5rem) 0 0; padding: 0;
-  display: grid; grid-template-columns: repeat(4, 1fr); gap: 2rem;
-  counter-reset: step;
+/* monitor do sequenciador: tela escura com fósforo âmbar e linhas de varredura */
+.monitor {
+  --phosphor: #F7B23B; --phosphor-dim: #9C7433;
+  position: relative;
+  margin-top: clamp(3rem, 6vw, 4.5rem);
+  padding: clamp(1.1rem, 2.5vw, 1.8rem) clamp(1rem, 3vw, 2.2rem);
+  border: 12px solid var(--steel-light); border-radius: 16px;
+  background: radial-gradient(90% 120% at 50% 30%, #2a1d0f, #140d07 75%);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .6), inset 0 0 40px rgba(0, 0, 0, .6), 0 18px 40px rgba(22, 32, 29, .22);
+  font-family: "VT323", ui-monospace, monospace;
+  color: var(--phosphor);
+  text-shadow: 0 0 6px rgba(247, 178, 59, .45);
+  overflow: hidden;
 }
-.steps li { counter-increment: step; border-top: 1px solid var(--line); padding-top: 1.1rem; }
-.steps li::before {
-  content: counter(step);
-  display: block;
-  font-family: var(--f-display); font-weight: 900; font-size: 4rem; line-height: 1;
-  color: transparent; -webkit-text-stroke: 1.5px var(--amber);
-  margin-bottom: .6rem;
+.monitor::after {
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  background: repeating-linear-gradient(rgba(0, 0, 0, .22) 0 1px, transparent 1px 3px);
 }
-.steps h3 { font-family: var(--f-display); font-weight: 800; font-size: 1.6rem; letter-spacing: .01em; color: var(--paper); margin-bottom: .35rem; }
-.steps p { font-size: 1.05rem; color: var(--muted); margin: 0; max-width: 30ch; }
-@media (max-width: 960px) { .steps { grid-template-columns: repeat(2, 1fr); } }
+.monitor__cmd { margin: 0 0 1rem; font-size: 1.45rem; line-height: 1.2; color: var(--phosphor-dim); }
+.monitor__cmd::before { content: "> "; }
+@media (prefers-reduced-motion: no-preference) { .monitor__cursor { animation: cursor 1s steps(1, end) infinite; } }
+@keyframes cursor { 50% { opacity: 0; } }
+.monitor__dna {
+  margin: 1.1rem 0 0; font-size: 1.2rem; letter-spacing: .3em; color: var(--phosphor-dim);
+  white-space: nowrap; overflow: hidden;
+}
 
+/* cada passo é uma linha da tela: número, nome, descrição, barra de progresso e estado */
+.steps { list-style: none; margin: 0; padding: 0; counter-reset: step; display: grid; }
+.steps li {
+  counter-increment: step;
+  display: grid; grid-template-columns: 2.6rem minmax(9rem, 13rem) minmax(0, 1fr) minmax(7rem, 11rem) 8.5rem;
+  align-items: baseline; column-gap: 1.25rem;
+  padding: .55rem 0; border-top: 1px dashed rgba(247, 178, 59, .22);
+}
+.steps li::before { content: counter(step, decimal-leading-zero); font-size: 1.5rem; }
+.steps h3 { margin: 0; font-family: inherit; font-weight: 400; font-size: 1.75rem; line-height: 1.1; color: var(--phosphor); }
+.steps p { margin: 0; font-size: 1.3rem; line-height: 1.2; color: var(--phosphor-dim); }
+.steps__bar { align-self: center; height: 12px; background: repeating-linear-gradient(90deg, rgba(247, 178, 59, .14) 0 9px, transparent 9px 12px); }
+.steps__bar::after {
+  content: ""; display: block; height: 100%;
+  background: repeating-linear-gradient(90deg, var(--phosphor) 0 9px, transparent 9px 12px);
+  transform: scaleX(var(--fill, 1)); transform-origin: left;
+}
+.steps__state { font-size: 1.35rem; text-align: right; }
+.steps li.is-wait h3, .steps li.is-wait::before, .steps li.is-wait .steps__state { color: var(--phosphor-dim); }
+/* as barras enchem uma depois da outra quando o monitor aparece (main.js) */
+.monitor.is-idle .steps__bar::after { transform: scaleX(0); }
+@media (prefers-reduced-motion: no-preference) {
+  .monitor.is-run .steps__bar::after { animation: sequencia .9s steps(12, end) calc(var(--i, 0) * .6s) both; }
+}
+@keyframes sequencia { from { transform: scaleX(0); } to { transform: scaleX(var(--fill, 1)); } }
+@media (max-width: 960px) {
+  .steps li { grid-template-columns: 2.6rem minmax(0, 1fr) minmax(6rem, 9rem) 9.5rem; row-gap: .2rem; }
+  .steps p { grid-column: 2 / -1; grid-row: 2; }
+}
+@media (max-width: 600px) {
+  .monitor { border-width: 8px; }
+  .steps li { grid-template-columns: 2.2rem minmax(0, 1fr) 8rem; }
+  .steps p { grid-column: 2 / -1; }
+  .steps__bar { grid-column: 2; grid-row: 3; margin-top: .35rem; }
+  .steps__state { grid-column: 3; grid-row: 3; font-size: 1.2rem; }
+}
+
+/* convite: painel de controle claro preso na parede */
 .lab__cta {
   display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1.25rem 2.5rem;
-  margin-top: clamp(2.5rem, 5vw, 3.5rem);
-  padding: 1.5rem clamp(1.25rem, 3vw, 2rem);
-  border: 1.5px dashed rgba(255, 213, 74, .35);
-  border-radius: 6px;
-  background: radial-gradient(80% 140% at 0% 0%, rgba(242, 159, 13, .12), transparent 60%);
+  margin-top: clamp(1.75rem, 3.5vw, 2.5rem);
+  padding: 1.4rem clamp(1.25rem, 3vw, 2rem);
+  border: 1.5px solid var(--steel); border-radius: 4px;
+  background: #F3F5F3;
+  box-shadow: inset 0 -3px 0 rgba(154, 163, 159, .35);
 }
-.lab__cta-text { margin: 0; max-width: 34ch; font-size: 1.35rem; line-height: 1.4; font-style: italic; color: var(--paper); }
+.lab__cta-text { margin: 0; max-width: 34ch; font-size: 1.35rem; line-height: 1.4; font-style: italic; color: var(--lab-ink); }
 .lab__cta-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 1rem 1.75rem; }
-@media (max-width: 520px) {
-  .steps { grid-template-columns: 1fr; gap: 1.25rem; }
-  .steps li { display: grid; grid-template-columns: 2.75rem 1fr; column-gap: .75rem; }
-  .steps li::before { grid-row: span 2; font-size: 2.9rem; margin: 0; }
-}
+.lab .link { color: var(--lab-ink); }
+.lab .link:hover { color: #8a5a00; }
+.lab .section-rule::before { background: linear-gradient(90deg, transparent, var(--steel)); }
+.lab .section-rule::after { background: linear-gradient(90deg, var(--steel), transparent); }
 
 .case {
   display: grid; grid-template-columns: 1.15fr 1fr; gap: clamp(2rem, 5vw, 5rem); align-items: start;
@@ -736,6 +815,20 @@ h1, h2, h3, h4 { margin: 0; font-weight: inherit; }
 .case__info > p:not(.case__kicker) { max-width: 44ch; }
 .case__info .species-name { margin-bottom: 1.4rem; }
 @media (max-width: 860px) { .case { grid-template-columns: 1fr; } }
+
+/* incubadora do ZeRO: janela escura com moldura de aço, iluminada por dentro em âmbar */
+.incubator {
+  padding: clamp(1.25rem, 3.5vw, 2.75rem);
+  border: 12px solid var(--steel-light, #C3C9C5); border-radius: 20px;
+  background:
+    radial-gradient(70% 55% at 30% 15%, rgba(242, 159, 13, .2), transparent 70%),
+    var(--resin-deep);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .6), inset 0 0 60px rgba(0, 0, 0, .55), 0 22px 50px rgba(22, 32, 29, .25);
+  color: var(--text);
+  overflow: hidden;
+}
+.incubator.spot::before { display: none; }
+@media (max-width: 600px) { .incubator { border-width: 8px; border-radius: 14px; } }
 
 /* ---------- crie sua espécie ---------- */
 

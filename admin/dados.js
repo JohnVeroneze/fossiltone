@@ -11,7 +11,8 @@
   const SUPABASE_JS = "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js";
   const DEMO_KEY = "ft-admin-demo-v2";
 
-  const TABELAS = ["produtos", "clientes", "pedidos", "itens_pedido", "cupons", "configuracoes", "contatos"];
+  const TABELAS = ["produtos", "clientes", "pedidos", "itens_pedido", "cupons", "configuracoes", "contatos", "acervo", "midias"];
+  const BUCKET = "acervo";
 
   const ORDEM = {
     produtos: ["numero", true],
@@ -20,7 +21,9 @@
     itens_pedido: ["nome", true],
     cupons: ["criado_em", false],
     configuracoes: ["chave", true],
-    contatos: ["criado_em", false]
+    contatos: ["criado_em", false],
+    acervo: ["ordem", true],
+    midias: ["ordem", true]
   };
 
   function carregarScript(src) {
@@ -165,6 +168,25 @@
 
       async salvarConfig(chave, valor) {
         erro(await sb.from("configuracoes").upsert({ chave, valor }));
+      },
+
+      /* ---------- arquivos do acervo (storage "acervo") ---------- */
+
+      async enviarArquivo(caminho, blob) {
+        erro(await sb.storage.from(BUCKET).upload(caminho, blob, { contentType: blob.type, cacheControl: "31536000", upsert: false }));
+        return caminho;
+      },
+
+      async removerArquivos(caminhos) {
+        const doStorage = caminhos.filter((c) => c && !c.startsWith("assets/"));
+        if (doStorage.length) erro(await sb.storage.from(BUCKET).remove(doStorage));
+      },
+
+      // "assets/..." é arquivo do próprio site; o resto está no storage
+      urlArquivo(caminho) {
+        if (!caminho) return "";
+        if (caminho.startsWith("assets/")) return "../" + caminho;
+        return sb.storage.from(BUCKET).getPublicUrl(caminho).data.publicUrl;
       }
     };
   }
@@ -176,6 +198,8 @@
     if (/duplicate key/i.test(msg)) return "Já existe um registro com esse código ou e-mail.";
     if (/row-level security/i.test(msg)) return "Sem permissão para essa ação.";
     if (/Failed to fetch/i.test(msg)) return "Sem conexão com o servidor.";
+    if (/exceeded the maximum allowed size|Payload too large/i.test(msg)) return "Arquivo grande demais (o limite é 50 MB).";
+    if (/mime type .* is not supported/i.test(msg)) return "Esse tipo de arquivo não é aceito.";
     if (/Invalid TOTP code|invalid.*code/i.test(msg)) return "Código incorreto. Confira o relógio do celular e use o código atual.";
     if (/AAL2 session is required/i.test(msg)) return "Confirme o código do Google Authenticator antes.";
     return msg;
@@ -254,7 +278,31 @@
 
     const configuracoes = [{ chave: "loja", valor: { nome: "Fossil Tone", email: "fossiltonefx@gmail.com", whatsapp: "5519991226377", freteFixo: 38.9, freteGratisAcima: 1500, prazoProducaoDias: 15, pix: "" } }];
 
-    return { produtos, clientes, pedidos, itens_pedido: itens, cupons, configuracoes, contatos };
+    return { produtos, clientes, pedidos, itens_pedido: itens, cupons, configuracoes, contatos, acervo: [], midias: [] };
+  }
+
+  // demonstração: o acervo sai do data/catalogo.json do site, com as fotos que já estão em assets/img
+  const FOTOS_DEMO = {
+    megalodon: [["megalodon-angle", "Megalodon em ângulo sobre uma mesa de madeira."], ["megalodon-art", "Detalhe da arte: a boca do tubarão em volta do footswitch."],
+      ["megalodon-plate", "Lateral do Megalodon com a placa First Edition."], ["megalodon-manual", "Cartão de instruções do Megalodon."]],
+    zero: [["zero-front", "Pedal ZeRO Alcino Edition, preto."]]
+  };
+  async function acervoDemo() {
+    const r = await fetch("../data/catalogo.json", { cache: "no-cache" });
+    const cat = r.ok ? await r.json() : { pecas: [] };
+    const acervo = [], midias = [];
+    const agora = new Date().toISOString();
+    (cat.pecas || []).forEach((p, i) => {
+      const id = uuid();
+      const conteudo = Object.assign({}, p);
+      ["id", "numero", "nome", "subtitulo", "tipo", "videos", "audios", "foto", "fotoAlt"].forEach((k) => delete conteudo[k]);
+      acervo.push({ id, slug: p.id, numero: p.numero || null, nome: p.nome, subtitulo: p.subtitulo || null, tipo: p.tipo, publicado: true, ordem: i, conteudo, criado_em: agora, atualizado_em: agora });
+      let ordem = 0;
+      (FOTOS_DEMO[p.id] || []).forEach(([base, alt]) => midias.push({ id: uuid(), acervo_id: id, tipo: "foto", arquivos: { grande: `assets/img/${base}-1200.jpg`, media: `assets/img/${base}-800.jpg` }, youtube: null, titulo: { pt: alt, en: "" }, ordem: ordem++, criado_em: agora }));
+      (p.videos || []).forEach((v) => midias.push({ id: uuid(), acervo_id: id, tipo: "video", arquivos: {}, youtube: v.youtube || null, titulo: v.titulo || {}, ordem: ordem++, criado_em: agora }));
+      (p.audios || []).forEach((a) => midias.push({ id: uuid(), acervo_id: id, tipo: "audio", arquivos: a.arquivo ? { audio: a.arquivo } : {}, youtube: null, titulo: a.titulo || {}, ordem: ordem++, criado_em: agora }));
+    });
+    return { acervo, midias };
   }
 
   function fonteDemo() {
@@ -266,6 +314,7 @@
     gravar();
     const copia = (x) => JSON.parse(JSON.stringify(x));
     let logado = false;
+    const arquivosDemo = new Map();
     try { logado = sessionStorage.getItem(DEMO_KEY + "-sessao") === "1"; } catch (e) { /* idem */ }
 
     function ordenar(tabela, lista) {
@@ -310,7 +359,13 @@
       async recuperar() { throw new Error("Indisponível na demonstração."); },
       async novaSenha() { throw new Error("Indisponível na demonstração."); },
       aoRecuperar() {},
-      async listar(tabela) { return ordenar(tabela, copia(db[tabela])); },
+      async listar(tabela) {
+        if ((tabela === "acervo" || tabela === "midias") && !db.acervoSemeado) {
+          const a = await acervoDemo().catch(() => ({ acervo: [], midias: [] }));
+          if (!db.acervoSemeado) { db.acervo = a.acervo; db.midias = a.midias; db.acervoSemeado = true; gravar(); }
+        }
+        return ordenar(tabela, copia(db[tabela]));
+      },
       async salvar(tabela, linha) {
         if (tabela === "cupons" || tabela === "clientes") {
           const campo = tabela === "cupons" ? "codigo" : "email";
@@ -329,6 +384,7 @@
         if (tabela === "pedidos") db.itens_pedido = db.itens_pedido.filter((i) => i.pedido_id !== id);
         if (tabela === "clientes") db.pedidos.forEach((p) => { if (p.cliente_id === id) p.cliente_id = null; });
         if (tabela === "produtos") db.itens_pedido.forEach((i) => { if (i.produto_id === id) i.produto_id = null; });
+        if (tabela === "acervo") db.midias = db.midias.filter((m) => m.acervo_id !== id);
         gravar();
       },
       async salvarPedido(pedido, itens) {
@@ -343,6 +399,14 @@
         return c ? copia(c.valor) : {};
       },
       async salvarConfig(chave, valor) { salvarLinha("configuracoes", { chave, valor }); gravar(); },
+      // na demonstração os arquivos enviados ficam só na memória desta aba
+      async enviarArquivo(caminho, blob) { arquivosDemo.set(caminho, URL.createObjectURL(blob)); return caminho; },
+      async removerArquivos(caminhos) { caminhos.forEach((c) => { if (arquivosDemo.has(c)) { URL.revokeObjectURL(arquivosDemo.get(c)); arquivosDemo.delete(c); } }); },
+      urlArquivo(caminho) {
+        if (!caminho) return "";
+        if (caminho.startsWith("assets/")) return "../" + caminho;
+        return arquivosDemo.get(caminho) || "";
+      },
       reiniciar() { db = semente(); gravar(); }
     };
   }

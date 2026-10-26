@@ -1,7 +1,7 @@
 /* ==========================================================
    Fossil Tone — painel admin
-   Entrada, rotas e as telas: visão geral, pedidos, produtos,
-   clientes, cupons e configurações.
+   Entrada, rotas e as telas: visão geral, contatos, pedidos, produtos,
+   acervo, clientes, cupons e configurações.
    ========================================================== */
 
 (function () {
@@ -35,7 +35,7 @@
   const FATURADOS = ["pago", "em_producao", "enviado", "entregue"];
 
   let fonte = null;
-  let db = { produtos: [], clientes: [], pedidos: [], itens_pedido: [], cupons: [], contatos: [] };
+  let db = { produtos: [], clientes: [], pedidos: [], itens_pedido: [], cupons: [], contatos: [], acervo: [], midias: [] };
   const filtros = { pedidos: { status: "", busca: "" }, produtos: { status: "", busca: "" }, clientes: { busca: "" }, contatos: { tipo: "", status: "abertos", busca: "" } };
 
   /* ---------- utilidades ---------- */
@@ -75,10 +75,10 @@
   const estoqueBaixo = () => db.produtos.filter((p) => p.status === "ativo" && p.estoque <= p.estoque_minimo);
 
   async function recarregar() {
-    const [produtos, clientes, pedidos, itens, cupons, contatos] = await Promise.all(
-      ["produtos", "clientes", "pedidos", "itens_pedido", "cupons", "contatos"].map((t) => fonte.listar(t))
+    const [produtos, clientes, pedidos, itens, cupons, contatos, acervo, midias] = await Promise.all(
+      ["produtos", "clientes", "pedidos", "itens_pedido", "cupons", "contatos", "acervo", "midias"].map((t) => fonte.listar(t))
     );
-    db = { produtos, clientes, pedidos, itens_pedido: itens, cupons, contatos };
+    db = { produtos, clientes, pedidos, itens_pedido: itens, cupons, contatos, acervo, midias };
     const marcar = (id, n) => { const b = $(id); b.hidden = !n; b.textContent = n; };
     marcar("#badge-pedidos", pedidos.filter((p) => p.status === "pago" || p.status === "em_producao").length);
     marcar("#badge-contatos", contatos.filter((c) => c.status === "novo").length);
@@ -276,6 +276,7 @@
     contatos: telaContatos,
     pedidos: telaPedidos,
     produtos: telaProdutos,
+    acervo: telaAcervo,
     clientes: telaClientes,
     cupons: telaCupons,
     configuracoes: telaConfiguracoes
@@ -811,7 +812,7 @@
   function telaProdutos(view) {
     const f = filtros.produtos;
     const contagem = (s) => db.produtos.filter((p) => !s || p.status === s).length;
-    view.innerHTML = cabecalho("03 · Acervo", "Produtos", `<button class="btn btn--sm" type="button" id="novo">Novo produto</button>`) + `
+    view.innerHTML = cabecalho("03 · Estoque", "Produtos", `<button class="btn btn--sm" type="button" id="novo">Novo produto</button>`) + `
       <div class="toolbar">
         <input class="search" type="search" id="busca" placeholder="Buscar nome, nº ou SKU" value="${esc(f.busca)}" aria-label="Buscar produtos">
         <div class="chips" role="group" aria-label="Filtrar por situação">
@@ -924,12 +925,363 @@
   }
 
   /* ==========================================================
+     ACERVO: modelos do fichário do site, com fotos, vídeos e áudios
+     Os textos ficam em acervo.conteudo (mesmo formato do antigo
+     data/catalogo.json); as mídias, na tabela midias. Fotos e áudios
+     enviados vão para o storage "acervo".
+     ========================================================== */
+
+  const TIPOS_MODELO = { pedal: "Pedal", amplificador: "Amplificador" };
+  const ACOES = { encomendar: "Encomendar (vai para o Crie sua espécie)", "lista-de-espera": "Lista de espera", laboratorio: "Ver o Laboratório", "": "Nenhum botão" };
+  // campos de texto em PT e EN da ficha de museu
+  const CAMPOS_FICHA = [
+    ["classe", "Classe", "Pedal, overdrive/distortion"],
+    ["habitat", "Habitat", "Do blues sujo ao rock pesado"],
+    ["dieta", "Dieta", "Guitarras, de preferência altas"],
+    ["situacao", "Situação", "Primeira edição, sob encomenda"],
+    ["carimbo", "Carimbo", "1ª edição"]
+  ];
+  const LIMITE_AUDIO = 50 * 1024 * 1024;
+
+  const midiasDe = (id, tipo) => db.midias.filter((m) => m.acervo_id === id && (!tipo || m.tipo === tipo)).sort((a, b) => a.ordem - b.ordem);
+  const capaDe = (id) => midiasDe(id, "foto").find((m) => m.arquivos && (m.arquivos.card || m.arquivos.media || m.arquivos.mini));
+  const urlMidia = (m, ...ordem) => { for (const k of ordem) if (m.arquivos && m.arquivos[k]) return fonte.urlArquivo(m.arquivos[k]); return ""; };
+  const pt = (v) => (v && typeof v === "object" ? v.pt : v) || "";
+  const en = (v) => (v && typeof v === "object" ? v.en : "") || "";
+  const bilingue = (p, e) => { const o = {}; if (vazioNulo(p)) o.pt = p.trim(); if (vazioNulo(e)) o.en = e.trim(); return Object.keys(o).length ? o : null; };
+  const codigo = () => Math.random().toString(36).slice(2, 10);
+  const youtubeId = (v) => {
+    const m = String(v || "").match(/(?:youtu\.be\/|v=|embed\/|shorts\/)([\w-]{11})/);
+    return m ? m[1] : /^[\w-]{11}$/.test(String(v || "").trim()) ? String(v).trim() : "";
+  };
+
+  function telaAcervo(view) {
+    view.innerHTML = cabecalho("04 · Museu", "Acervo", `<button class="btn btn--sm" type="button" id="novo">Novo modelo</button>`) + `
+      <p class="nota">Os modelos publicados aparecem no fichário do site, com as fotos, os vídeos e os áudios. As exposições da coleção (Megalodon, Kraken e ZeRO) usam as fotos daqui.</p>
+      <div id="lista"></div>`;
+    const lista = db.acervo;
+    $("#lista", view).innerHTML = !lista.length ? '<p class="empty">Nenhum modelo no acervo.</p>' : `<ul class="modelos">${lista.map((a) => {
+      const capa = capaDe(a.id);
+      const n = (t) => midiasDe(a.id, t).length;
+      return `<li><button class="modelo" type="button" data-modelo="${esc(a.id)}">
+        <span class="modelo__foto">${capa ? `<img src="${esc(urlMidia(capa, "card", "media", "mini"))}" alt="" loading="lazy">` : "<span>sem foto</span>"}</span>
+        <span class="modelo__no">${esc(a.numero || "")}</span>
+        <span class="modelo__nome">${esc(a.nome)}${a.subtitulo ? ` <small>${esc(a.subtitulo)}</small>` : ""}</span>
+        <span class="modelo__conta">${n("foto")} fotos · ${n("video")} vídeos · ${n("audio")} áudios</span>
+        ${a.publicado ? '<span class="stamp st-ativo">No fichário</span>' : '<span class="stamp st-rascunho">Fora do fichário</span>'}
+      </button></li>`;
+    }).join("")}</ul>`;
+    $$("[data-modelo]", view).forEach((b) => b.addEventListener("click", () => abrirModelo(db.acervo.find((a) => a.id === b.dataset.modelo))));
+    $("#novo", view).addEventListener("click", () => abrirModelo(null));
+  }
+
+  function abrirModelo(a) {
+    const novo = !a;
+    a = a || { tipo: "pedal", publicado: false, ordem: (db.acervo.reduce((m, x) => Math.max(m, x.ordem), -1) + 1), conteudo: {} };
+    const c = a.conteudo || {};
+    const par = (campo, rotulo, exemplo, area) => {
+      const v = c[campo];
+      const input = (lang, valor) => area
+        ? `<textarea id="md-${campo}-${lang}" name="${campo}_${lang}" rows="4">${esc(valor)}</textarea>`
+        : `<input id="md-${campo}-${lang}" name="${campo}_${lang}" value="${esc(valor)}"${lang === "pt" && exemplo ? ` placeholder="${esc(exemplo)}"` : ""}>`;
+      return `<div class="field"><label for="md-${campo}-pt">${esc(rotulo)}</label>${input("pt", pt(v))}</div>
+        <div class="field"><label for="md-${campo}-en">${esc(rotulo)} (inglês)</label>${input("en", en(v))}</div>`;
+    };
+    const selos = c.selos || [];
+    abrirGaveta(novo ? "Novo modelo" : (a.numero || "Acervo"), novo ? "Novo modelo" : a.nome, `
+      <form id="form-modelo" novalidate style="display:grid;gap:1.1rem">
+        <div class="grid2">
+          <div class="field"><label for="md-nome">Nome</label><input id="md-nome" name="nome" value="${esc(a.nome || "")}" required></div>
+          <div class="field"><label for="md-sub">Subtítulo</label><input id="md-sub" name="subtitulo" value="${esc(a.subtitulo || "")}" placeholder="opcional, ex.: Alcino Edition"></div>
+          <div class="field"><label for="md-numero">Nº de catálogo</label><input id="md-numero" name="numero" value="${esc(a.numero || "")}" placeholder="FT-003"></div>
+          <div class="field"><label for="md-slug">Identificador</label><input id="md-slug" name="slug" value="${esc(a.slug || "")}" pattern="[a-z0-9-]+"${novo ? "" : " readonly"}><small>${novo ? "Letras minúsculas e hífen. Não muda depois." : "Fixo: o site usa para achar o modelo."}</small></div>
+          <div class="field"><label for="md-tipo">Tipo</label><select id="md-tipo" name="tipo">${opcoes(TIPOS_MODELO, a.tipo)}</select></div>
+          <div class="field"><label for="md-acao">Botão no dossiê</label><select id="md-acao" name="acao">${opcoes(ACOES, c.acao || "")}</select></div>
+          <div class="field"><label for="md-sci">Nome científico</label><input id="md-sci" name="nomeCientifico" value="${esc(c.nomeCientifico || "")}" placeholder="Carcharocles saturatus"></div>
+          <div class="field"><label for="md-ordem">Posição no fichário</label><input id="md-ordem" name="ordem" type="number" step="1" value="${esc(a.ordem)}"><small>Menor aparece primeiro.</small></div>
+        </div>
+        <label class="check"><input type="checkbox" name="publicado" ${a.publicado ? "checked" : ""}> Mostrar no fichário do site</label>
+        <p class="sheet__title">Ficha de museu</p>
+        <div class="grid2">
+          ${par("resumo", "Resumo", "", true)}
+          ${CAMPOS_FICHA.map(([campo, rotulo, exemplo]) => par(campo, rotulo, exemplo)).join("")}
+          <div class="field"><label for="md-selos-pt">Selos</label><textarea id="md-selos-pt" name="selos_pt" rows="3" placeholder="Um por linha. Ex.: True bypass">${esc(selos.map(pt).join("\n"))}</textarea></div>
+          <div class="field"><label for="md-selos-en">Selos (inglês)</label><textarea id="md-selos-en" name="selos_en" rows="3">${esc(selos.map(en).join("\n"))}</textarea></div>
+        </div>
+        ${c.painel || c.ficha || c.figura ? '<p class="nota nota--gaveta">Knobs, ficha técnica e figura interativa deste modelo são editados no código e continuam como estão.</p>' : ""}
+        <div class="actions">
+          <button class="btn" type="submit">${novo ? "Cadastrar e adicionar mídias" : "Salvar ficha"}</button>
+          <span class="spacer"></span>
+          ${novo ? "" : '<button class="btn btn--danger btn--sm" type="button" id="excluir">Excluir modelo</button>'}
+        </div>
+      </form>
+      ${novo ? '<p class="nota nota--gaveta">Depois de cadastrar, você adiciona fotos, vídeos e áudios aqui mesmo.</p>' : `
+      <section class="midias" aria-labelledby="mt-fotos">
+        <div class="midias__head"><h3 class="sheet__title" id="mt-fotos">Fotos</h3>
+          <label class="btn btn--ghost btn--sm midias__enviar">Enviar fotos<input type="file" id="up-fotos" accept="image/jpeg,image/png,image/webp,image/heic" multiple hidden></label></div>
+        <p class="nota nota--gaveta">A primeira foto é a capa no fichário. O painel reduz cada foto para os tamanhos do site antes de enviar.</p>
+        <ul class="fotos" id="lista-fotos"></ul>
+      </section>
+      <section class="midias" aria-labelledby="mt-videos">
+        <div class="midias__head"><h3 class="sheet__title" id="mt-videos">Vídeos do YouTube</h3>
+          <button class="btn btn--ghost btn--sm" type="button" id="add-video">Adicionar vídeo</button></div>
+        <ul class="midia-lista" id="lista-videos"></ul>
+      </section>
+      <section class="midias" aria-labelledby="mt-audios">
+        <div class="midias__head"><h3 class="sheet__title" id="mt-audios">Áudios de timbre</h3>
+          <label class="btn btn--ghost btn--sm midias__enviar">Enviar áudio<input type="file" id="up-audio" accept="audio/mpeg,audio/mp4,audio/x-m4a,audio/aac,audio/wav,audio/ogg,.mp3,.m4a,.wav,.ogg,.aac" hidden></label></div>
+        <p class="nota nota--gaveta">MP3 ou M4A, até 50 MB. Sem arquivo, o áudio aparece no site como "em breve".</p>
+        <ul class="midia-lista" id="lista-audios"></ul>
+      </section>
+      <p class="nota nota--gaveta">Fotos, vídeos e áudios são salvos na hora.</p>`}`);
+
+    const form = $("#form-modelo");
+    if (novo) {
+      let slugManual = false;
+      form.slug.addEventListener("input", () => { slugManual = true; });
+      form.nome.addEventListener("input", () => { if (!slugManual) form.slug.value = slug(form.nome.value); });
+    }
+
+    form.addEventListener("submit", async (ev) => {
+      ev.preventDefault();
+      const nome = form.nome.value.trim();
+      const s = slug(form.slug.value || nome);
+      if (!nome) return toast("Dê um nome ao modelo.", true);
+      if (!s) return toast("Preencha o identificador.", true);
+      if (novo && db.acervo.some((x) => x.slug === s)) return toast("Já existe um modelo com esse identificador.", true);
+      const val = (k) => form.elements[k] ? form.elements[k].value : "";
+      const conteudo = Object.assign({}, c, {
+        nomeCientifico: vazioNulo(val("nomeCientifico")),
+        acao: vazioNulo(val("acao")),
+        resumo: bilingue(val("resumo_pt"), val("resumo_en"))
+      });
+      CAMPOS_FICHA.forEach(([campo]) => { conteudo[campo] = bilingue(val(campo + "_pt"), val(campo + "_en")); });
+      const sp = val("selos_pt").split("\n").map((x) => x.trim()), se = val("selos_en").split("\n").map((x) => x.trim());
+      conteudo.selos = sp.map((x, i) => bilingue(x, se[i] || "")).filter(Boolean);
+      Object.keys(conteudo).forEach((k) => { if (conteudo[k] == null || (Array.isArray(conteudo[k]) && !conteudo[k].length)) delete conteudo[k]; });
+      const dados = {
+        nome, slug: s, numero: vazioNulo(form.numero.value), subtitulo: vazioNulo(form.subtitulo.value),
+        tipo: form.tipo.value, ordem: inteiro(form.ordem.value), publicado: form.publicado.checked, conteudo
+      };
+      if (!novo) dados.id = a.id;
+      const salvo = await tentar(() => fonte.salvar("acervo", dados), $("button[type=submit]", form));
+      if (!salvo) return;
+      await tentar(recarregar);
+      if (novo) { abrirModelo(db.acervo.find((x) => x.id === salvo.id)); rotearSemFechar(); toast("Modelo cadastrado. Agora adicione as mídias."); return; }
+      fecharGaveta(); rotear(); toast("Ficha salva.");
+    });
+
+    const ex = $("#excluir");
+    if (ex) ex.addEventListener("click", async () => {
+      if (!confirm(`Excluir ${a.nome} do acervo, com todas as fotos e áudios enviados? Isso não pode ser desfeito.`)) return;
+      const arquivos = midiasDe(a.id).flatMap((m) => Object.values(m.arquivos || {}));
+      const ok = await tentar(async () => { await fonte.excluir("acervo", a.id); await fonte.removerArquivos(arquivos).catch(() => {}); return true; }, ex);
+      if (ok) { await tentar(recarregar); fecharGaveta(); rotear(); toast("Modelo excluído."); }
+    });
+
+    if (novo) return;
+    const redesenhar = async () => { await tentar(recarregar); desenharMidias(); rotearSemFechar(); };
+    const proximaOrdem = () => midiasDe(a.id).reduce((m, x) => Math.max(m, x.ordem), -1) + 1;
+
+    // troca de lugar com a vizinha do mesmo tipo
+    async function mover(m, passo) {
+      const lista = midiasDe(a.id, m.tipo);
+      const i = lista.findIndex((x) => x.id === m.id), j = i + passo;
+      if (j < 0 || j >= lista.length) return;
+      const outra = lista[j];
+      const ok = await tentar(async () => {
+        await fonte.atualizar("midias", m.id, { ordem: outra.ordem });
+        await fonte.atualizar("midias", outra.id, { ordem: m.ordem === outra.ordem ? m.ordem + passo : m.ordem });
+        return true;
+      });
+      if (ok) redesenhar();
+    }
+
+    async function remover(m, rotulo) {
+      if (!confirm(`Remover ${rotulo}?`)) return;
+      const ok = await tentar(async () => {
+        await fonte.excluir("midias", m.id);
+        await fonte.removerArquivos(Object.values(m.arquivos || {})).catch(() => {});
+        return true;
+      });
+      if (ok) { redesenhar(); toast("Removido."); }
+    }
+
+    // título PT/EN salvo quando o campo perde o foco
+    function ligarTitulos(li, m) {
+      $$("[data-titulo]", li).forEach((inp) => inp.addEventListener("change", async () => {
+        const titulo = bilingue($('[data-titulo="pt"]', li).value, $('[data-titulo="en"]', li).value) || {};
+        if (await tentar(() => fonte.atualizar("midias", m.id, { titulo }))) { m.titulo = titulo; toast("Salvo."); }
+      }));
+    }
+
+    const botoesOrdem = (i, total) => `<button type="button" class="mini-btn" data-mover="-1" ${i === 0 ? "disabled" : ""} aria-label="Mover para antes">←</button>
+      <button type="button" class="mini-btn" data-mover="1" ${i === total - 1 ? "disabled" : ""} aria-label="Mover para depois">→</button>
+      <button type="button" class="mini-btn mini-btn--rm" data-remover aria-label="Remover">×</button>`;
+
+    function desenharMidias() {
+      const fotos = midiasDe(a.id, "foto"), videos = midiasDe(a.id, "video"), audios = midiasDe(a.id, "audio");
+
+      $("#lista-fotos").innerHTML = fotos.length ? "" : '<li class="vazio">Nenhuma foto ainda.</li>';
+      fotos.forEach((m, i) => {
+        const li = document.createElement("li");
+        li.className = "foto";
+        const src = urlMidia(m, "card", "media", "mini", "grande");
+        li.innerHTML = `<div class="foto__img">${src ? `<img src="${esc(src)}" alt="" loading="lazy">` : "<span>arquivo indisponível</span>"}${i === 0 ? '<span class="foto__capa">Capa</span>' : ""}</div>
+          <input data-titulo="pt" value="${esc(pt(m.titulo))}" placeholder="Descrição da foto" aria-label="Descrição da foto ${i + 1}">
+          <input data-titulo="en" value="${esc(en(m.titulo))}" placeholder="Descrição em inglês" aria-label="Descrição em inglês da foto ${i + 1}">
+          <div class="foto__acoes">${botoesOrdem(i, fotos.length)}</div>`;
+        ligarTitulos(li, m);
+        $$("[data-mover]", li).forEach((b) => b.addEventListener("click", () => mover(m, Number(b.dataset.mover))));
+        $("[data-remover]", li).addEventListener("click", () => remover(m, "esta foto"));
+        $("#lista-fotos").appendChild(li);
+      });
+
+      $("#lista-videos").innerHTML = videos.length ? "" : '<li class="vazio">Nenhum vídeo ainda.</li>';
+      videos.forEach((m, i) => {
+        const li = document.createElement("li");
+        li.className = "midia-item";
+        const id = youtubeId(m.youtube);
+        li.innerHTML = `<div class="midia-item__thumb">${id ? `<img src="https://i.ytimg.com/vi/${esc(id)}/mqdefault.jpg" alt="" loading="lazy">` : "<span>em breve</span>"}</div>
+          <div class="midia-item__campos">
+            <input data-youtube value="${esc(m.youtube || "")}" placeholder="Link do YouTube" aria-label="Link do vídeo ${i + 1}">
+            <input data-titulo="pt" value="${esc(pt(m.titulo))}" placeholder="Título" aria-label="Título do vídeo ${i + 1}">
+            <input data-titulo="en" value="${esc(en(m.titulo))}" placeholder="Título em inglês" aria-label="Título em inglês do vídeo ${i + 1}">
+          </div>
+          <div class="midia-item__acoes">${botoesOrdem(i, videos.length)}</div>`;
+        ligarTitulos(li, m);
+        $("[data-youtube]", li).addEventListener("change", async (ev) => {
+          const v = ev.target.value.trim();
+          if (v && !youtubeId(v)) return toast("Esse link não parece ser do YouTube.", true);
+          if (await tentar(() => fonte.atualizar("midias", m.id, { youtube: v || null }))) { redesenhar(); toast(v ? "Vídeo salvo." : "Link removido: o vídeo aparece como em breve."); }
+        });
+        $$("[data-mover]", li).forEach((b) => b.addEventListener("click", () => mover(m, Number(b.dataset.mover))));
+        $("[data-remover]", li).addEventListener("click", () => remover(m, "este vídeo"));
+        $("#lista-videos").appendChild(li);
+      });
+
+      $("#lista-audios").innerHTML = audios.length ? "" : '<li class="vazio">Nenhum áudio ainda.</li>';
+      audios.forEach((m, i) => {
+        const li = document.createElement("li");
+        li.className = "midia-item midia-item--audio";
+        const src = urlMidia(m, "audio");
+        li.innerHTML = `<div class="midia-item__campos">
+            <input data-titulo="pt" value="${esc(pt(m.titulo))}" placeholder="Título, ex.: Sustain alto" aria-label="Título do áudio ${i + 1}">
+            <input data-titulo="en" value="${esc(en(m.titulo))}" placeholder="Título em inglês" aria-label="Título em inglês do áudio ${i + 1}">
+            ${src ? `<audio controls preload="none" src="${esc(src)}"></audio>` : '<span class="sub">Sem arquivo: aparece como "em breve".</span>'}
+            <label class="link-btn">${src ? "Trocar arquivo" : "Enviar arquivo"}<input type="file" data-trocar accept="audio/mpeg,audio/mp4,audio/x-m4a,audio/aac,audio/wav,audio/ogg,.mp3,.m4a,.wav,.ogg,.aac" hidden></label>
+          </div>
+          <div class="midia-item__acoes">${botoesOrdem(i, audios.length)}</div>`;
+        ligarTitulos(li, m);
+        $("[data-trocar]", li).addEventListener("change", async (ev) => {
+          const f = ev.target.files[0];
+          if (!f) return;
+          const caminho = await enviarAudio(f);
+          if (!caminho) return;
+          const antigo = Object.values(m.arquivos || {});
+          if (await tentar(() => fonte.atualizar("midias", m.id, { arquivos: { audio: caminho } }))) {
+            fonte.removerArquivos(antigo).catch(() => {});
+            redesenhar(); toast("Áudio enviado.");
+          }
+        });
+        $$("[data-mover]", li).forEach((b) => b.addEventListener("click", () => mover(m, Number(b.dataset.mover))));
+        $("[data-remover]", li).addEventListener("click", () => remover(m, "este áudio"));
+        $("#lista-audios").appendChild(li);
+      });
+    }
+
+    async function enviarAudio(f) {
+      if (f.size > LIMITE_AUDIO) { toast(`${f.name} passa de 50 MB.`, true); return null; }
+      const ext = (f.name.match(/\.(\w+)$/) || [, "mp3"])[1].toLowerCase();
+      const tipo = f.type || { mp3: "audio/mpeg", m4a: "audio/mp4", aac: "audio/aac", wav: "audio/wav", ogg: "audio/ogg" }[ext] || "audio/mpeg";
+      const blob = f.type ? f : new Blob([f], { type: tipo });
+      toast(`Enviando ${f.name}…`);
+      return tentar(() => fonte.enviarArquivo(`${a.slug}/${codigo()}.${ext}`, blob));
+    }
+
+    $("#up-fotos").addEventListener("change", async (ev) => {
+      const arquivos = Array.from(ev.target.files);
+      ev.target.value = "";
+      let ordem = proximaOrdem(), enviadas = 0;
+      for (const f of arquivos) {
+        toast(`Preparando ${f.name}…`);
+        const ok = await tentar(async () => {
+          const versoes = await prepararFoto(f);
+          const base = `${a.slug}/${codigo()}`, caminhos = {};
+          for (const [nome, blob] of Object.entries(versoes)) {
+            caminhos[nome] = await fonte.enviarArquivo(`${base}-${nome}.${blob.type === "image/webp" ? "webp" : "jpg"}`, blob);
+          }
+          await fonte.salvar("midias", { acervo_id: a.id, tipo: "foto", arquivos: caminhos, titulo: {}, ordem: ordem++ });
+          return true;
+        });
+        if (ok) enviadas++;
+      }
+      if (enviadas) { await redesenhar(); toast(enviadas === 1 ? "Foto enviada." : `${enviadas} fotos enviadas.`); }
+    });
+
+    $("#add-video").addEventListener("click", async () => {
+      const salvo = await tentar(() => fonte.salvar("midias", { acervo_id: a.id, tipo: "video", arquivos: {}, youtube: null, titulo: { pt: "Vídeo", en: "Video" }, ordem: proximaOrdem() }));
+      if (salvo) { await redesenhar(); const ult = $$("#lista-videos [data-youtube]").pop(); if (ult) ult.focus(); }
+    });
+
+    $("#up-audio").addEventListener("change", async (ev) => {
+      const f = ev.target.files[0];
+      ev.target.value = "";
+      if (!f) return;
+      const caminho = await enviarAudio(f);
+      if (!caminho) return;
+      const titulo = f.name.replace(/\.\w+$/, "").replace(/[-_]+/g, " ").trim();
+      if (await tentar(() => fonte.salvar("midias", { acervo_id: a.id, tipo: "audio", arquivos: { audio: caminho }, titulo: { pt: titulo }, ordem: proximaOrdem() }))) {
+        await redesenhar(); toast("Áudio enviado. Ajuste o título se precisar.");
+      }
+    });
+
+    desenharMidias();
+  }
+
+  // reduz a foto no navegador: grande (1200 px), média (800 px), card do fichário (560×420) e miniatura (240×360)
+  async function prepararFoto(arquivo) {
+    let img;
+    try { img = await createImageBitmap(arquivo, { imageOrientation: "from-image" }); }
+    catch (e) { throw new Error(`Não deu para abrir ${arquivo.name}. Envie em JPG, PNG ou WebP.`); }
+    const gerar = (w, h, recortar) => new Promise((ok, falha) => {
+      const cv = document.createElement("canvas");
+      cv.width = w; cv.height = h;
+      const ctx = cv.getContext("2d");
+      ctx.imageSmoothingQuality = "high";
+      if (recortar) {
+        const escala = Math.max(w / img.width, h / img.height);
+        const sw = w / escala, sh = h / escala;
+        ctx.drawImage(img, (img.width - sw) / 2, (img.height - sh) / 2, sw, sh, 0, 0, w, h);
+      } else {
+        ctx.drawImage(img, 0, 0, w, h);
+      }
+      const erro = () => falha(new Error("Não deu para preparar a foto."));
+      // navegador que não gera WebP devolve PNG: aí sai JPEG
+      cv.toBlob((b) => {
+        if (!b) return erro();
+        if (b.type === "image/webp") return ok(b);
+        cv.toBlob((j) => j ? ok(j) : erro(), "image/jpeg", .85);
+      }, "image/webp", .82);
+    });
+    const largura = (max) => { const e = Math.min(1, max / img.width); return [Math.round(img.width * e), Math.round(img.height * e)]; };
+    const versoes = {
+      grande: await gerar(...largura(1200)),
+      media: await gerar(...largura(800)),
+      card: await gerar(560, 420, true),
+      mini: await gerar(240, 360, true)
+    };
+    img.close && img.close();
+    return versoes;
+  }
+
+  /* ==========================================================
      CLIENTES
      ========================================================== */
 
   function telaClientes(view) {
     const f = filtros.clientes;
-    view.innerHTML = cabecalho("04 · Pessoas", "Clientes", `<button class="btn btn--sm" type="button" id="novo">Novo cliente</button>`) + `
+    view.innerHTML = cabecalho("05 · Pessoas", "Clientes", `<button class="btn btn--sm" type="button" id="novo">Novo cliente</button>`) + `
       <div class="toolbar"><input class="search" type="search" id="busca" placeholder="Buscar nome, e-mail, telefone ou cidade" value="${esc(f.busca)}" aria-label="Buscar clientes"></div>
       <div id="lista"></div>`;
 
@@ -1018,7 +1370,7 @@
   function telaCupons(view) {
     const hoje = new Date().toISOString().slice(0, 10);
     const situacao = (c) => !c.ativo ? ["arquivado", "Pausado"] : c.validade && c.validade < hoje ? ["cancelado", "Vencido"] : c.limite_usos && c.usos >= c.limite_usos ? ["esgotado", "Esgotado"] : ["ativo", "Ativo"];
-    view.innerHTML = cabecalho("05 · Promoções", "Cupons", `<button class="btn btn--sm" type="button" id="novo">Novo cupom</button>`) +
+    view.innerHTML = cabecalho("06 · Promoções", "Cupons", `<button class="btn btn--sm" type="button" id="novo">Novo cupom</button>`) +
       (!db.cupons.length ? '<p class="empty">Nenhum cupom criado.</p>' : `<div class="table-wrap"><table class="table table--cards">
         <thead><tr><th>Código</th><th>Desconto</th><th class="num">Usos</th><th>Validade</th><th>Situação</th></tr></thead>
         <tbody>${db.cupons.map((c) => { const [st, rot] = situacao(c); return `<tr data-cupom="${esc(c.id)}" tabindex="0">
@@ -1084,10 +1436,10 @@
      ========================================================== */
 
   async function telaConfiguracoes(view) {
-    view.innerHTML = cabecalho("06 · Loja", "Configurações") + '<p class="loading">Carregando…</p>';
+    view.innerHTML = cabecalho("07 · Loja", "Configurações") + '<p class="loading">Carregando…</p>';
     const cfg = (await tentar(() => fonte.config("loja"))) || {};
     if (!view.isConnected || !$(".side__nav a.is-active[data-rota=configuracoes]")) return;
-    view.innerHTML = cabecalho("06 · Loja", "Configurações") + `
+    view.innerHTML = cabecalho("07 · Loja", "Configurações") + `
       <form id="form-config" class="panel" novalidate style="display:grid;gap:1.2rem;max-width:760px">
         <h2 class="panel__title">Dados da loja</h2>
         <div class="grid2">

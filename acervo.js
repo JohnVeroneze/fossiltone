@@ -1,5 +1,6 @@
 /* Fossil Tone — acervo: fichário, dossiê, ficha técnica, mídia e lista de espera.
-   Tudo sai de data/catalogo.json e data/config.json. */
+   Os modelos, fotos, vídeos e áudios vêm do painel admin (tabelas acervo e midias do Supabase).
+   Se o banco não responder, usa data/catalogo.json. */
 (function () {
   "use strict";
 
@@ -16,11 +17,7 @@
   /* ---------- utilidades ---------- */
 
   // um campo pode ser texto puro ou { "pt": "...", "en": "..." }
-  function tx(v) {
-    if (v == null) return "";
-    if (typeof v === "string" || Array.isArray(v)) return v;
-    return v[FT.lang()] || v.pt || "";
-  }
+  var tx = FT.tx;
 
   function h(tag, attrs, children) {
     var el = document.createElement(tag);
@@ -56,25 +53,74 @@
 
   function isMixedCase(name) { return /[a-z]/.test(name) && /[A-Z].*[A-Z]/.test(name); }
 
+  // foto n da peça (a primeira é a capa): no fichário em tamanho de card, no dossiê em 800/1200
+  function photo(p, variant, n) {
+    var f = p.fotos && p.fotos[n || 0];
+    if (!f) return null;
+    var pic = FT.picture(f.arquivos, tx(f.alt) || p.nome, variant === "card" ? "card" : "full",
+      variant === "card" ? null : "(min-width: 721px) 440px, calc(100vw - 4rem)");
+    if (pic && variant === "card") {
+      var img = pic.querySelector("img");
+      img.width = 560; img.height = 420; img.loading = "lazy";
+    }
+    return pic;
+  }
+
+  /* ---------- formato das peças ----------
+     Banco: linha do acervo + midias. Arquivo: peça do catalogo.json. Os dois viram o mesmo objeto. */
+
+  function fromRow(r) {
+    var p = Object.assign({}, r.conteudo || {}, { id: r.slug, numero: r.numero, nome: r.nome, subtitulo: r.subtitulo, tipo: r.tipo });
+    var ms = r.midias || [];
+    var of = function (tipo) { return ms.filter(function (m) { return m.tipo === tipo; }); };
+    p.fotos = of("foto").filter(function (m) { return m.arquivos && Object.keys(m.arquivos).length; })
+      .map(function (m) { return { arquivos: m.arquivos, alt: m.titulo }; });
+    p.videos = of("video").map(function (m) { return { titulo: m.titulo, youtube: m.youtube || "" }; });
+    p.audios = of("audio").map(function (m) { return { titulo: m.titulo, arquivo: FT.arquivo(m.arquivos && m.arquivos.audio) }; });
+    return p;
+  }
+
   // "megalodon-angle" vira as versões -card, -800 e -1200; um caminho com extensão é usado como está
-  function photo(p, variant) {
-    if (!p.foto) return null;
-    var alt = tx(p.fotoAlt) || p.nome;
-    if (/\.(jpe?g|png|webp|avif)$/i.test(p.foto)) {
-      return h("img", { src: p.foto, alt: alt, loading: "lazy", decoding: "async" });
+  function fromCatalog(p) {
+    p = Object.assign({}, p);
+    if (!p.foto) p.fotos = [];
+    else if (/\.(jpe?g|png|webp|avif)$/i.test(p.foto)) p.fotos = [{ arquivos: { media: p.foto }, alt: p.fotoAlt }];
+    else {
+      var b = "assets/img/" + p.foto;
+      p.fotos = [{ arquivos: { grande: b + "-1200.jpg", media: b + "-800.jpg", card: b + "-card.jpg" }, alt: p.fotoAlt }];
     }
-    var base = "assets/img/" + p.foto;
-    if (variant === "card") {
-      return h("picture", null, [
-        h("source", { type: "image/avif", srcset: base + "-card.avif" }),
-        h("img", { src: base + "-card.jpg", alt: alt, width: "560", height: "420", loading: "lazy", decoding: "async" })
-      ]);
-    }
-    var sizes = "(min-width: 721px) 440px, calc(100vw - 4rem)";
-    return h("picture", null, [
-      h("source", { type: "image/avif", srcset: base + "-800.avif 800w, " + base + "-1200.avif 1200w", sizes: sizes }),
-      h("img", { src: base + "-800.jpg", srcset: base + "-800.jpg 800w, " + base + "-1200.jpg 1200w", sizes: sizes, alt: alt, decoding: "async" })
-    ]);
+    return p;
+  }
+
+  function loadPieces() {
+    return FT.apiGet("acervo?select=slug,numero,nome,subtitulo,tipo,conteudo,midias(tipo,arquivos,youtube,titulo,ordem)" +
+      "&publicado=eq.true&order=ordem.asc&midias.order=ordem.asc")
+      .then(function (rows) { return rows.map(fromRow); })
+      .catch(function () {
+        return getJSON("data/catalogo.json").then(function (cat) { return (cat && cat.pecas || []).map(fromCatalog); });
+      });
+  }
+
+  /* ---------- exposições da coleção: as fotos seguem o painel ---------- */
+
+  function syncExhibits() {
+    var mega = byId.megalodon;
+    if (mega && mega.fotos.length && FT.setGallery) FT.setGallery(mega.fotos);
+    var zero = byId.zero, box = document.querySelector("#exposicao-zero .case__photos");
+    if (!zero || !zero.fotos.length || !box) return;
+    var sig = zero.fotos.slice(0, 3).map(function (f) { return f.arquivos.media || f.arquivos.grande || ""; }).join("|");
+    if (box.dataset.sig === sig) return;
+    box.dataset.sig = sig;
+    box.innerHTML = "";
+    zero.fotos.slice(0, 3).forEach(function (f, i) {
+      var pic = FT.picture(f.arquivos, tx(f.alt) || zero.nome, i === 0 ? "full" : "media",
+        i === 0 ? "(min-width: 861px) 600px, (min-width: 700px) 46vw, calc(100vw - 32px)" : null);
+      if (!pic) return;
+      if (i === 0) pic.className = "case__main";
+      var img = pic.querySelector("img");
+      img.width = i === 0 ? 800 : 600; img.height = i === 0 ? 800 : 600; img.loading = "lazy";
+      box.appendChild(pic);
+    });
   }
 
   // peça sem foto: a silhueta enterrada, como na exposição do Kraken
@@ -522,8 +568,26 @@
     return null;
   }
 
+  // várias fotos e nenhuma figura: miniaturas embaixo da foto grande
+  function dossierThumbs(p, photoBox) {
+    if (p.figura || !p.fotos || p.fotos.length < 2) return null;
+    var buttons = p.fotos.map(function (f, i) {
+      var pic = FT.picture(f.arquivos, "", "mini");
+      return h("button", {
+        type: "button", "aria-pressed": String(i === 0), "aria-label": tx(f.alt) || t("dossier.photo", { n: i + 1 }),
+        onclick: function () {
+          photoBox.innerHTML = "";
+          photoBox.appendChild(photo(p, "full", i));
+          buttons.forEach(function (b, j) { b.setAttribute("aria-pressed", String(j === i)); });
+        }
+      }, [pic]);
+    });
+    return h("div", { class: "dossier__thumbs", role: "group", "aria-label": t("dossier.photos", { name: p.nome }) }, buttons);
+  }
+
   function buildDossier(p, fromExhibit) {
     var photoBox = p.figura ? figureBox(p) : h("div", { class: "dossier__photo", "data-vt": "" }, [photo(p, "full") || silhouette(p)]);
+    var thumbs = dossierThumbs(p, photoBox);
     var title = h("h2", { class: "dossier__name" + (isMixedCase(p.nome) ? " is-mixed" : ""), id: "dossier-title" }, [
       p.nome, p.subtitulo ? h("small", { text: p.subtitulo }) : null
     ]);
@@ -539,7 +603,7 @@
       exhibit
     ]);
     // peça com figura interativa: os botões ficam embaixo do pedal, e os knobs ao lado
-    var visual = p.figura ? h("div", { class: "dossier__visual" }, [photoBox, actions]) : photoBox;
+    var visual = p.figura ? h("div", { class: "dossier__visual" }, [photoBox, actions]) : thumbs ? h("div", { class: "dossier__visual" }, [photoBox, thumbs]) : photoBox;
     var paper = h("div", { class: "sheet__paper" }, [
       closeButton(dossier),
       h("div", { class: "sheet__head" }, [h("span", { text: t("dossier.archive") }), h("span", { text: p.numero })]),
@@ -753,14 +817,21 @@
   renderWait();
 
   Promise.all([
-    getJSON("data/catalogo.json"),
+    loadPieces(),
     getJSON("data/config.json").catch(function () { return {}; })
   ]).then(function (res) {
-    pecas = (res[0] && res[0].pecas || []).filter(function (p) { return p && p.id && p.nome; });
+    pecas = (res[0] || []).filter(function (p) { return p && p.id && p.nome; });
     pecas.forEach(function (p) { byId[p.id] = p; });
     config = res[1] || {};
     renderAll();
-    FT.onLang(function () { stopAudio(); renderAll(); });
+    syncExhibits();
+    FT.onLang(function () {
+      stopAudio();
+      renderAll();
+      // as fotos do ZeRO são refeitas para a descrição trocar de idioma
+      var zb = document.querySelector("#exposicao-zero .case__photos");
+      if (zb && zb.dataset.sig) { delete zb.dataset.sig; syncExhibits(); }
+    });
     if (FT.relayout) FT.relayout();
   }).catch(function () {
     var empty = document.getElementById("drawer-empty");

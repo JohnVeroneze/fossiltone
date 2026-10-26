@@ -220,49 +220,98 @@
     else breakAmber();
   });
 
-  /* ---------- galeria do Megalodon ---------- */
+  /* ---------- galeria do Megalodon ----------
+     Começa com as fotos escritas no HTML; quando o acervo carrega, o acervo.js
+     troca pela lista do painel (FT.setGallery). */
 
-  var mainImg = document.getElementById("gallery-main");
-  var mainAvif = document.getElementById("gallery-main-avif");
-  function photoSet(name, ext) {
-    return "assets/img/" + name + "-800." + ext + " 800w, assets/img/" + name + "-1200." + ext + " 1200w";
+  var gallery = document.querySelector(".gallery");
+  var mainBox = document.querySelector(".gallery__main");
+  var thumbsBox = document.querySelector(".gallery__thumbs");
+  var GALLERY_SIZES = "(min-width: 861px) 540px, (min-width: 700px) 46vw, calc(100vw - 32px)";
+  // cada foto: { arquivos: { grande, media, mini }, alt: () => texto no idioma atual }
+  var galleryItems = Array.prototype.map.call(thumbsBox.querySelectorAll("button"), function (btn) {
+    var b = "assets/img/" + btn.dataset.photo;
+    var key = btn.dataset.altKey;
+    return { arquivos: { grande: b + "-1200.jpg", media: b + "-800.jpg", mini: b + "-thumb.jpg" }, alt: function () { return t(key); } };
+  });
+  var galleryNow = 0;
+
+  function showPhoto(i) {
+    var item = galleryItems[i];
+    var pic = item && FT.picture(item.arquivos, item.alt(), "full", GALLERY_SIZES);
+    if (!pic) return;
+    var img = pic.querySelector("img");
+    img.id = "gallery-main";
+    img.width = 800; img.height = 1200;
+    var old = mainBox.querySelector("picture");
+    if (old) mainBox.replaceChild(pic, old); else mainBox.appendChild(pic);
+    return img;
   }
-  var thumbs = document.querySelectorAll(".gallery__thumbs button");
-  thumbs.forEach(function (btn) {
-    btn.addEventListener("click", function () {
-      if (btn.getAttribute("aria-pressed") === "true") return;
-      thumbs.forEach(function (b) { b.setAttribute("aria-pressed", "false"); });
-      btn.setAttribute("aria-pressed", "true");
-      var swap = function () {
-        var name = btn.dataset.photo;
-        mainAvif.srcset = photoSet(name, "avif");
-        mainImg.srcset = photoSet(name, "jpg");
-        mainImg.src = "assets/img/" + name + "-800.jpg";
-        mainImg.alt = t(btn.dataset.altKey);
-        mainImg.classList.remove("is-swapping");
-      };
-      if (reduceMotion) { swap(); return; }
-      if (document.startViewTransition) {
-        document.startViewTransition(function () {
-          swap();
-          return mainImg.decode ? mainImg.decode().catch(function () {}) : null;
-        });
-        return;
-      }
-      mainImg.classList.add("is-swapping");
-      setTimeout(swap, 200);
+
+  function markThumbs() {
+    thumbsBox.querySelectorAll("button").forEach(function (b, i) {
+      b.setAttribute("aria-pressed", String(i === galleryNow));
+      b.setAttribute("aria-label", galleryItems[i].alt());
     });
-  });
-  // as miniaturas são só imagem: o nome do botão vem da descrição da foto, para o leitor de tela
-  function labelThumbs() {
-    thumbs.forEach(function (b) { b.setAttribute("aria-label", t(b.dataset.altKey)); });
   }
-  labelThumbs();
-  onLang(function () {
-    var active = document.querySelector(".gallery__thumbs [aria-pressed='true']");
-    if (active) mainImg.alt = t(active.dataset.altKey);
-    labelThumbs();
-  });
+
+  function pickPhoto(i) {
+    if (i === galleryNow) return;
+    galleryNow = i;
+    markThumbs();
+    var current = mainBox.querySelector("img");
+    if (reduceMotion) { showPhoto(i); return; }
+    if (document.startViewTransition) {
+      document.startViewTransition(function () {
+        var img = showPhoto(i);
+        return img && img.decode ? img.decode().catch(function () {}) : null;
+      });
+      return;
+    }
+    if (current) current.classList.add("is-swapping");
+    setTimeout(function () { showPhoto(i); }, 200);
+  }
+
+  function renderThumbs() {
+    thumbsBox.innerHTML = "";
+    galleryItems.forEach(function (item, i) {
+      var btn = document.createElement("button");
+      btn.type = "button";
+      var pic = FT.picture(item.arquivos, "", "mini");
+      if (pic) {
+        var img = pic.querySelector("img");
+        img.width = 240; img.height = 360; img.loading = "lazy";
+        btn.appendChild(pic);
+      }
+      btn.addEventListener("click", function () { pickPhoto(i); });
+      thumbsBox.appendChild(btn);
+    });
+    // uma foto só: as miniaturas somem
+    thumbsBox.hidden = galleryItems.length < 2;
+    markThumbs();
+  }
+
+  if (gallery) {
+    thumbsBox.querySelectorAll("button").forEach(function (btn, i) {
+      btn.addEventListener("click", function () { pickPhoto(i); });
+    });
+    markThumbs();
+    onLang(function () {
+      var img = mainBox.querySelector("img");
+      if (img && galleryItems[galleryNow]) img.alt = galleryItems[galleryNow].alt();
+      markThumbs();
+    });
+  }
+
+  // fotos vindas do painel: [{ arquivos, alt: { pt, en } }]
+  FT.setGallery = function (fotos) {
+    if (!gallery || !fotos || !fotos.length) return;
+    var firstBefore = galleryItems[0] && galleryItems[0].arquivos.media;
+    galleryItems = fotos.map(function (f) { return { arquivos: f.arquivos, alt: function () { return FT.tx(f.alt) || "Megalodon"; } }; });
+    galleryNow = 0;
+    renderThumbs();
+    if (galleryItems[0].arquivos.media !== firstBefore) showPhoto(0);
+  };
 
   /* ---------- knobs ---------- */
 

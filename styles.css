@@ -1607,6 +1607,12 @@ dialog.sheet.vt[open], dialog.sheet.vt[open]::backdrop { animation: none; }
 .figura__toast.is-on { opacity: 1; transform: none; }
 /* botões do dossiê embaixo do pedal */
 .dossier__visual { display: grid; gap: 1.1rem; align-content: start; min-width: 0; }
+/* várias fotos e nenhuma figura: miniaturas embaixo da foto */
+.dossier__thumbs { display: grid; grid-template-columns: repeat(auto-fill, minmax(56px, 1fr)); gap: .5rem; }
+.dossier__thumbs button { padding: 0; border: 0; border-radius: 3px; overflow: hidden; aspect-ratio: 2 / 3; cursor: pointer; background: var(--resin-3); opacity: .6; }
+.dossier__thumbs button picture, .dossier__thumbs button img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.dossier__thumbs button:hover { opacity: .85; }
+.dossier__thumbs button[aria-pressed="true"] { opacity: 1; box-shadow: 0 0 0 2px var(--ember); }
 .dossier__visual .dossier__actions { margin-top: 0; }
 /* botão principal ao lado da "Ficha técnica" ("Encomendar um Megalodon", "Entrar na lista de espera"):
    em duas colunas o texto acompanha a largura da coluna (cqi); no celular ele fica no tamanho normal e desce de linha */

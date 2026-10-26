@@ -125,6 +125,8 @@
       "dossier.wait": "Entrar na lista de espera",
       "dossier.lab": "Criar uma peça assim",
       "dossier.noPhoto": "Silhueta do {name}, ainda sem foto.",
+      "dossier.photos": "Fotos do {name}",
+      "dossier.photo": "Foto {n}",
       "ficha.title": "Ficha técnica",
       "ficha.loading": "Abrindo o desenho…",
       "ficha.error": "Não foi possível abrir o desenho agora.",
@@ -356,6 +358,8 @@
       "dossier.wait": "Join the waiting list",
       "dossier.lab": "Create a piece like this",
       "dossier.noPhoto": "Silhouette of the {name}, no photo yet.",
+      "dossier.photos": "Photos of the {name}",
+      "dossier.photo": "Photo {n}",
       "ficha.title": "Spec sheet",
       "ficha.loading": "Opening the drawing…",
       "ficha.error": "We couldn't load the drawing right now.",
@@ -575,6 +579,58 @@
     }
   }
 
+  /* ---------- fotos do acervo ----------
+     Cada foto tem { grande (1200 px), media (800 px), card (560×420), mini (240×360) }.
+     Caminho "assets/..." é arquivo do site (JPEG com irmão AVIF); o resto vem do storage "acervo". */
+
+  var STORAGE = API.replace("/rest/v1/", "/storage/v1/object/public/acervo/");
+
+  function arquivo(caminho) {
+    if (!caminho) return "";
+    return /^(assets\/|https?:)/.test(caminho) ? caminho : STORAGE + caminho;
+  }
+
+  // um campo pode ser texto puro ou { "pt": "...", "en": "..." }
+  function tx(v) {
+    if (v == null) return "";
+    if (typeof v === "string" || Array.isArray(v)) return v;
+    return v[lang] || v.pt || "";
+  }
+
+  // <picture> de uma foto. tipo "full": srcset 800/1200; "card", "mini" ou "media": um tamanho só, com reserva
+  function picture(arquivos, alt, tipo, sizes) {
+    var a = arquivos || {};
+    var first = function (keys) { for (var i = 0; i < keys.length; i++) if (a[keys[i]]) return a[keys[i]]; return ""; };
+    var src, srcset = "";
+    if (tipo === "full") {
+      src = first(["media", "grande", "card", "mini"]);
+      if (a.media && a.grande) srcset = arquivo(a.media) + " 800w, " + arquivo(a.grande) + " 1200w";
+    } else if (tipo === "mini") {
+      src = first(["mini", "card", "media", "grande"]);
+    } else if (tipo === "card") {
+      src = first(["card", "media", "grande", "mini"]);
+    } else {
+      src = first(["media", "grande", "card", "mini"]);
+    }
+    if (!src) return null;
+    var pic = document.createElement("picture");
+    // as fotos do site têm versão AVIF ao lado do JPEG
+    if (/^assets\/.*\.jpg$/.test(src)) {
+      var av = document.createElement("source");
+      av.type = "image/avif";
+      av.srcset = srcset ? srcset.replace(/\.jpg/g, ".avif") : src.replace(/\.jpg$/, ".avif");
+      if (srcset && sizes) av.sizes = sizes;
+      pic.appendChild(av);
+    }
+    var img = document.createElement("img");
+    img.src = arquivo(src);
+    if (srcset) { img.srcset = srcset; if (sizes) img.sizes = sizes; }
+    img.alt = alt || "";
+    img.decoding = "async";
+    pic.appendChild(img);
+    return pic;
+  }
+
   /* ---------- ponte para os scripts de cada página ---------- */
 
   window.FT = {
@@ -585,6 +641,9 @@
     lang: function () { return lang; },
     onLang: onLang,
     applyLang: applyLang,
+    tx: tx,
+    arquivo: arquivo,
+    picture: picture,
     sendContact: sendContact,
     apiGet: apiGet,
     whatsappDigits: whatsappDigits,

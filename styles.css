@@ -678,23 +678,23 @@ h1, h2, h3, h4 { margin: 0; font-weight: inherit; }
 }
 .about .fossils {
   background-image: url("assets/fosseis/amonite.svg"), url("assets/fosseis/samambaia.svg");
-  background-position: right -60px top 40px, left 3% bottom -70px;
-  background-size: clamp(160px, 22vw, 300px) auto, clamp(90px, 10vw, 140px) auto;
+  background-position: right -70px top 20px, left 2% bottom -80px;
+  background-size: clamp(200px, 24vw, 340px), clamp(170px, 18vw, 260px);
 }
 .collection .fossils {
-  background-image: url("assets/fosseis/peixe.svg"), url("assets/fosseis/trilobita.svg"), url("assets/fosseis/osso.svg");
-  background-position: left -80px top 32%, right -30px top 62%, left 30% bottom -26px;
-  background-size: clamp(220px, 28vw, 380px) auto, clamp(110px, 12vw, 170px) auto, clamp(180px, 20vw, 280px) auto;
+  background-image: url("assets/fosseis/peixe.svg"), url("assets/fosseis/trilobita.svg"), url("assets/fosseis/dente-tubarao.svg");
+  background-position: left -90px top 30%, right -60px top 60%, left 28% bottom -60px;
+  background-size: clamp(240px, 28vw, 400px), clamp(200px, 22vw, 320px), clamp(130px, 13vw, 190px);
 }
 .create .fossils {
-  background-image: url("assets/fosseis/osso.svg"), url("assets/fosseis/amonite.svg");
-  background-position: left -50px top 70%, right 4% bottom -90px;
-  background-size: clamp(170px, 18vw, 260px) auto, clamp(150px, 18vw, 240px) auto;
+  background-image: url("assets/fosseis/concha.svg"), url("assets/fosseis/amonite.svg");
+  background-position: left -60px top 68%, right 3% bottom -100px;
+  background-size: clamp(180px, 20vw, 280px), clamp(180px, 20vw, 280px);
 }
 .restore .fossils {
-  background-image: url("assets/fosseis/trilobita.svg"), url("assets/fosseis/samambaia.svg");
-  background-position: left -40px bottom 12%, right -20px top 20%;
-  background-size: clamp(100px, 11vw, 150px) auto, clamp(90px, 10vw, 130px) auto;
+  background-image: url("assets/fosseis/trilobita.svg"), url("assets/fosseis/dente-tubarao.svg");
+  background-position: left -60px bottom 10%, right -30px top 18%;
+  background-size: clamp(170px, 18vw, 250px), clamp(110px, 11vw, 160px);
 }
 
 /* ---------- laboratório: sala branca de laboratório genético, enterrada no Jurássico ----------
@@ -705,6 +705,7 @@ h1, h2, h3, h4 { margin: 0; font-weight: inherit; }
 .lab {
   --wall: #E8EBE8; --seam: #CDD3CF; --steel: #9AA39F; --steel-light: #C3C9C5; --lab-ink: #16201D; --lab-text: #3B4642;
   --floor: clamp(34px, 5vw, 60px);
+  --lab-gap: clamp(2rem, 4vw, 3rem);
   position: relative;
   padding-block: calc(var(--section) + 22px) calc(var(--section) + var(--floor) + 22px);
   color: var(--lab-text);
@@ -716,19 +717,15 @@ h1, h2, h3, h4 { margin: 0; font-weight: inherit; }
   --hole-bg: var(--resin-deep);
 }
 /* entrada: trilho de aço, listras de segurança e outro trilho */
-.lab::before {
-  content: ""; position: absolute; left: 0; right: 0; top: 0; height: 22px;
-  background:
-    linear-gradient(var(--steel) 0 4px, transparent 4px 16px, #7d8783 16px 22px),
-    repeating-linear-gradient(135deg, var(--amber) 0 14px, var(--lab-ink) 14px 28px);
+/* faixas de segurança (entrada e saída): 4px de aço, 14px de listras, 4px de aço, sempre iguais */
+.lab::before, .lab::after {
+  content: ""; position: absolute; left: 0; right: 0; z-index: 3; height: 22px; box-sizing: border-box;
+  border-block: 4px solid #8A938F;
+  background: repeating-linear-gradient(135deg, var(--amber) 0 14px, var(--lab-ink) 14px 28px);
 }
+.lab::before { top: 0; }
 /* saída: as mesmas listras de segurança da entrada; abaixo delas a terra do Triássico */
-.lab::after {
-  content: ""; position: absolute; left: 0; right: 0; bottom: var(--floor); height: 22px;
-  background:
-    linear-gradient(#7d8783 0 6px, transparent 6px 18px, var(--steel) 18px 22px),
-    repeating-linear-gradient(135deg, var(--amber) 0 14px, var(--lab-ink) 14px 28px);
-}
+.lab::after { bottom: var(--floor); }
 
 .lab__head { display: grid; gap: clamp(1.25rem, 2.5vw, 2rem); }
 .lab__head > * { min-width: 0; }
@@ -825,7 +822,7 @@ h1, h2, h3, h4 { margin: 0; font-weight: inherit; }
 /* convite: painel de controle claro preso na parede */
 .lab__cta {
   display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1.25rem 2.5rem;
-  margin-top: clamp(1.75rem, 3.5vw, 2.5rem);
+  margin-top: var(--lab-gap);
   padding: 1.4rem clamp(1.25rem, 3vw, 2rem);
   border: 1.5px solid var(--steel); border-radius: 4px;
   background: #F3F5F3;
@@ -869,6 +866,7 @@ h1, h2, h3, h4 { margin: 0; font-weight: inherit; }
 .incubator.spot::before { display: none; }
 /* o botão Examinar fica embaixo de tudo, sem subir por cima dos knobs */
 .case.incubator > .specimen__actions { margin-top: 0; }
+.lab__cta + .incubator { margin-top: var(--lab-gap); }
 /* barra de título do programa */
 .incubator__bar {
   grid-column: 1 / -1;

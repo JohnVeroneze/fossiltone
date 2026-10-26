@@ -538,7 +538,7 @@
       </form>`);
 
     const salvar = async (dados, aviso) => {
-      const salvo = await tentar(() => fonte.salvar("contatos", Object.assign({ id: c.id }, dados)));
+      const salvo = await tentar(() => fonte.atualizar("contatos", c.id, dados));
       if (!salvo) return false;
       Object.assign(c, salvo);
       await tentar(recarregar);

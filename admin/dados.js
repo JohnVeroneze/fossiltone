@@ -136,6 +136,12 @@
         return dados;
       },
 
+      // muda só alguns campos de uma linha que já existe; o upsert com a linha
+      // incompleta vira um INSERT e esbarra nas colunas obrigatórias (ex.: "tipo" dos contatos)
+      async atualizar(tabela, id, campos) {
+        return erro(await sb.from(tabela).update(campos).eq("id", id).select().single());
+      },
+
       async excluir(tabela, id) {
         erro(await sb.from(tabela).delete().eq("id", id));
       },
@@ -313,6 +319,10 @@
         }
         if (tabela === "produtos" && db.produtos.some((l) => l.slug === linha.slug && l.id !== linha.id)) throw new Error("Já existe um produto com esse identificador.");
         const r = salvarLinha(tabela, linha); gravar(); return copia(r);
+      },
+      async atualizar(tabela, id, campos) {
+        if (!db[tabela].some((l) => l.id === id)) throw new Error("Registro não encontrado.");
+        const r = salvarLinha(tabela, Object.assign({}, campos, { id })); gravar(); return copia(r);
       },
       async excluir(tabela, id) {
         db[tabela] = db[tabela].filter((l) => l.id !== id);

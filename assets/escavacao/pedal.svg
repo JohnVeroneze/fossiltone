@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -40 400 300" preserveAspectRatio="xMidYMid slice">
+  <!-- pedal ainda enterrado: usado nos modelos "em escavação" sem foto -->
+  <rect x="0" y="-40" width="400" height="300" fill="#45250F"/>
+  <g fill="none" stroke="#FFD54A" stroke-width="3" stroke-linejoin="round">
+    <rect x="120" y="10" width="160" height="230" rx="12"/>
+    <rect x="104" y="58" width="16" height="22" rx="2"/><rect x="280" y="58" width="16" height="22" rx="2"/>
+    <circle cx="160" cy="54" r="14"/><circle cx="240" cy="54" r="14"/><circle cx="200" cy="94" r="14"/>
+    <line x1="160" y1="54" x2="160" y2="42"/><line x1="240" y1="54" x2="240" y2="42"/><line x1="200" y1="94" x2="200" y2="82"/>
+    <circle cx="200" cy="134" r="4"/><circle cx="200" cy="190" r="18"/>
+  </g>
+  <path fill="#7A4A22" d="M0 150 C60 138 110 162 170 150 S290 132 400 148 V270 H0Z"/>
+  <path fill="#5E3519" d="M0 186 C80 176 140 200 220 188 S330 174 400 186 V270 H0Z"/>
+  <path fill="#44240F" d="M0 220 C70 212 150 232 230 222 S340 210 400 220 V270 H0Z"/>
+  <circle fill="#2B1609" cx="62" cy="196" r="5"/><circle fill="#2B1609" cx="318" cy="228" r="4"/><circle fill="#2B1609" cx="250" cy="168" r="3"/>
+</svg>

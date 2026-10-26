@@ -130,6 +130,7 @@
       "situacao": { "pt": "Em desenvolvimento", "en": "In development" },
       "carimbo": { "pt": "Em escavação", "en": "Excavating" },
       "acao": "lista-de-espera",
+      "escavacao": true,
       "exposicao": "exposicao-kraken",
       "foto": "",
       "figura": "assets/figuras/kraken.html",

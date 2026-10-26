@@ -944,6 +944,7 @@
   const LIMITE_AUDIO = 50 * 1024 * 1024;
 
   const midiasDe = (id, tipo) => db.midias.filter((m) => m.acervo_id === id && (!tipo || m.tipo === tipo)).sort((a, b) => a.ordem - b.ordem);
+  const enterrado = (a) => !!(a.conteudo && a.conteudo.escavacao);
   const capaDe = (id) => midiasDe(id, "foto").find((m) => m.arquivos && (m.arquivos.card || m.arquivos.media || m.arquivos.mini));
   const urlMidia = (m, ...ordem) => { for (const k of ordem) if (m.arquivos && m.arquivos[k]) return fonte.urlArquivo(m.arquivos[k]); return ""; };
   const pt = (v) => (v && typeof v === "object" ? v.pt : v) || "";
@@ -965,11 +966,12 @@
       const n = (t) => midiasDe(a.id, t).length;
       const conta = (q, um, varios) => `${q} ${q === 1 ? um : varios}`;
       return `<li><button class="modelo" type="button" data-modelo="${esc(a.id)}">
-        <span class="modelo__foto">${capa ? `<img src="${esc(urlMidia(capa, "card", "media", "mini"))}" alt="" loading="lazy">` : "<span>sem foto</span>"}</span>
+        <span class="modelo__foto">${enterrado(a) ? `<img src="../assets/escavacao/${a.tipo === "amplificador" ? "amplificador" : "pedal"}.svg" alt="" loading="lazy">` : capa ? `<img src="${esc(urlMidia(capa, "card", "media", "mini"))}" alt="" loading="lazy">` : "<span>sem foto</span>"}</span>
         <span class="modelo__no">${esc(a.numero || "")}</span>
         <span class="modelo__nome">${esc(a.nome)}${a.subtitulo ? ` <small>${esc(a.subtitulo)}</small>` : ""}</span>
         <span class="modelo__conta">${conta(n("foto"), "foto", "fotos")} · ${conta(n("video"), "vídeo", "vídeos")} · ${conta(n("audio"), "áudio", "áudios")}</span>
         ${a.publicado ? '<span class="stamp st-ativo">No fichário</span>' : '<span class="stamp st-rascunho">Fora do fichário</span>'}
+        ${enterrado(a) ? '<span class="modelo__escavacao">Em escavação</span>' : ""}
       </button></li>`;
     }).join("")}</ul>`;
     $$("[data-modelo]", view).forEach((b) => b.addEventListener("click", () => abrirModelo(db.acervo.find((a) => a.id === b.dataset.modelo))));
@@ -1002,6 +1004,10 @@
           <div class="field"><label for="md-ordem">Posição no fichário</label><input id="md-ordem" name="ordem" type="number" step="1" value="${esc(a.ordem)}"><small>Menor aparece primeiro.</small></div>
         </div>
         <label class="check"><input type="checkbox" name="publicado" ${a.publicado ? "checked" : ""}> Mostrar no fichário do site</label>
+        <div class="field">
+          <label class="check"><input type="checkbox" name="escavacao" ${c.escavacao ? "checked" : ""}> Em escavação (em desenvolvimento)</label>
+          <small>No fichário e no dossiê, o site mostra o amplificador ou o pedal enterrado no lugar das fotos, com o carimbo inclinado. As fotos enviadas ficam guardadas para quando ele sair da rocha.</small>
+        </div>
         <p class="sheet__title">Ficha de museu</p>
         <div class="grid2">
           ${par("resumo", "Resumo", "", true)}
@@ -1043,6 +1049,13 @@
       form.nome.addEventListener("input", () => { if (!slugManual) form.slug.value = slug(form.nome.value); });
     }
 
+    // marcou "em escavação" e o carimbo está vazio: sugere o do Kraken
+    form.escavacao.addEventListener("change", () => {
+      if (!form.escavacao.checked || form.carimbo_pt.value.trim()) return;
+      form.carimbo_pt.value = "Em escavação";
+      if (!form.carimbo_en.value.trim()) form.carimbo_en.value = "Excavating";
+    });
+
     form.addEventListener("submit", async (ev) => {
       ev.preventDefault();
       const nome = form.nome.value.trim();
@@ -1054,6 +1067,7 @@
       const conteudo = Object.assign({}, c, {
         nomeCientifico: vazioNulo(val("nomeCientifico")),
         acao: vazioNulo(val("acao")),
+        escavacao: form.escavacao.checked || null,
         resumo: bilingue(val("resumo_pt"), val("resumo_en"))
       });
       CAMPOS_FICHA.forEach(([campo]) => { conteudo[campo] = bilingue(val(campo + "_pt"), val(campo + "_en")); });

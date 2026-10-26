@@ -123,20 +123,15 @@
     });
   }
 
-  // peça sem foto: a silhueta enterrada, como na exposição do Kraken
+  // modelo em escavação (em desenvolvimento): no fichário e no dossiê aparece enterrado, mesmo com fotos
+  function buried(p) { return p.escavacao === true; }
+
+  // amplificador ou pedal enterrado, como na exposição do Kraken; também serve para peça sem foto
   function silhouette(p) {
-    var svg = fromMarkup(
-      '<svg viewBox="0 -40 400 300" preserveAspectRatio="xMidYMid slice" role="img">' +
-      '<g fill="none" stroke="currentColor" stroke-width="3" stroke-linejoin="round">' +
-      '<path d="M140 52 v-16 q0-10 10-10 h100 q10 0 10 10 v16"/><rect x="30" y="52" width="340" height="176" rx="14"/>' +
-      '<rect x="150" y="104" width="100" height="26" rx="3"/><line x1="46" y1="180" x2="354" y2="180"/>' +
-      '<circle cx="80" cy="204" r="9"/><circle cx="122" cy="204" r="9"/><circle cx="164" cy="204" r="9"/><circle cx="206" cy="204" r="9"/></g>' +
-      '<path fill="#7A4A22" d="M0 150 C60 138 110 162 170 150 S290 132 400 148 V270 H0Z"/>' +
-      '<path fill="#5E3519" d="M0 186 C80 176 140 200 220 188 S330 174 400 186 V270 H0Z"/>' +
-      '<path fill="#44240F" d="M0 220 C70 212 150 232 230 222 S340 210 400 220 V270 H0Z"/></svg>'
-    );
-    svg.setAttribute("aria-label", t("dossier.noPhoto", { name: p.nome }));
-    return svg;
+    return h("img", {
+      class: "buried", src: "assets/escavacao/" + (p.tipo === "amplificador" ? "amplificador" : "pedal") + ".svg",
+      alt: t(buried(p) ? "dossier.buried" : "dossier.noPhoto", { name: p.nome }), width: "400", height: "300", decoding: "async"
+    });
   }
 
   // selos da peça ("Pedal 100% analógico", "True bypass"…), no quadro da figura e na ficha técnica
@@ -148,7 +143,7 @@
   function stamp(p, extraClass) {
     var label = tx(p.carimbo);
     if (!label) return null;
-    var wip = p.acao === "lista-de-espera";
+    var wip = p.acao === "lista-de-espera" || buried(p);
     return h("span", { class: "stamp" + (wip ? " stamp--wip" : "") + (extraClass ? " " + extraClass : ""), text: label });
   }
 
@@ -475,7 +470,7 @@
   /* ---------- fichário do acervo ---------- */
 
   function cardFor(p) {
-    var art = h("div", { class: "fcard__photo" }, [photo(p, "card") || silhouette(p), stamp(p)]);
+    var art = h("div", { class: "fcard__photo" }, [(!buried(p) && photo(p, "card")) || silhouette(p), stamp(p)]);
     var name = h("h4", { class: "fcard__name" }, [
       h("button", {
         type: "button", class: "fcard__open" + (isMixedCase(p.nome) ? " is-mixed" : ""), text: p.nome,
@@ -570,7 +565,7 @@
 
   // várias fotos e nenhuma figura: miniaturas embaixo da foto grande
   function dossierThumbs(p, photoBox) {
-    if (p.figura || !p.fotos || p.fotos.length < 2) return null;
+    if (p.figura || buried(p) || !p.fotos || p.fotos.length < 2) return null;
     var buttons = p.fotos.map(function (f, i) {
       var pic = FT.picture(f.arquivos, "", "mini");
       return h("button", {
@@ -586,7 +581,7 @@
   }
 
   function buildDossier(p, fromExhibit) {
-    var photoBox = p.figura ? figureBox(p) : h("div", { class: "dossier__photo", "data-vt": "" }, [photo(p, "full") || silhouette(p)]);
+    var photoBox = p.figura ? figureBox(p) : h("div", { class: "dossier__photo", "data-vt": "" }, [(!buried(p) && photo(p, "full")) || silhouette(p)]);
     var thumbs = dossierThumbs(p, photoBox);
     var title = h("h2", { class: "dossier__name" + (isMixedCase(p.nome) ? " is-mixed" : ""), id: "dossier-title" }, [
       p.nome, p.subtitulo ? h("small", { text: p.subtitulo }) : null

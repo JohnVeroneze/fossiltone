@@ -492,6 +492,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .modelo .stamp { position: absolute; top: .7rem; right: .7rem; background: var(--paper); font-size: .85rem; }
 .modelo .st-ativo { color: #4f6b1f; }
 .modelo .st-rascunho { color: #7A4A22; }
+.modelo__escavacao { position: absolute; left: .7rem; top: .7rem; padding: .15rem .5rem; background: var(--ink); color: var(--honey); font-family: var(--f-type); font-size: .8rem; border-radius: 2px; }
 
 .midias { display: grid; gap: .7rem; padding-top: 1rem; border-top: 2px solid rgba(42, 26, 14, .18); }
 .midias__head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .6rem; }

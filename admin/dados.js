@@ -11,7 +11,7 @@
   const SUPABASE_JS = "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js";
   const DEMO_KEY = "ft-admin-demo-v2";
 
-  const TABELAS = ["produtos", "clientes", "pedidos", "itens_pedido", "cupons", "configuracoes", "contatos", "acervo", "midias"];
+  const TABELAS = ["produtos", "clientes", "pedidos", "itens_pedido", "cupons", "configuracoes", "contatos", "acervo", "midias", "emails", "anexos"];
   const BUCKET = "acervo";
 
   const ORDEM = {
@@ -23,7 +23,9 @@
     configuracoes: ["chave", true],
     contatos: ["criado_em", false],
     acervo: ["ordem", true],
-    midias: ["ordem", true]
+    midias: ["ordem", true],
+    emails: ["criado_em", false],
+    anexos: ["criado_em", true]
   };
 
   function carregarScript(src) {
@@ -131,6 +133,8 @@
 
       async listar(tabela) {
         const [col, asc] = ORDEM[tabela];
+        // a caixa de e-mails pode crescer: o painel carrega os 500 mais recentes
+        if (tabela === "emails") return erro(await sb.from(tabela).select("*").order(col, { ascending: asc }).limit(500));
         return erro(await sb.from(tabela).select("*").order(col, { ascending: asc }));
       },
 
@@ -180,6 +184,29 @@
       async removerArquivos(caminhos) {
         const doStorage = caminhos.filter((c) => c && !c.startsWith("assets/"));
         if (doStorage.length) erro(await sb.storage.from(BUCKET).remove(doStorage));
+      },
+
+      /* ---------- e-mails ---------- */
+
+      // a resposta sai pelo Brevo na função enviar-email (a chave fica no Supabase, nunca no navegador)
+      async enviarEmail(dados) {
+        const { data, error } = await sb.functions.invoke("enviar-email", { body: dados });
+        if (error) {
+          let msg = error.message;
+          try { const j = await error.context.json(); if (j && j.erro) msg = j.erro; } catch (e) { /* sem corpo */ }
+          throw new Error(traduzirErro(msg));
+        }
+        return data;
+      },
+
+      // anexos ficam num storage privado: o link vale 10 minutos
+      async urlAnexo(caminho) {
+        const d = erro(await sb.storage.from("emails").createSignedUrl(caminho, 600, { download: true }));
+        return d.signedUrl;
+      },
+
+      async removerAnexos(caminhos) {
+        if (caminhos.length) erro(await sb.storage.from("emails").remove(caminhos));
       },
 
       // "assets/..." é arquivo do próprio site; o resto está no storage
@@ -278,7 +305,14 @@
 
     const configuracoes = [{ chave: "loja", valor: { nome: "Fossil Tone", email: "fossiltonefx@gmail.com", whatsapp: "5519991226377", freteFixo: 38.9, freteGratisAcima: 1500, prazoProducaoDias: 15, pix: "" } }];
 
-    return { produtos, clientes, pedidos, itens_pedido: itens, cupons, configuracoes, contatos, acervo: [], midias: [] };
+    const emails = [
+      { id: uuid(), caixa: "contato", direcao: "entrada", de: "helena.d@exemplo.com", de_nome: "Helena Duarte", para: "contato@fossiltone.com.br", cc: null, assunto: "Orçamento para um fuzz", texto: "Oi! Vi o Megalodon no Instagram e queria saber se vocês fazem um fuzz com chave de oitava.\n\nAbraço,\nHelena", html: null, message_id: "<demo-1@exemplo.com>", em_resposta_a: null, conversa: "<demo-1@exemplo.com>", lido: false, pasta: "entrada", tem_anexo: false, criado_em: quando(0, 1) },
+      { id: uuid(), caixa: "suporte", direcao: "entrada", de: "rafael.m@exemplo.com", de_nome: "Rafael Monteiro", para: "suporte@fossiltone.com.br", cc: null, assunto: "Megalodon com chiado", texto: "Meu Megalodon começou a chiar com o Stage 2 no máximo. Segue foto da placa.", html: "<p>Meu Megalodon começou a chiar com o <b>Stage 2</b> no máximo. Segue foto da placa.</p>", message_id: "<demo-2@exemplo.com>", em_resposta_a: null, conversa: "<demo-2@exemplo.com>", lido: false, pasta: "entrada", tem_anexo: true, criado_em: quando(0, 5) },
+      { id: uuid(), caixa: "joao", direcao: "entrada", de: "loja@exemplo.com", de_nome: "Loja de Componentes", para: "joao@fossiltone.com.br", cc: null, assunto: "Seu pedido de potenciômetros foi enviado", texto: "Olá João, seu pedido #8812 saiu para entrega.", html: null, message_id: "<demo-3@exemplo.com>", em_resposta_a: null, conversa: "<demo-3@exemplo.com>", lido: true, pasta: "entrada", tem_anexo: false, criado_em: quando(1, 2) }
+    ];
+    const anexos = [{ id: uuid(), email_id: emails[1].id, nome: "placa-megalodon.jpg", tipo: "image/jpeg", tamanho: 284000, caminho: null, criado_em: quando(0, 5) }];
+
+    return { produtos, clientes, pedidos, itens_pedido: itens, cupons, configuracoes, contatos, acervo: [], midias: [], emails, anexos };
   }
 
   // demonstração: o acervo sai do data/catalogo.json do site, com as fotos que já estão em assets/img
@@ -385,6 +419,7 @@
         if (tabela === "clientes") db.pedidos.forEach((p) => { if (p.cliente_id === id) p.cliente_id = null; });
         if (tabela === "produtos") db.itens_pedido.forEach((i) => { if (i.produto_id === id) i.produto_id = null; });
         if (tabela === "acervo") db.midias = db.midias.filter((m) => m.acervo_id !== id);
+        if (tabela === "emails") db.anexos = db.anexos.filter((a) => a.email_id !== id);
         gravar();
       },
       async salvarPedido(pedido, itens) {
@@ -399,6 +434,13 @@
         return c ? copia(c.valor) : {};
       },
       async salvarConfig(chave, valor) { salvarLinha("configuracoes", { chave, valor }); gravar(); },
+      async enviarEmail(d) {
+        const original = d.responde ? db.emails.find((e) => e.id === d.responde) : null;
+        const r = salvarLinha("emails", { caixa: d.caixa, direcao: "saida", de: d.caixa + "@fossiltone.com.br", de_nome: "Fossil Tone", para: d.para, cc: null, assunto: d.assunto, texto: d.texto, html: null, message_id: "<demo-" + uuid() + ">", em_resposta_a: original ? original.message_id : null, conversa: original ? original.conversa : uuid(), lido: true, pasta: "entrada", tem_anexo: false });
+        gravar(); return copia(r);
+      },
+      async urlAnexo() { throw new Error("Na demonstração os anexos não abrem."); },
+      async removerAnexos() {},
       // na demonstração os arquivos enviados ficam só na memória desta aba
       async enviarArquivo(caminho, blob) { arquivosDemo.set(caminho, URL.createObjectURL(blob)); return caminho; },
       async removerArquivos(caminhos) { caminhos.forEach((c) => { if (arquivosDemo.has(c)) { URL.revokeObjectURL(arquivosDemo.get(c)); arquivosDemo.delete(c); } }); },

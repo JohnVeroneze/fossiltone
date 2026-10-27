@@ -1,6 +1,6 @@
 /* ==========================================================
    Fossil Tone — painel admin
-   Entrada, rotas e as telas: visão geral, contatos, pedidos, produtos,
+   Entrada, rotas e as telas: visão geral, contatos, e-mails, pedidos, produtos,
    acervo, clientes, cupons e configurações.
    ========================================================== */
 
@@ -35,8 +35,8 @@
   const FATURADOS = ["pago", "em_producao", "enviado", "entregue"];
 
   let fonte = null;
-  let db = { produtos: [], clientes: [], pedidos: [], itens_pedido: [], cupons: [], contatos: [], acervo: [], midias: [] };
-  const filtros = { pedidos: { status: "", busca: "" }, produtos: { status: "", busca: "" }, clientes: { busca: "" }, contatos: { tipo: "", status: "abertos", busca: "" } };
+  let db = { produtos: [], clientes: [], pedidos: [], itens_pedido: [], cupons: [], contatos: [], acervo: [], midias: [], emails: [], anexos: [] };
+  const filtros = { pedidos: { status: "", busca: "" }, produtos: { status: "", busca: "" }, clientes: { busca: "" }, contatos: { tipo: "", status: "abertos", busca: "" }, emails: { caixa: "", pasta: "entrada", busca: "" } };
 
   /* ---------- utilidades ---------- */
 
@@ -75,13 +75,14 @@
   const estoqueBaixo = () => db.produtos.filter((p) => p.status === "ativo" && p.estoque <= p.estoque_minimo);
 
   async function recarregar() {
-    const [produtos, clientes, pedidos, itens, cupons, contatos, acervo, midias] = await Promise.all(
-      ["produtos", "clientes", "pedidos", "itens_pedido", "cupons", "contatos", "acervo", "midias"].map((t) => fonte.listar(t))
+    const [produtos, clientes, pedidos, itens, cupons, contatos, acervo, midias, emails, anexos] = await Promise.all(
+      ["produtos", "clientes", "pedidos", "itens_pedido", "cupons", "contatos", "acervo", "midias", "emails", "anexos"].map((t) => fonte.listar(t))
     );
-    db = { produtos, clientes, pedidos, itens_pedido: itens, cupons, contatos, acervo, midias };
+    db = { produtos, clientes, pedidos, itens_pedido: itens, cupons, contatos, acervo, midias, emails, anexos };
     const marcar = (id, n) => { const b = $(id); b.hidden = !n; b.textContent = n; };
     marcar("#badge-pedidos", pedidos.filter((p) => p.status === "pago" || p.status === "em_producao").length);
     marcar("#badge-contatos", contatos.filter((c) => c.status === "novo").length);
+    marcar("#badge-emails", emails.filter((e) => e.direcao === "entrada" && e.pasta === "entrada" && !e.lido).length);
   }
 
   /* ==========================================================
@@ -274,6 +275,7 @@
   const TELAS = {
     "visao-geral": telaVisaoGeral,
     contatos: telaContatos,
+    emails: telaEmails,
     pedidos: telaPedidos,
     produtos: telaProdutos,
     acervo: telaAcervo,
@@ -292,7 +294,7 @@
       if (ativo) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current");
     });
     const nome = $(`.side__nav a[data-rota="${tela}"]`).lastChild.textContent;
-    document.title = (tela === "pedidos" ? "Pedidos" : tela === "contatos" ? "Contatos" : nome) + " · Gabinete · Fossil Tone";
+    document.title = (tela === "pedidos" ? "Pedidos" : tela === "contatos" ? "Contatos" : tela === "emails" ? "E-mails" : nome) + " · Gabinete · Fossil Tone";
     TELAS[tela]($("#view"));
     const ativo = $(".side__nav a.is-active");
     if (ativo && ativo.scrollIntoView && window.innerWidth <= 900) ativo.scrollIntoView({ block: "nearest", inline: "center" });
@@ -633,7 +635,7 @@
   function telaPedidos(view) {
     const f = filtros.pedidos;
     const contagem = (s) => db.pedidos.filter((p) => !s || p.status === s).length;
-    view.innerHTML = cabecalho("02 · Vendas", "Pedidos",
+    view.innerHTML = cabecalho("03 · Vendas", "Pedidos",
       `<button class="btn btn--ghost btn--sm" type="button" id="exportar">Exportar CSV</button><button class="btn btn--sm" type="button" id="novo">Novo pedido</button>`) + `
       <div class="toolbar">
         <input class="search" type="search" id="busca" placeholder="Buscar nº, cliente ou rastreio" value="${esc(f.busca)}" aria-label="Buscar pedidos">
@@ -812,7 +814,7 @@
   function telaProdutos(view) {
     const f = filtros.produtos;
     const contagem = (s) => db.produtos.filter((p) => !s || p.status === s).length;
-    view.innerHTML = cabecalho("03 · Estoque", "Produtos", `<button class="btn btn--sm" type="button" id="novo">Novo produto</button>`) + `
+    view.innerHTML = cabecalho("04 · Estoque", "Produtos", `<button class="btn btn--sm" type="button" id="novo">Novo produto</button>`) + `
       <div class="toolbar">
         <input class="search" type="search" id="busca" placeholder="Buscar nome, nº ou SKU" value="${esc(f.busca)}" aria-label="Buscar produtos">
         <div class="chips" role="group" aria-label="Filtrar por situação">
@@ -925,6 +927,172 @@
   }
 
   /* ==========================================================
+     E-MAILS: caixa de entrada de contato@, joao@ e suporte@
+     Os e-mails chegam pelo Worker de e-mail do Cloudflare (função
+     receber-email) e as respostas saem pelo Brevo (função enviar-email).
+     ========================================================== */
+
+  const CAIXAS_EMAIL = { contato: "contato@", joao: "joao@", suporte: "suporte@" };
+  const PASTAS_EMAIL = { entrada: "Entrada", enviados: "Enviados", arquivo: "Arquivados", spam: "Spam", lixeira: "Lixeira" };
+
+  const naPasta = (e, pasta) => pasta === "enviados" ? e.direcao === "saida" && e.pasta !== "lixeira" : e.direcao === "entrada" && e.pasta === pasta;
+  const quemEnviou = (e) => e.direcao === "saida" ? "Para: " + (e.para || "") : (e.de_nome || e.de);
+  const trecho = (e) => String(e.texto || "").replace(/\s+/g, " ").trim().slice(0, 140);
+  const dataCurta = (iso) => {
+    const d = new Date(iso), hoje = new Date();
+    return d.toDateString() === hoje.toDateString() ? d.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }) : data(iso);
+  };
+  const tamanho = (b) => !b ? "" : b > 1048576 ? (b / 1048576).toFixed(1).replace(".", ",") + " MB" : Math.max(1, Math.round(b / 1024)) + " KB";
+
+  function telaEmails(view) {
+    const f = filtros.emails;
+    const conta = (pasta, caixa) => db.emails.filter((e) => naPasta(e, pasta) && (!caixa || e.caixa === caixa) && (pasta !== "entrada" || !e.lido)).length;
+    view.innerHTML = cabecalho("02 · Correio", "E-mails", `<button class="btn btn--sm" type="button" id="escrever">Escrever</button>`) + `
+      <div class="toolbar">
+        <input class="search" type="search" id="busca" placeholder="Buscar remetente, assunto ou texto" value="${esc(f.busca)}" aria-label="Buscar e-mails">
+        <div class="chips" role="group" aria-label="Filtrar por endereço">
+          <button type="button" data-caixa="" aria-pressed="${!f.caixa}">Todos</button>
+          ${Object.keys(CAIXAS_EMAIL).map((c) => `<button type="button" data-caixa="${c}" aria-pressed="${f.caixa === c}">${CAIXAS_EMAIL[c]}${conta("entrada", c) ? `<b>${conta("entrada", c)}</b>` : ""}</button>`).join("")}
+        </div>
+        <div class="chips" role="group" aria-label="Pasta">
+          ${Object.keys(PASTAS_EMAIL).map((p) => `<button type="button" data-pasta="${p}" aria-pressed="${f.pasta === p}">${PASTAS_EMAIL[p]}</button>`).join("")}
+        </div>
+      </div>
+      <div id="lista"></div>`;
+
+    const desenhar = () => {
+      const q = f.busca.trim().toLowerCase();
+      const lista = db.emails.filter((e) => naPasta(e, f.pasta) && (!f.caixa || e.caixa === f.caixa) &&
+        (!q || [e.de, e.de_nome, e.para, e.assunto, e.texto].some((v) => v && v.toLowerCase().includes(q))));
+      $("#lista", view).innerHTML = !lista.length
+        ? `<p class="empty">${f.pasta === "entrada" ? "Nenhum e-mail na entrada." : "Nada nesta pasta."}</p>`
+        : `<ul class="correio">${lista.map((e) => `<li><button type="button" class="correio__item${e.lido ? "" : " is-novo"}" data-email="${esc(e.id)}">
+            <span class="correio__de">${esc(quemEnviou(e))}</span>
+            <span class="correio__caixa">${esc(CAIXAS_EMAIL[e.caixa] || e.caixa)}</span>
+            <span class="correio__assunto">${esc(e.assunto || "(sem assunto)")}${e.tem_anexo ? ' <span class="correio__clip" title="Tem anexo">📎</span>' : ""}</span>
+            <span class="correio__trecho">${esc(trecho(e))}</span>
+            <span class="correio__data">${esc(dataCurta(e.criado_em))}</span>
+          </button></li>`).join("")}</ul>`;
+      $$("[data-email]", view).forEach((b) => b.addEventListener("click", () => abrirEmail(db.emails.find((e) => e.id === b.dataset.email))));
+    };
+    desenhar();
+    $("#busca", view).addEventListener("input", (ev) => { f.busca = ev.target.value; desenhar(); });
+    $$("[data-caixa]", view).forEach((b) => b.addEventListener("click", () => { f.caixa = b.dataset.caixa; telaEmails(view); }));
+    $$("[data-pasta]", view).forEach((b) => b.addEventListener("click", () => { f.pasta = b.dataset.pasta; telaEmails(view); }));
+    $("#escrever", view).addEventListener("click", () => escreverEmail(null));
+  }
+
+  // corpo do e-mail: o HTML vai num iframe isolado (sem scripts); links abrem em outra aba
+  function corpoEmail(e) {
+    if (e.html) {
+      const doc = `<!doctype html><meta charset="utf-8"><base target="_blank"><style>body{font:15px/1.5 Arial,sans-serif;color:#1a1a1a;margin:12px;word-wrap:break-word}img{max-width:100%;height:auto}</style>${e.html}`;
+      return `<iframe class="email__html" sandbox="allow-popups allow-popups-to-escape-sandbox" referrerpolicy="no-referrer" srcdoc="${esc(doc)}" title="Conteúdo do e-mail"></iframe>`;
+    }
+    return `<div class="email__texto">${esc(e.texto || "(sem texto)")}</div>`;
+  }
+
+  async function abrirEmail(e) {
+    if (!e) return;
+    if (!e.lido && e.direcao === "entrada") {
+      e.lido = true;
+      tentar(() => fonte.atualizar("emails", e.id, { lido: true })).then(() => tentar(recarregar)).then(rotearSemFechar);
+    }
+    const conversa = db.emails.filter((x) => x.conversa && x.conversa === e.conversa).sort((a, b) => a.criado_em < b.criado_em ? -1 : 1);
+    const mensagens = conversa.length ? conversa : [e];
+    const ultimaRecebida = mensagens.filter((x) => x.direcao === "entrada").pop() || e;
+    abrirGaveta(CAIXAS_EMAIL[e.caixa] + "fossiltone.com.br", e.assunto || "(sem assunto)", `
+      ${mensagens.map((m) => {
+        const anexos = db.anexos.filter((a) => a.email_id === m.id);
+        return `<article class="email${m.id === e.id ? " is-atual" : ""}">
+          <header class="email__cab">
+            <span class="email__de">${esc(m.direcao === "saida" ? "Você (" + m.de + ")" : (m.de_nome ? m.de_nome + " · " : "") + m.de)}</span>
+            <span class="email__data">${esc(dataHora(m.criado_em))}</span>
+            ${m.direcao === "saida" ? `<span class="email__para">para ${esc(m.para || "")}</span>` : ""}
+          </header>
+          ${corpoEmail(m)}
+          ${anexos.length ? `<ul class="email__anexos">${anexos.map((a) => `<li>${a.caminho
+            ? `<button type="button" class="link-btn" data-anexo="${esc(a.caminho)}">${esc(a.nome)}</button>`
+            : `<span>${esc(a.nome)}</span>`} <small>${esc(tamanho(a.tamanho))}${a.caminho ? "" : " · grande demais, veja no Gmail"}</small></li>`).join("")}</ul>` : ""}
+        </article>`;
+      }).join("")}
+      <form id="form-resposta" class="resposta" novalidate>
+        <label class="label" for="rp-texto">Responder como ${esc(CAIXAS_EMAIL[ultimaRecebida.caixa] || "contato@")}fossiltone.com.br para ${esc(ultimaRecebida.direcao === "entrada" ? ultimaRecebida.de : ultimaRecebida.para)}</label>
+        <textarea id="rp-texto" name="texto" rows="6" placeholder="Escreva a resposta…"></textarea>
+        <div class="actions">
+          <button class="btn" type="submit">Enviar resposta</button>
+          <span class="spacer"></span>
+          ${e.direcao === "entrada" ? `<button class="btn btn--ghost btn--sm" type="button" data-mover="${e.pasta === "arquivo" ? "entrada" : "arquivo"}">${e.pasta === "arquivo" ? "Voltar para a entrada" : "Arquivar"}</button>
+          <button class="btn btn--ghost btn--sm" type="button" data-mover="${e.pasta === "spam" ? "entrada" : "spam"}">${e.pasta === "spam" ? "Não é spam" : "Spam"}</button>
+          <button class="btn btn--ghost btn--sm" type="button" id="nao-lido">Marcar como não lido</button>` : ""}
+          ${e.pasta === "lixeira" ? '<button class="btn btn--danger btn--sm" type="button" id="apagar">Apagar de vez</button>' : '<button class="btn btn--danger btn--sm" type="button" data-mover="lixeira">Lixeira</button>'}
+        </div>
+      </form>`);
+
+    $$("[data-anexo]").forEach((b) => b.addEventListener("click", async () => {
+      const url = await tentar(() => fonte.urlAnexo(b.dataset.anexo), b);
+      if (url) window.open(url, "_blank", "noopener");
+    }));
+
+    $$("[data-mover]").forEach((b) => b.addEventListener("click", async () => {
+      const pasta = b.dataset.mover;
+      if (await tentar(() => fonte.atualizar("emails", e.id, { pasta }), b)) {
+        await tentar(recarregar); fecharGaveta(); rotear();
+        toast({ arquivo: "Arquivado.", spam: "Movido para o spam.", lixeira: "Movido para a lixeira.", entrada: "Voltou para a entrada." }[pasta]);
+      }
+    }));
+    const nl = $("#nao-lido");
+    if (nl) nl.addEventListener("click", async () => {
+      if (await tentar(() => fonte.atualizar("emails", e.id, { lido: false }), nl)) { await tentar(recarregar); fecharGaveta(); rotear(); }
+    });
+    const ap = $("#apagar");
+    if (ap) ap.addEventListener("click", async () => {
+      if (!confirm("Apagar este e-mail de vez? Ele continua no Gmail, se tiver chegado lá.")) return;
+      const caminhos = db.anexos.filter((a) => a.email_id === e.id && a.caminho).map((a) => a.caminho);
+      if (await tentar(async () => { await fonte.excluir("emails", e.id); await fonte.removerAnexos(caminhos).catch(() => {}); return true; }, ap)) {
+        await tentar(recarregar); fecharGaveta(); rotear(); toast("E-mail apagado.");
+      }
+    });
+
+    const form = $("#form-resposta");
+    form.addEventListener("submit", async (ev) => {
+      ev.preventDefault();
+      const texto = form.texto.value.trim();
+      if (!texto) return toast("Escreva a resposta.", true);
+      const assunto = /^re:/i.test(e.assunto || "") ? e.assunto : "Re: " + (e.assunto || "");
+      const para = ultimaRecebida.direcao === "entrada" ? ultimaRecebida.de : ultimaRecebida.para;
+      const ok = await tentar(() => fonte.enviarEmail({ caixa: ultimaRecebida.caixa, para, assunto, texto, responde: ultimaRecebida.id }), $("button[type=submit]", form));
+      if (!ok) return;
+      await tentar(recarregar);
+      abrirEmail(db.emails.find((x) => x.id === e.id));
+      rotearSemFechar();
+      toast("Resposta enviada.");
+    });
+  }
+
+  function escreverEmail() {
+    abrirGaveta("Novo e-mail", "Escrever", `
+      <form id="form-email" novalidate style="display:grid;gap:1.1rem">
+        <div class="grid2">
+          <div class="field"><label for="em-caixa">Enviar como</label><select id="em-caixa" name="caixa">${Object.keys(CAIXAS_EMAIL).map((c) => `<option value="${c}">${CAIXAS_EMAIL[c]}fossiltone.com.br</option>`).join("")}</select></div>
+          <div class="field"><label for="em-para">Para</label><input id="em-para" name="para" type="email" placeholder="nome@exemplo.com" required></div>
+        </div>
+        <div class="field"><label for="em-assunto">Assunto</label><input id="em-assunto" name="assunto" maxlength="200"></div>
+        <div class="field"><label for="em-texto">Mensagem</label><textarea id="em-texto" name="texto" rows="10"></textarea></div>
+        <div class="actions"><button class="btn" type="submit">Enviar</button></div>
+      </form>`);
+    const form = $("#form-email");
+    form.addEventListener("submit", async (ev) => {
+      ev.preventDefault();
+      const para = form.para.value.trim(), texto = form.texto.value.trim();
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(para)) return toast("Escreva um e-mail válido em Para.", true);
+      if (!texto) return toast("Escreva a mensagem.", true);
+      const ok = await tentar(() => fonte.enviarEmail({ caixa: form.caixa.value, para, assunto: form.assunto.value.trim(), texto }), $("button[type=submit]", form));
+      if (!ok) return;
+      await tentar(recarregar); fecharGaveta(); rotear(); toast("E-mail enviado.");
+    });
+  }
+
+  /* ==========================================================
      ACERVO: modelos do fichário do site, com fotos, vídeos e áudios
      Os textos ficam em acervo.conteudo (mesmo formato do antigo
      data/catalogo.json); as mídias, na tabela midias. Fotos e áudios
@@ -957,7 +1125,7 @@
   };
 
   function telaAcervo(view) {
-    view.innerHTML = cabecalho("04 · Museu", "Acervo", `<button class="btn btn--sm" type="button" id="novo">Novo modelo</button>`) + `
+    view.innerHTML = cabecalho("05 · Museu", "Acervo", `<button class="btn btn--sm" type="button" id="novo">Novo modelo</button>`) + `
       <p class="nota">Os modelos publicados aparecem no fichário do site, com as fotos, os vídeos e os áudios. As exposições da coleção (Megalodon, Kraken e ZeRO) usam as fotos daqui.</p>
       <div id="lista"></div>`;
     const lista = db.acervo;
@@ -1296,7 +1464,7 @@
 
   function telaClientes(view) {
     const f = filtros.clientes;
-    view.innerHTML = cabecalho("05 · Pessoas", "Clientes", `<button class="btn btn--sm" type="button" id="novo">Novo cliente</button>`) + `
+    view.innerHTML = cabecalho("06 · Pessoas", "Clientes", `<button class="btn btn--sm" type="button" id="novo">Novo cliente</button>`) + `
       <div class="toolbar"><input class="search" type="search" id="busca" placeholder="Buscar nome, e-mail, telefone ou cidade" value="${esc(f.busca)}" aria-label="Buscar clientes"></div>
       <div id="lista"></div>`;
 
@@ -1385,7 +1553,7 @@
   function telaCupons(view) {
     const hoje = new Date().toISOString().slice(0, 10);
     const situacao = (c) => !c.ativo ? ["arquivado", "Pausado"] : c.validade && c.validade < hoje ? ["cancelado", "Vencido"] : c.limite_usos && c.usos >= c.limite_usos ? ["esgotado", "Esgotado"] : ["ativo", "Ativo"];
-    view.innerHTML = cabecalho("06 · Promoções", "Cupons", `<button class="btn btn--sm" type="button" id="novo">Novo cupom</button>`) +
+    view.innerHTML = cabecalho("07 · Promoções", "Cupons", `<button class="btn btn--sm" type="button" id="novo">Novo cupom</button>`) +
       (!db.cupons.length ? '<p class="empty">Nenhum cupom criado.</p>' : `<div class="table-wrap"><table class="table table--cards">
         <thead><tr><th>Código</th><th>Desconto</th><th class="num">Usos</th><th>Validade</th><th>Situação</th></tr></thead>
         <tbody>${db.cupons.map((c) => { const [st, rot] = situacao(c); return `<tr data-cupom="${esc(c.id)}" tabindex="0">
@@ -1451,10 +1619,10 @@
      ========================================================== */
 
   async function telaConfiguracoes(view) {
-    view.innerHTML = cabecalho("07 · Loja", "Configurações") + '<p class="loading">Carregando…</p>';
+    view.innerHTML = cabecalho("08 · Loja", "Configurações") + '<p class="loading">Carregando…</p>';
     const cfg = (await tentar(() => fonte.config("loja"))) || {};
     if (!view.isConnected || !$(".side__nav a.is-active[data-rota=configuracoes]")) return;
-    view.innerHTML = cabecalho("07 · Loja", "Configurações") + `
+    view.innerHTML = cabecalho("08 · Loja", "Configurações") + `
       <form id="form-config" class="panel" novalidate style="display:grid;gap:1.2rem;max-width:760px">
         <h2 class="panel__title">Dados da loja</h2>
         <div class="grid2">

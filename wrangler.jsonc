@@ -1,0 +1,12 @@
+// Deploy do site no Cloudflare (Worker "fossiltone", só arquivos estáticos).
+{
+  "name": "fossiltone",
+  "compatibility_date": "2026-10-01",
+  "assets": {
+    "directory": ".",
+    // endereço que não existe mostra o 404.html (com status 404)
+    "not_found_handling": "404-page",
+    // /manutencao serve manutencao.html, como já acontecia
+    "html_handling": "auto-trailing-slash"
+  }
+}

@@ -1136,7 +1136,14 @@ h1, h2, h3, h4 { margin: 0; font-weight: inherit; }
   width: 7px; height: 7px; border-radius: 50%;
   background: var(--resin-deep); box-shadow: inset 0 1px 2px rgba(0, 0, 0, .6);
 }
-.part.is-in { box-shadow: inset 0 0 0 3px var(--amber); }
+.part.is-in::after {
+  /* moldura de 3px que segue o chanfro (a sombra interna era cortada nos cantos) */
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  background: var(--amber);
+  clip-path: polygon(evenodd,
+    12px 0, 100% 0, 100% 100%, 12px 100%, 0 calc(100% - 12px), 0 12px, 12px 0,
+    13.24px 3px, 3px 13.24px, 3px calc(100% - 13.24px), 13.24px calc(100% - 3px), calc(100% - 3px) calc(100% - 3px), calc(100% - 3px) 3px, 13.24px 3px);
+}
 .part.is-out { opacity: .7; }
 .part__no { font-family: var(--f-display); font-weight: 800; font-size: .95rem; letter-spacing: .05em; color: var(--ember); }
 .part__name { font-family: var(--f-display); font-weight: 800; font-size: 1.25rem; line-height: 1.05; }

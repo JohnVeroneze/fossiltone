@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Espécime não encontrado · Fossil Tone</title>
+  <meta name="robots" content="noindex">
+  <meta name="theme-color" content="#2B1609">
+  <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="/assets/favicon.png" type="image/png">
+  <style>
+    /* página 404: vitrine vazia do museu. Caminhos absolutos porque ela aparece em qualquer endereço. */
+    @font-face { font-family: "Big Shoulders Display"; src: url("/assets/fonts/big-shoulders-display-latin.woff2") format("woff2"); font-weight: 100 900; font-display: swap; }
+    @font-face { font-family: "Newsreader"; src: url("/assets/fonts/newsreader-latin.woff2") format("woff2"); font-display: swap; }
+    @font-face { font-family: "Special Elite"; src: url("/assets/fonts/special-elite-latin.woff2") format("woff2"); font-display: swap; }
+    :root { --resin: #2B1609; --resin-2: #361C0C; --amber: #F29F0D; --honey: #FFD54A; --ember: #D4401C;
+            --paper: #E6D9BB; --ink: #2A1A0E; --text: #EFE3C8; --muted: #BFA27A; --line: rgba(242,159,13,.22); }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; }
+    body { min-height: 100svh; display: grid; place-items: center; padding: 48px 16px;
+           background: radial-gradient(ellipse at 50% 30%, #4A2810 0%, var(--resin) 55%, #1E0E05 100%);
+           color: var(--text); font: 1.05rem/1.55 "Newsreader", Georgia, serif; overflow-x: hidden; }
+    .logo { display: block; width: 150px; height: 34px; margin: 0 auto 2.2rem; fill: var(--amber); }
+    .wrap { width: 100%; max-width: 760px; display: grid; gap: 2rem; grid-template-columns: 1fr 1fr; align-items: center; }
+    .case { position: relative; aspect-ratio: 1; border: 2px solid var(--line); border-radius: 4px;
+            background: linear-gradient(160deg, rgba(255,213,74,.06), rgba(0,0,0,.25)); box-shadow: inset 0 0 60px rgba(0,0,0,.5); }
+    .case::before { content: ""; position: absolute; inset: 14%; border: 2px dashed rgba(230,217,187,.35); border-radius: 50%; }
+    .case img { position: absolute; inset: 18%; width: 64%; height: 64%; opacity: .12; filter: blur(.4px); animation: some 6s ease-in-out infinite alternate; }
+    .case__tag { position: absolute; left: 50%; bottom: -14px; translate: -50% 0; white-space: nowrap; padding: .2rem .8rem;
+                 background: var(--amber); color: var(--ink); font: 700 .8rem/1.4 "Big Shoulders Display", sans-serif; letter-spacing: .14em; text-transform: uppercase; }
+    @keyframes some { from { opacity: .06; } to { opacity: .16; } }
+    .card { position: relative; background: var(--paper); color: var(--ink); padding: 1.6rem 1.5rem 1.4rem;
+            clip-path: polygon(14px 0, 100% 0, 100% 100%, 0 100%, 0 14px); box-shadow: 0 20px 40px rgba(0,0,0,.4); }
+    .card__num { display: block; padding-right: 5.5rem; font: .85rem "Special Elite", monospace; color: #7A5A3A; letter-spacing: .08em; }
+    h1 { margin: .2rem 0 .1rem; font: 800 clamp(2.2rem, 6vw, 3rem)/.95 "Big Shoulders Display", sans-serif; text-transform: uppercase; }
+    .sci { margin: 0 0 1rem; font-style: italic; color: #6E260C; }
+    dl { margin: 0 0 1.2rem; display: grid; grid-template-columns: auto 1fr; gap: .25rem .9rem; font-size: .95rem; }
+    dt { font: .78rem/1.7 "Special Elite", monospace; text-transform: uppercase; color: #7A5A3A; }
+    dd { margin: 0; }
+    .stamp { position: absolute; top: 1.1rem; right: .9rem; rotate: 9deg; padding: .15rem .55rem; border: 3px solid var(--ember);
+             color: var(--ember); font: 800 1rem/1.2 "Big Shoulders Display", sans-serif; letter-spacing: .12em; text-transform: uppercase; opacity: .85; }
+    .actions { display: flex; flex-wrap: wrap; gap: .6rem; }
+    .btn { display: inline-block; padding: .65rem 1rem; border: 2px solid var(--ink); color: var(--ink); text-decoration: none;
+           font: 700 .85rem/1 "Big Shoulders Display", sans-serif; letter-spacing: .12em; text-transform: uppercase; }
+    .btn--main { background: var(--ink); color: var(--paper); }
+    .btn:hover, .btn:focus-visible { background: var(--amber); border-color: var(--amber); color: var(--ink); outline: none; }
+    .en { margin: 1.1rem 0 0; font-size: .85rem; color: #7A5A3A; }
+    @media (max-width: 640px) { .wrap { grid-template-columns: 1fr; } .case { width: min(260px, 70vw); margin: 0 auto; } }
+    @media (prefers-reduced-motion: reduce) { .case img { animation: none; } }
+  </style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="logo" viewBox="0 0 753.22 171.01">
+    <path d="M12.69,113.28c1.2-1.2,2.41-1.4,4.01-.6l6.01,2.61c2,.8,2.21,2.61.8,4.41-9.22,12.63-9.62,33.28,9.42,33.28s32.08-19.04,43.7-39.69c3.41-6.01,8.62-15.44,14.43-26.46l-31.27,1.4c-2.21,0-3.41-1.2-2.41-3.41l2.21-5.21c.6-1.4,1.8-2.21,3.41-2.41l34.68-2.41c10.22-19.04,21.45-40.29,29.47-55.53-27.06,1.6-46.91,3.41-59.94,4.61-42.3,3.41-49.12,16.44-42.7,25.86,5.41,7.82,12.83,10.42,16.84,11.23,2,.4,3.21,1.6,3.01,3.61l-.8,5.61c-.2,1.6-1.8,2.81-3.61,2.41-11.23-3.21-24.86-9.62-31.07-23.66C-2.75,22.86,20.7,12.84,62.6,9.03c32.88-3.01,57.74-4.61,87.2-7.02,3.01-.2,4.41,2,3.01,4.81l-5.41,10.42c-2,4.01-15.64,28.47-30.27,56.13l22.45-1.6c2.21-.2,3.41,1.2,2.41,3.41l-3.01,7.22c-.6,1.4-1.6,2.41-3.41,2.41l-25.26,1.2-5.21,10.02c-26.46,50.72-44.71,74.98-75.78,74.98-34.28,0-36.69-36.89-16.64-57.74Z"/>
+    <path d="M127.55,115.48c3.61-21.65,26.66-48.92,49.32-45.91,10.02,1.4,13.43,11.63,11.43,22.45-4.21,24.26-23.86,53.12-45.91,49.92-11.83-1.8-17.44-12.43-14.83-26.46ZM148.6,122.9c11.63,2,26.06-15.04,29.27-33.28.8-4.61,0-11.23-4.41-12.03-12.23-1.2-28.47,20.05-31.07,34.08-1.2,6.42,1,10.42,6.21,11.23Z"/>
+    <path d="M178.67,134.12c-1.2-1.4-.8-2.81.2-4.21l7.62-10.83c1.2-1.8,2.61-1.6,3.81.2,3.01,4.41,5.81,6.62,9.22,7.42,6.01,1.4,11.63-2,12.23-10.42.6-9.62-12.03-17.64-11.03-30.07,1.4-16.04,15.84-24.66,30.67-22.25,3.61.6,8.02,2.81,11.03,5.21,1.4,1.2,1.6,2.61.4,4.21l-3.41,4.61c-1.2,1.6-2.61,1.8-4.21.6-1.8-1.4-4.01-2.41-6.62-2.81-9.02-1.6-14.43,4.01-14.83,10.42-.8,13.03,11.63,18.44,11.23,33.68-.4,14.23-15.04,25.26-29.67,23.25-8.22-1-13.03-4.41-16.64-9.02Z"/>
+    <path d="M226.38,134.12c-1.2-1.4-.8-2.81.2-4.21l7.62-10.83c1.2-1.8,2.61-1.6,3.81.2,3.01,4.41,5.81,6.62,9.22,7.42,6.01,1.4,11.63-2,12.23-10.42.6-9.62-12.03-17.64-11.03-30.07,1.4-16.04,15.84-24.66,30.67-22.25,3.61.6,8.02,2.81,11.03,5.21,1.4,1.2,1.6,2.61.4,4.21l-3.41,4.61c-1.2,1.6-2.61,1.8-4.21.6-1.8-1.4-4.01-2.41-6.62-2.81-9.02-1.6-14.43,4.01-14.83,10.42-.8,13.03,11.63,18.44,11.23,33.68-.4,14.23-15.04,25.26-29.67,23.25-8.22-1-13.03-4.41-16.64-9.02Z"/>
+    <path d="M277.7,118.29c2-9.22,10.42-23.05,25.46-45.71,1-1.4,2.61-1.8,4.01-1l6.21,3.41c1.6,1,2.21,2.81,1,4.61-12.23,19.25-19.65,29.07-21.45,36.69-1.8,6.21,1,9.82,6.62,10.42,5.81.6,18.24-2,30.67-10.02,2-1.2,4.21-.6,5.01,1.4l1,2.61c.4,1.2.2,2.41-.6,3.21-18.84,17.04-36.29,17.64-44.91,16.24-12.23-2.21-15.24-11.43-13.03-21.85ZM325.61,45.12c5.21.2,8.82,4.81,7.02,11.03-2.21,7.22-9.62,10.62-14.63,9.62-3.81-.8-6.62-4.01-5.61-9.02,1.4-7.22,7.62-12.03,13.23-11.63Z"/>
+    <path d="M329.02,113.88c3.41-19.25,20.25-60.34,42.1-85,8.42-9.62,19.25-19.45,27.46-19.45,15.24,0,14.63,18.84,3.01,37.49-9.82,15.84-29.47,44.7-58.94,69.16-.4,6.82,5.21,10.22,10.42,10.83,11.43,1,24.46-3.21,32.68-8.22,1.6-1,3.21-.6,4.01,1.2l1.6,3.21c.8,1.6.6,3.01-.8,4.21-11.83,9.62-27.06,17.04-45.71,15.24-8.82-1.4-19.65-7.62-15.84-28.67ZM396.17,38.5c4.41-7.22,5.61-14.03,4.41-15.64-1.2-1.6-4.41-1.4-8.22,2.21-19.65,18.64-38.69,53.33-46.51,77.78,23.66-23.05,42.3-50.12,50.32-64.35Z"/>
+    <path d="M453.9,50.93c-11.63-26.06,11.83-37.09,53.73-41.3C550.53,5.42,598.64,2.42,643.75.01c3.01-.2,4.61,2.61,3.21,5.41l-5.21,9.82c-1.4,2.81-2.61,3.01-5.81,3.21-23.46,1-47.31,2.21-68.16,3.41-20.85,35.68-49.52,102.84-65.55,141.73-.6,1.6-2,2.21-3.61,1.6l-13.43-4.61c-1.6-.6-2.41-2.21-1.8-3.81,9.82-28.67,44.5-91.62,68.96-133.91l-40.09,2.81c-42.3,3.01-49.12,16.64-42.7,26.06,5.41,7.82,18.44,14.23,28.47,15.24,1.8.2,3.21,1.8,3.01,3.41l-.8,5.61c-.2,1.6-1.8,2.81-3.61,2.41-17.24-3.21-36.49-13.43-42.7-27.46Z"/>
+    <path d="M531.89,115.48c3.61-21.65,26.66-48.92,49.32-45.91,10.02,1.4,13.43,11.63,11.43,22.45-4.21,24.26-23.86,53.12-45.91,49.92-11.83-1.8-17.44-12.43-14.83-26.46ZM552.93,122.9c11.63,2,26.06-15.04,29.27-33.28.8-4.61,0-11.23-4.41-12.03-12.23-1.2-28.47,20.05-31.07,34.08-1.2,6.42,1,10.42,6.21,11.23Z"/>
+    <path d="M649.56,92.43c10.22-15.24,7.02-20.65-7.42-7.82-12.23,11.03-23.86,25.06-40.29,51.52-.8,1.2-2.21,1.8-3.41,1.4l-9.82-3.01c-2-.6-3.01-2.61-2-4.41l28.27-57.13c.8-1.4,2.41-2,3.81-1.4l4.61,2c1.6.8,2.41,2.61,1.6,4.21l-16.04,32.08c8.02-10.22,18.04-22.85,26.66-30.67,23.86-22.05,42.1-11.63,27.46,15.44-8.42,15.44-17.64,29.67-6.62,31.67,8.82,1.2,19.45-5.61,25.66-10.42,1.4-1.4,3.41-1,4.61.6l1.2,1.6c.6,1,.6,2.21,0,3.21-11.23,16.04-27.46,21.45-40.29,19.65-16.64-2.61-14.83-23.25,2-48.51Z"/>
+    <path d="M676.02,122.1c2-12.23,12.23-19.65,23.66-24.06-11.43-5.81-5.01-21.25,7.22-27.87,11.43-6.21,26.46-7.82,37.29-5.41,2,.4,3.01,2.21,2.21,4.01l-2.61,6.42c-.6,1.4-2,2.21-3.61,1.8-8.82-2.21-19.85-2.81-27.46,1.6-7.02,4.01-10.62,10.42-2.21,11.83,4.61.8,8.62.8,15.64.2,2.61-.2,4.81,1.4,4.01,4.01l-1.4,4.21c-.4,1-1.4,1.8-2.61,2-17.04,1.4-32.48,5.01-35.08,15.04-2,9.22,4.81,14.43,24.06,12.43,12.83-1.2,22.85-5.21,31.27-10.42,1.8-1,3.81-.6,4.61,1.2l1.8,3.61c.6,1.4.6,2.81-.2,3.41-9.82,6.21-23.05,14.43-41.7,18.04-24.66,4.81-37.29-6.42-34.88-22.05Z"/>
+  </symbol>
+</svg>
+<main>
+  <a href="/" aria-label="Fossil Tone, página inicial"><svg class="logo" aria-hidden="true"><use href="#logo"/></svg></a>
+  <div class="wrap">
+    <div class="case" aria-hidden="true">
+      <img src="/assets/fosseis/trilobita.svg" alt="">
+      <span class="case__tag">Vitrine vazia</span>
+    </div>
+    <article class="card">
+      <span class="stamp">Extinto</span>
+      <span class="card__num">FT-404 · ficha sem espécime</span>
+      <h1>Espécime não encontrado</h1>
+      <p class="sci">Paginae inexistens</p>
+      <dl>
+        <dt>Situação</dt><dd>Nunca escavado, ou levado para outra ala do museu.</dd>
+        <dt>Habitat</dt><dd>Um endereço digitado errado ou um link antigo.</dd>
+      </dl>
+      <div class="actions">
+        <a class="btn btn--main" href="/">Voltar ao museu</a>
+        <a class="btn" href="/#acervo">Ver o acervo</a>
+        <a class="btn" href="/manutencao">Manutenção</a>
+      </div>
+      <p class="en" lang="en">Specimen not found. This page went extinct, or never existed.</p>
+    </article>
+  </div>
+</main>
+</body>
+</html>

@@ -5,7 +5,7 @@
   Referrer-Policy: strict-origin-when-cross-origin
   Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=()
   Cross-Origin-Opener-Policy: same-origin
-  Content-Security-Policy: default-src 'self'; script-src 'self' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; media-src 'self' blob: https://mlyahqfoslwzbwjoxaas.supabase.co; font-src 'self'; connect-src 'self' https://mlyahqfoslwzbwjoxaas.supabase.co wss://mlyahqfoslwzbwjoxaas.supabase.co; frame-src https://www.youtube-nocookie.com 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests
+  Content-Security-Policy: default-src 'self'; script-src 'self' https://cdn.jsdelivr.net https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; media-src 'self' blob: https://mlyahqfoslwzbwjoxaas.supabase.co; font-src 'self'; connect-src 'self' https://cloudflareinsights.com https://mlyahqfoslwzbwjoxaas.supabase.co wss://mlyahqfoslwzbwjoxaas.supabase.co; frame-src https://www.youtube-nocookie.com 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests
 
 /admin/*
   X-Robots-Tag: noindex, nofollow

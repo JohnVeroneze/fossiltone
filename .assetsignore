@@ -1,0 +1,6 @@
+.git
+.gitignore
+._*
+.DS_Store
+_headers
+.assetsignore

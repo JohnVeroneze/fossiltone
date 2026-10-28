@@ -227,12 +227,12 @@
   var gallery = document.querySelector(".gallery");
   var mainBox = document.querySelector(".gallery__main");
   var thumbsBox = document.querySelector(".gallery__thumbs");
-  var GALLERY_SIZES = "(min-width: 861px) 540px, (min-width: 700px) 46vw, calc(100vw - 32px)";
+  var GALLERY_SIZES = "(min-width: 1220px) 540px, (min-width: 861px) 45vw, (min-width: 700px) 46vw, calc(100vw - 32px)";
   // cada foto: { arquivos: { grande, media, mini }, alt: () => texto no idioma atual }
   var galleryItems = Array.prototype.map.call(thumbsBox.querySelectorAll("button"), function (btn) {
     var b = "assets/img/" + btn.dataset.photo;
     var key = btn.dataset.altKey;
-    return { arquivos: { grande: b + "-1200.jpg", media: b + "-800.jpg", mini: b + "-thumb.jpg" }, alt: function () { return t(key); } };
+    return { arquivos: { grande: b + "-1200.jpg", media: b + "-800.jpg", pequena: b + "-560.jpg", mini: b + "-thumb.jpg" }, alt: function () { return t(key); } };
   });
   var galleryNow = 0;
 

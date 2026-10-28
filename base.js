@@ -615,6 +615,7 @@
     if (tipo === "full") {
       src = first(["media", "grande", "card", "mini"]);
       if (a.media && a.grande) srcset = arquivo(a.media) + " 800w, " + arquivo(a.grande) + " 1200w";
+      if (srcset && a.pequena) srcset = arquivo(a.pequena) + " 560w, " + srcset;   // fotos do site: versão de 560 px para celular
     } else if (tipo === "mini") {
       src = first(["mini", "card", "media", "grande"]);
     } else if (tipo === "card") {

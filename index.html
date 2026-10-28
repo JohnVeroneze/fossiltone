@@ -22,7 +22,7 @@
   <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
   <link rel="preload" href="assets/fonts/big-shoulders-display-latin.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="assets/fonts/newsreader-latin.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="stylesheet" href="styles.css?v=56">
+  <link rel="stylesheet" href="styles.css?v=57">
 </head>
 <body>
 
@@ -425,7 +425,8 @@
 
       <!-- a vitrine do ZeRO fica dentro de uma incubadora: janela escura com moldura de aço na parede branca -->
       <article class="case spot incubator" id="exposicao-zero" aria-labelledby="zero-t">
-        <div class="incubator__bar" aria-hidden="true"><b>incubadora_02</b><span data-i18n="lab.incubator">espécime FT-L01, em incubação</span><span><i></i><i></i><i></i></span></div>
+        <div class="incubator__bar" aria-hidden="true"><b>incubadora_02</b><span data-i18n="lab.incubator">espécime FT-000, transferido</span><span><i></i><i></i><i></i></span></div>
+        <div class="case__media">
         <div class="case__photos">
           <picture class="case__main">
             <source type="image/avif" srcset="assets/img/zero-front-800.avif 800w, assets/img/zero-front-1200.avif 1200w" sizes="(min-width: 861px) 600px, (min-width: 700px) 46vw, calc(100vw - 32px)">
@@ -440,25 +441,26 @@
             <img src="assets/img/zero-back-600.jpg" width="600" height="600" alt="Fundo do pedal com a tracklist do disco Alcino gravada." data-i18n-alt="zero.alt3" loading="lazy" decoding="async">
           </picture>
         </div>
+          <div class="specimen__actions">
+            <button type="button" class="btn btn--ghost examine" data-examine="zero"><svg class="examine__icon" viewBox="0 0 20 20" aria-hidden="true"><circle cx="8.5" cy="8.5" r="5.5"/><path d="M12.6 12.6 18 18"/></svg><span data-i18n="examine">Examinar o espécime</span></button>
+          </div>
+        </div>
         <div class="case__info">
-          <p class="case__kicker" data-i18n="zero.kicker">Exposição temporária, ainda em incubação</p>
+          <p class="case__kicker" data-i18n="zero.kicker">Exposição temporária, peça emprestada da coleção do ZeRO</p>
           <h3 class="species-name species-name--zero" id="zero-t">ZeRO <span>Alcino Edition</span></h3>
           <p data-i18n="zero.p1">Um pedal criado do zero (com o perdão do trocadilho) para o ZeRO, a partir do disco Alcino.</p>
           <p data-i18n="zero.p2">Volume, Tone e Gain, uma chave Si/Ge pra alternar entre silício e germânio, e a tracklist do disco gravada no fundo da caixa.</p>
           <div class="card card--zero">
-            <div class="card__head"><span>Fossil Tone</span><span class="card__no">FT-L01 <button type="button" class="info-btn" data-ficha="zero" aria-label="Abrir a ficha técnica">i</button></span></div>
+            <div class="card__head"><span>Fossil Tone</span><span class="card__no">FT-000 <button type="button" class="info-btn" data-ficha="zero" aria-label="Abrir a ficha técnica">i</button></span></div>
             <dl class="card__rows">
               <div><dt data-i18n="card.sci">Nome científico</dt><dd><i>Zerodon alcinoi</i></dd></div>
               <div><dt data-i18n="card.found">Criado para</dt><dd><a href="https://instagram.com/iamzerobadass" target="_blank" rel="noopener">@iamzerobadass</a></dd></div>
-              <div><dt data-i18n="card.status">Situação</dt><dd data-i18n="zero.status">Em desenvolvimento</dd></div>
+              <div><dt data-i18n="card.status">Situação</dt><dd data-i18n="zero.status">Em coleção particular</dd></div>
             </dl>
             <span class="card__hole" aria-hidden="true"></span>
           </div>
           <!-- knobs do ZeRO: montados pelo acervo.js a partir do "painel" no catalogo.json -->
           <div data-painel="zero"></div>
-        </div>
-        <div class="specimen__actions">
-          <button type="button" class="btn btn--ghost examine" data-examine="zero"><svg class="examine__icon" viewBox="0 0 20 20" aria-hidden="true"><circle cx="8.5" cy="8.5" r="5.5"/><path d="M12.6 12.6 18 18"/></svg><span data-i18n="examine">Examinar o espécime</span></button>
         </div>
       </article>
     </div>
@@ -683,7 +685,7 @@
 <dialog class="sheet dossier" id="dossier" aria-labelledby="dossier-title"></dialog>
 <dialog class="sheet ficha" id="ficha-dialog" aria-labelledby="ficha-title"></dialog>
 
-<script src="base.js?v=5"></script>
+<script src="base.js?v=6"></script>
 <script src="main.js?v=22"></script>
 <script src="acervo.js?v=17"></script>
 </body>

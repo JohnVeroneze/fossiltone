@@ -183,7 +183,7 @@
     },
     {
       "id": "zero",
-      "numero": "FT-L01",
+      "numero": "FT-000",
       "nome": "ZeRO",
       "subtitulo": "Alcino Edition",
       "nomeCientifico": "Zerodon alcinoi",
@@ -194,7 +194,7 @@
         "en": "A pedal built for ZeRO based on the album Alcino, with Volume, Tone, Gain and a Si/Ge switch to swap between silicon and germanium."
       },
       "criadoPara": { "texto": "@iamzerobadass", "link": "https://instagram.com/iamzerobadass" },
-      "situacao": { "pt": "Em desenvolvimento", "en": "In development" },
+      "situacao": { "pt": "Em coleção particular", "en": "In a private collection" },
       "carimbo": { "pt": "Peça única", "en": "One of a kind" },
       "acao": "laboratorio",
       "exposicao": "exposicao-zero",

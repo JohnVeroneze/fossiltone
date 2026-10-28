@@ -1892,3 +1892,6 @@ dialog.sheet.vt[open], dialog.sheet.vt[open]::backdrop { animation: none; }
   html { scroll-behavior: auto; }
   *, *::before, *::after { transition-duration: .01ms !important; animation-duration: .01ms !important; transition-delay: 0s !important; }
 }
+
+/* ZeRO: botão Examinar logo embaixo das fotos */
+.case__media .specimen__actions { margin-top: 1.25rem; justify-content: center; }

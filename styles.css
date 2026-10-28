@@ -317,8 +317,8 @@ h1, h2, h3, h4 { margin: 0; font-weight: inherit; }
 /* ---------- camadas de sedimento entre as seções ---------- */
 
 .strata {
-  /* desce 1px para dentro da seção: encostado exato, o arredondamento do scroll abria uma fresta */
-  position: absolute; left: 0; bottom: calc(100% - 1px);
+  /* desce 3px para dentro da seção (a faixa de baixo tem a cor dela): com 1px o arredondamento do scroll ainda abria fresta */
+  position: absolute; left: 0; bottom: calc(100% - 3px);
   display: block;
   width: 100%; height: clamp(34px, 5vw, 60px);
   pointer-events: none;

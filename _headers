@@ -1,12 +1,17 @@
 /*
   Strict-Transport-Security: max-age=31536000; includeSubDomains
   X-Content-Type-Options: nosniff
-  X-Frame-Options: DENY
+  X-Frame-Options: SAMEORIGIN
   Referrer-Policy: strict-origin-when-cross-origin
   Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=()
   Cross-Origin-Opener-Policy: same-origin
-  Content-Security-Policy: default-src 'self'; script-src 'self' https://cdn.jsdelivr.net https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; media-src 'self' blob: https://mlyahqfoslwzbwjoxaas.supabase.co; font-src 'self'; connect-src 'self' https://cloudflareinsights.com https://mlyahqfoslwzbwjoxaas.supabase.co wss://mlyahqfoslwzbwjoxaas.supabase.co; frame-src https://www.youtube-nocookie.com 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests
+  Content-Security-Policy: default-src 'self'; script-src 'self' https://cdn.jsdelivr.net https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; media-src 'self' blob: https://mlyahqfoslwzbwjoxaas.supabase.co; font-src 'self'; connect-src 'self' https://cloudflareinsights.com https://mlyahqfoslwzbwjoxaas.supabase.co wss://mlyahqfoslwzbwjoxaas.supabase.co; frame-src https://www.youtube-nocookie.com 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'self'; upgrade-insecure-requests
 
 /admin/*
   X-Robots-Tag: noindex, nofollow
   Cache-Control: no-store
+
+# figuras interativas (iframe do dossiê): scripts dentro do próprio HTML
+/assets/figuras/*
+  ! Content-Security-Policy
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; media-src 'self' blob: https://mlyahqfoslwzbwjoxaas.supabase.co; font-src 'self'; connect-src 'self' https://cloudflareinsights.com https://mlyahqfoslwzbwjoxaas.supabase.co wss://mlyahqfoslwzbwjoxaas.supabase.co; frame-src https://www.youtube-nocookie.com 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'self'; upgrade-insecure-requests

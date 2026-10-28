@@ -673,29 +673,20 @@ h1, h2, h3, h4 { margin: 0; font-weight: inherit; }
 .about, .collection, .create, .restore { position: relative; isolation: isolate; }
 .fossils {
   position: absolute; inset: 0; z-index: -1; pointer-events: none;
-  background-repeat: no-repeat;
+  overflow: hidden;
   opacity: .07;
 }
-.about .fossils {
-  background-image: url("assets/fosseis/amonite.svg"), url("assets/fosseis/samambaia.svg");
-  background-position: right -70px top 20px, left 2% bottom -80px;
-  background-size: clamp(200px, 24vw, 340px), clamp(170px, 18vw, 260px);
-}
-.collection .fossils {
-  background-image: url("assets/fosseis/peixe.svg"), url("assets/fosseis/trilobita.svg"), url("assets/fosseis/dente-tubarao.svg");
-  background-position: left -90px top 30%, right -60px top 60%, left 28% bottom -60px;
-  background-size: clamp(240px, 28vw, 400px), clamp(200px, 22vw, 320px), clamp(130px, 13vw, 190px);
-}
-.create .fossils {
-  background-image: url("assets/fosseis/concha.svg"), url("assets/fosseis/amonite.svg");
-  background-position: left -60px top 68%, right 3% bottom -100px;
-  background-size: clamp(180px, 20vw, 280px), clamp(180px, 20vw, 280px);
-}
-.restore .fossils {
-  background-image: url("assets/fosseis/trilobita.svg"), url("assets/fosseis/dente-tubarao.svg");
-  background-position: left -60px bottom 10%, right -30px top 18%;
-  background-size: clamp(170px, 18vw, 250px), clamp(110px, 11vw, 160px);
-}
+/* lugar e tamanho de cada fóssil; o giro é sorteado pelo base.js */
+.fossils img { position: absolute; height: auto; max-width: none; }
+.about .fossils img:nth-child(1) { width: clamp(200px, 24vw, 340px); right: -70px; top: 20px; }
+.about .fossils img:nth-child(2) { width: clamp(170px, 18vw, 260px); left: 2%; bottom: -80px; }
+.collection .fossils img:nth-child(1) { width: clamp(240px, 28vw, 400px); left: -90px; top: 30%; }
+.collection .fossils img:nth-child(2) { width: clamp(200px, 22vw, 320px); right: -60px; top: 60%; }
+.collection .fossils img:nth-child(3) { width: clamp(130px, 13vw, 190px); left: 28%; bottom: -60px; }
+.create .fossils img:nth-child(1) { width: clamp(180px, 20vw, 280px); left: -60px; top: 68%; }
+.create .fossils img:nth-child(2) { width: clamp(180px, 20vw, 280px); right: 3%; bottom: -100px; }
+.restore .fossils img:nth-child(1) { width: clamp(170px, 18vw, 250px); left: -60px; bottom: 10%; }
+.restore .fossils img:nth-child(2) { width: clamp(110px, 11vw, 160px); right: -30px; top: 18%; }
 
 /* ---------- laboratório: sala branca de laboratório genético, enterrada no Jurássico ----------
    Única seção clara do site. Entra por uma faixa de aço com listras de segurança,

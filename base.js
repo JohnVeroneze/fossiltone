@@ -663,6 +663,28 @@
     emailOk: function (v) { return EMAIL_RE.test(String(v || "").trim()); }
   };
 
+  /* ---------- fósseis enterrados no fundo das seções ----------
+     Os mesmos fósseis de sempre (lugar e tamanho no styles.css, .fossils img),
+     cada um girado num ângulo sorteado e às vezes espelhado, para não parecerem
+     carimbados iguais. */
+  var FOSSEIS = {
+    about: ["amonite", "samambaia"],
+    collection: ["peixe", "trilobita", "dente-tubarao"],
+    create: ["concha", "amonite"],
+    restore: ["trilobita", "dente-tubarao"]
+  };
+  Array.prototype.forEach.call(document.querySelectorAll(".fossils"), function (box) {
+    var sec = box.parentNode, nomes = [];
+    for (var k in FOSSEIS) if (sec.classList.contains(k)) nomes = FOSSEIS[k];
+    nomes.forEach(function (nome) {
+      var img = document.createElement("img");
+      img.src = "assets/fosseis/" + nome + ".svg";
+      img.alt = ""; img.loading = "lazy"; img.decoding = "async";
+      img.style.transform = "rotate(" + Math.round(Math.random() * 360) + "deg)" + (Math.random() < .5 ? " scaleX(-1)" : "");
+      box.appendChild(img);
+    });
+  });
+
   var year = document.getElementById("year");
   if (year) year.textContent = new Date().getFullYear();
 })();

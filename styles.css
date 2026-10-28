@@ -317,7 +317,8 @@ h1, h2, h3, h4 { margin: 0; font-weight: inherit; }
 /* ---------- camadas de sedimento entre as seções ---------- */
 
 .strata {
-  position: absolute; left: 0; bottom: 100%;
+  /* desce 1px para dentro da seção: encostado exato, o arredondamento do scroll abria uma fresta */
+  position: absolute; left: 0; bottom: calc(100% - 1px);
   display: block;
   width: 100%; height: clamp(34px, 5vw, 60px);
   pointer-events: none;
@@ -1886,3 +1887,8 @@ dialog.sheet.vt[open], dialog.sheet.vt[open]::backdrop { animation: none; }
 
 /* ZeRO: botão Examinar logo embaixo das fotos */
 .case__media .specimen__actions { margin-top: 1.25rem; justify-content: center; }
+
+/* no laboratório a camada não pode cobrir a faixa de perigo: fica encostada,
+   e uma sombra de 1px da cor da última camada tapa a fresta do arredondamento */
+.lab > .strata { bottom: 100%; }
+.lab { box-shadow: 0 -1px 0 var(--resin-deep); }

@@ -281,6 +281,7 @@
     acervo: telaAcervo,
     clientes: telaClientes,
     cupons: telaCupons,
+    pesquisa: telaPesquisa,
     configuracoes: telaConfiguracoes
   };
 
@@ -1618,11 +1619,77 @@
      CONFIGURAÇÕES
      ========================================================== */
 
+  /* ==========================================================
+     PESQUISA DE MERCADO
+     O documento (HTML com os dados) fica no Supabase, na tabela
+     configuracoes, que só libera leitura para admin com o segundo fator.
+     O código de exibição é público e não tem dados: visor/pesquisa.js.
+     ========================================================== */
+
+  const PESQUISA_CHAVE = "pesquisa-concorrentes";
+
+  async function telaPesquisa(view) {
+    const titulo = () => cabecalho("08 · Mercado", "Pesquisa de concorrentes", `
+      <button class="btn btn--ghost" type="button" id="pesquisa-baixar" hidden>Baixar arquivo</button>
+      <button class="btn" type="button" id="pesquisa-enviar">Enviar nova versão</button>
+      <input type="file" id="pesquisa-arquivo" accept=".html,text/html" hidden>`);
+    view.innerHTML = titulo() + '<p class="loading">Carregando…</p>';
+    const doc = await tentar(() => fonte.config(PESQUISA_CHAVE));
+    if (!view.isConnected || !$(".side__nav a.is-active[data-rota=pesquisa]")) return;
+    const tem = doc && typeof doc.html === "string" && doc.html.length > 0;
+
+    view.innerHTML = titulo() + (tem ? `
+      <p class="pesquisa__meta">Versão de ${esc(dataHora(doc.atualizado_em))} · ${esc(doc.nome || "pesquisa.html")} · ${Math.round(doc.html.length / 1024)} KB${doc.por ? " · enviada por " + esc(doc.por) : ""}</p>
+      <iframe class="pesquisa__frame" title="Pesquisa de concorrentes"></iframe>` : `
+      <section class="panel" style="max-width:760px">
+        <h2 class="panel__title" style="margin-bottom:.6rem">Nenhuma versão enviada</h2>
+        <p>A pesquisa de concorrentes fica guardada no banco, e só abre aqui para quem entrou com login e código.</p>
+        <p>Para enviar: no computador, na pasta FOSSIL TONE, rode <b>python3 -I ferramentas/pesquisa-para-admin.py</b>. Ele gera o arquivo <b>pesquisa-concorrentes-admin.html</b>. Depois clique em <b>Enviar nova versão</b> e escolha esse arquivo.</p>
+      </section>`);
+
+    if (tem) {
+      // iframe sem endereço: mesmo domínio e mesmas regras de segurança do painel.
+      // O CSS da pesquisa não se mistura com o do painel.
+      const frame = $(".pesquisa__frame", view);
+      const d = frame.contentDocument;
+      d.open(); d.write(doc.html); d.close();
+
+      const baixar = $("#pesquisa-baixar", view);
+      baixar.hidden = false;
+      baixar.addEventListener("click", () => {
+        const url = URL.createObjectURL(new Blob([doc.html], { type: "text/html" }));
+        const a = document.createElement("a");
+        a.href = url; a.download = doc.nome || "pesquisa-concorrentes-admin.html";
+        document.body.appendChild(a); a.click(); a.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 2000);
+      });
+    }
+
+    const input = $("#pesquisa-arquivo", view);
+    $("#pesquisa-enviar", view).addEventListener("click", () => input.click());
+    input.addEventListener("change", async () => {
+      const arquivo = input.files && input.files[0];
+      input.value = "";
+      if (!arquivo) return;
+      if (arquivo.size > 3 * 1024 * 1024) { toast("Arquivo grande demais (máximo 3 MB).", true); return; }
+      const html = await arquivo.text();
+      if (!/id="dados"/.test(html) || !/\/admin\/visor\/pesquisa\.js/.test(html)) {
+        toast("Esse não é o arquivo do painel. Gere com ferramentas/pesquisa-para-admin.py e envie o pesquisa-concorrentes-admin.html.", true);
+        return;
+      }
+      if (tem && !confirm(`Substituir a versão de ${dataHora(doc.atualizado_em)} por ${arquivo.name}?`)) return;
+      const sessao = await fonte.sessao().catch(() => null);
+      const valor = { html, nome: arquivo.name, atualizado_em: new Date().toISOString(), por: sessao && sessao.email !== "demonstracao" ? sessao.email : null };
+      const ok = await tentar(() => fonte.salvarConfig(PESQUISA_CHAVE, valor).then(() => true), $("#pesquisa-enviar", view));
+      if (ok) { toast("Pesquisa atualizada."); telaPesquisa(view); }
+    });
+  }
+
   async function telaConfiguracoes(view) {
-    view.innerHTML = cabecalho("08 · Loja", "Configurações") + '<p class="loading">Carregando…</p>';
+    view.innerHTML = cabecalho("09 · Loja", "Configurações") + '<p class="loading">Carregando…</p>';
     const cfg = (await tentar(() => fonte.config("loja"))) || {};
     if (!view.isConnected || !$(".side__nav a.is-active[data-rota=configuracoes]")) return;
-    view.innerHTML = cabecalho("08 · Loja", "Configurações") + `
+    view.innerHTML = cabecalho("09 · Loja", "Configurações") + `
       <form id="form-config" class="panel" novalidate style="display:grid;gap:1.2rem;max-width:760px">
         <h2 class="panel__title">Dados da loja</h2>
         <div class="grid2">

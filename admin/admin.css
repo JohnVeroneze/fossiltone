@@ -627,3 +627,8 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .resposta .label { font-family: var(--f-display); font-weight: 700; font-size: 1.05rem; }
 .resposta textarea { width: 100%; padding: .7em .8em; font: inherit; color: var(--ink); background: rgba(255, 255, 255, .45); border: 1.5px solid rgba(42, 26, 14, .25); border-radius: 3px; resize: vertical; }
 .resposta textarea:focus { outline: none; border-color: var(--rust); }
+
+/* ---------- pesquisa de mercado ---------- */
+.pesquisa__meta { margin: 0 0 .8rem; font-family: var(--f-type); font-size: .85rem; color: var(--muted); }
+.pesquisa__frame { display: block; width: 100%; height: calc(100vh - 12rem); min-height: 560px; border: 1px solid var(--line-soft); background: #2B1609; }
+@media (max-width: 900px) { .pesquisa__frame { height: calc(100vh - 16rem); min-height: 480px; } }
